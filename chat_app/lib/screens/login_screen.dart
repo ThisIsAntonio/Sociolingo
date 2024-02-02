@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'register_screen.dart';
-import 'main_screen.dart';
+import 'package:chat_app/screens/register_screen.dart';
+import 'package:chat_app/screens/main_screen.dart';
 
 // Define the LoginScreen widget
 class LoginScreen extends StatefulWidget {

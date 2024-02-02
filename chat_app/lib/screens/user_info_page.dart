@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:chat_app/model/user.dart';
+import 'package:chat_app/screens/edit_user_info_page.dart';
 
 class UserInfoPage extends StatefulWidget {
   final String userEmail;
@@ -54,6 +55,22 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   Text('Email: ${_user!.email}'),
                   Text('Username: ${_user!.username}'),
                   Text('Bio: ${_user!.bio}'),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Edit user info
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => EditUserInfoPage(
+                                user: _user, userEmail: widget.userEmail)),
+                      ).then((_) {
+                        // Optional: Reload the user info when this comeback from edit his info
+                        _fetchUserInfo();
+                      });
+                    },
+                    child: Text('Modify Information'),
+                  ),
                 ],
               ),
             ),

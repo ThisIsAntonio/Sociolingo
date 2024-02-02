@@ -87,6 +87,23 @@ app.get('/userInfo', (req, res) => {
     });
 });
 
+// Endpoint for update user info
+app.put('/updateUserInfo', (req, res) => {
+    const { email, username, bio } = req.body;
+    console.log(email + ', ' + username + ', ' + bio);
+    // updating information by the database
+    const query = 'UPDATE users SET username = ?, bio = ? WHERE email = ?';
+
+    db.execute(query, [username, bio, email], (err, result) => {
+        if (err) {
+            console.error('Error updating user info', err);
+            res.status(500).send('Error updating user info');
+            return;
+        }
+
+        res.status(200).send('User info updated successfully');
+    });
+});
 
 
 // Start the server
