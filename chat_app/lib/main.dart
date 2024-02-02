@@ -126,7 +126,9 @@ class _MyHomePageState extends State<MyHomePage> {
  */
 
 import 'package:flutter/material.dart';
-import 'screens/login_screen.dart'; // Asegúrate de que la ruta de importación sea correcta
+import 'package:provider/provider.dart';
+import 'package:chat_app/screens/login_screen.dart';
+import 'package:chat_app/model/theme_provider.dart';
 
 void main() {
   runApp(MyApp());
@@ -135,12 +137,19 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Mi Aplicación',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: 'Mi Aplicación',
+            themeMode: themeProvider.themeMode,
+            theme: ThemeData.light(),
+            darkTheme: ThemeData.dark(),
+            home: const LoginScreen(),
+          );
+        },
       ),
-      home: LoginScreen(), // Establece LoginScreen como la pantalla de inicio
     );
   }
 }

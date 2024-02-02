@@ -41,7 +41,19 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Main Screen'),
+        title: Row(
+          mainAxisSize: MainAxisSize
+              .min, // Ensures that the Row takes up the minimum space necessary
+          children: [
+            Image.asset(
+              'lib/img/logo.png', // rute of your image
+              fit: BoxFit.contain,
+              height: 20.0, // Adjust the height as needed
+            ),
+            const SizedBox(width: 8.0), // Space between logo and text
+            const Text('SocioLingo Chat'),
+          ],
+        ),
       ),
       body: IndexedStack(
         index: _selectedIndex,

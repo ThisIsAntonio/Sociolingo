@@ -72,7 +72,19 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Log In'),
+        title: Row(
+          mainAxisSize: MainAxisSize
+              .min, // Asegura que el Row ocupe el mínimo espacio necesario
+          children: [
+            Image.asset(
+              'lib/img/logo.png', // Asegúrate de que la ruta de la imagen sea correcta
+              fit: BoxFit.contain,
+              height: 20.0, // Ajusta la altura según necesites
+            ),
+            const SizedBox(width: 8.0), // Espacio entre el logo y el texto
+            const Text('SocioLingo Chat - Log In'),
+          ],
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -81,7 +93,18 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              // Tus campos TextFormField para Email y Password
+              CircleAvatar(
+                radius: 60, // Adjust the size to your liking
+                backgroundColor: Colors.transparent, // Transparent background
+                child: ClipOval(
+                  child: Image.asset('lib/img/logo.png', // rute of your image
+                      fit: BoxFit.cover, // Cover the space of the circle
+                      width: 120, // Adjust the width
+                      height: 120), //Adjust the height
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Field TextFormField for Email and Password
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Email'),
                 keyboardType: TextInputType.emailAddress,

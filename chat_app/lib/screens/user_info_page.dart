@@ -47,7 +47,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _user == null
-          ? CircularProgressIndicator()
+          ? const CircularProgressIndicator()
           : Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -55,7 +55,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   Text('Email: ${_user!.email}'),
                   Text('Username: ${_user!.username}'),
                   Text('Bio: ${_user!.bio}'),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: () {
                       // Edit user info
@@ -69,7 +69,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                         _fetchUserInfo();
                       });
                     },
-                    child: Text('Modify Information'),
+                    child: const Text('Modify Information'),
                   ),
                 ],
               ),
