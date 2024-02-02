@@ -42,7 +42,7 @@ app.post('/login', (req, res) => {
             // Comparing hashed password with the one provided by user
             const comparison = await bcrypt.compare(password, result[0].password);
             if (comparison) {
-                res.status(200).send('Login successful');
+                res.status(200).json({messaje: 'Login successful', email: result[0].email, userId: result[0].id});
             } else {
                 res.status(401).send('Incorrect password');
             }
@@ -67,6 +67,27 @@ app.post('/register', async (req, res) => {
         res.status(201).send('User registered successfully');
     });
 });
+
+// Endpoint for user info
+app.get('/userInfo', (req, res) => {
+    const { email } = req.query; // Usar query en lugar de params
+    const query = 'SELECT username, email, bio FROM users WHERE email = ?';
+
+    db.execute(query, [email], (err, result) => {
+        if (err) {
+            res.status(500).send('Error retrieving user information');
+            return;
+        }
+
+        if (result.length > 0) {
+            res.status(200).json(result[0]);
+        } else {
+            res.status(404).send('User not found');
+        }
+    });
+});
+
+
 
 // Start the server
 app.listen(port, () => {
