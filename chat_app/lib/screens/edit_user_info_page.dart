@@ -69,7 +69,8 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
   }
 
   Future<void> _updateUserInfo() async {
-    var url = Uri.parse('http://10.0.2.2:3000/updateUserInfo');
+    var url = Uri.parse(
+        'https://serverchat2.onrender.com/updateUserInfo'); // Adjust the URL for your environment //localhost is 100.20.92.101:300
     String? base64Image;
     if (_imageFile != null) {
       final bytes = await _imageFile!.readAsBytes();

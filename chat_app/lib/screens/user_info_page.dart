@@ -26,7 +26,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
   Future<void> _fetchUserInfo() async {
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:3000/userInfo?email=${widget.userEmail}'),
+        Uri.parse(
+            'https://serverchat2.onrender.com/userInfo?email=${widget.userEmail}'), // Adjust the URL for your environment //localhost is 100.20.92.101:300
       );
       // Print the response status code
       print('Response status code: ${response.statusCode}');

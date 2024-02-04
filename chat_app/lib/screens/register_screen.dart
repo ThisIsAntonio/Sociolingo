@@ -34,7 +34,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   // Sends data to the backend for registration
   void _register() async {
     var url = Uri.parse(
-        'http://10.0.2.2:3000/register'); // Ajusta la URL para tu entorno
+        'https://serverchat2.onrender.com/register'); // Adjust the URL for your environment //localhost is 100.20.92.101:300
     try {
       // Prepara el request
       var request = http.MultipartRequest('POST', url)

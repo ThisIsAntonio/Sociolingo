@@ -23,7 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   // Function to handle user login
   void _login() async {
     var url = Uri.parse(
-        'http://10.0.2.2:3000/login'); // Adjust the URL for your environment
+        'https://serverchat2.onrender.com/login'); // Adjust the URL for your environment //localhost is 100.20.92.101:300
     try {
       var response = await http.post(
         url,
