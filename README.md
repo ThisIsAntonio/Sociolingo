@@ -40,6 +40,12 @@ npm install
 4. Run the Node js application
 node server.js
 
+note: right now, I've deployed a node server to check how works the app, however, if you need to modify the server.js file, you need to change the url for login, register, user info, modify user info by the localhost url.
+
+### SQL files:
+
+There is an example of the DBA working on my own server, if you want to use your own, please feel free to do it, however, check the .sql file because this has all the first tables to start this interesting project.
+
 ## License
 
 This project does not have a specific license for now. Be aware of the licenses of the dependencies you use and make sure you comply with them.
