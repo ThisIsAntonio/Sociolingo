@@ -1,4 +1,5 @@
-# Chat project in Flutter and API in Node.js is a College project for the class Project1
+# Chat project in Flutter and API in Node.js
+Note: This is a College project for the class Project1.
 
 This is a project in development that uses Flutter to create a chat application and an API in Node.js for database management. Currently, the project includes the following features:
 
