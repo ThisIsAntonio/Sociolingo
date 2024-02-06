@@ -34,7 +34,7 @@ db.connect((err) => {
         return console.error(error.message);
     }
     // Imprime los resultados en la consola
-    console.log(results);
+    //console.log(results);
     });
 
 });
@@ -99,7 +99,7 @@ app.get('/userInfo', (req, res) => {
             };
             delete userInfo.user_img; // Remove the BLOB field
 
-            console.log('User Info:', userInfo);
+            //console.log('User Info:', userInfo);
             res.status(200).json(userInfo);
         } else {
             res.status(404).send('User not found');
@@ -186,9 +186,9 @@ app.put('/updateUserInfo', async (req, res) => {
     const { first_name, last_name, email, password, birthday, country, profile_picture_base64 } = req.body;
     
     try {
-        console.log('Received fields:', req.body);
-        if (req.files) console.log('Received files:', req.files);
-        console.log('Password to hash:', req.body.password);
+        //console.log('Received fields:', req.body);
+        //if (req.files) console.log('Received files:', req.files);
+       // console.log('Password to hash:', req.body.password);
         
         const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
         const join_date = new Date(); // Current date and time
