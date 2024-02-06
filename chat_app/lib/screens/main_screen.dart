@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'user_info_page.dart';
-import 'friend_suggestions_page.dart';
-import 'friend_requests_page.dart';
-import 'chat_page.dart';
-import 'settings_page.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:chat_app/screens/user_info_page.dart';
+import 'package:chat_app/screens/friend_suggestions_page.dart';
+import 'package:chat_app/screens/friend_requests_page.dart';
+import 'package:chat_app/screens/chat_page.dart';
+import 'package:chat_app/screens/settings_page.dart';
 
 class MainScreen extends StatefulWidget {
   final String userEmail;
@@ -17,20 +18,25 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  late List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      UserInfoPage(userEmail: widget.userEmail),
-      FriendSuggestionsPage(),
-      FriendRequestsPage(),
-      ChatPage(),
-      SettingsPage(),
-    ];
+  // Build the selected page based on the current index
+  Widget _buildPage() {
+    switch (_selectedIndex) {
+      case 0:
+        return UserInfoPage(userEmail: widget.userEmail);
+      case 1:
+        return FriendSuggestionsPage();
+      case 2:
+        return FriendRequestsPage();
+      case 3:
+        return ChatPage();
+      case 4:
+        return SettingsPage();
+      default:
+        return UserInfoPage(userEmail: widget.userEmail); // Fallback page
+    }
   }
 
+  // Update the selected index when tapping on a navigation item
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -41,41 +47,46 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize
-              .min, // Ensures that the Row takes up the minimum space necessary
-          children: [
-            Image.asset(
-              'lib/img/logo.png', // rute of your image
-              fit: BoxFit.contain,
-              height: 20.0, // Adjust the height as needed
-            ),
-            const SizedBox(width: 8.0), // Space between logo and text
-            const Text('SocioLingo Chat'),
-          ],
-        ),
+        // The leading widget is empty to hide the back button
+        leading: Container(),
+        // App title that is localized
+        title: Text('SocioLingo'),
       ),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
-      ),
+      // The body is the currently selected page
+      body: _buildPage(),
+      // Bottom navigation bar to switch between pages
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+        // Navigation bar items with localized labels
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-              icon: Icon(Icons.account_circle), label: 'Profile'),
+            icon: Icon(Icons.account_circle),
+            label: tr('mainScreen_profileLabel'),
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.people), label: 'Suggestions'),
-          BottomNavigationBarItem(icon: Icon(Icons.mail), label: 'Requests'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
+            icon: Icon(Icons.people),
+            label: tr('mainScreen_suggestionsLabel'),
+          ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.settings), label: 'Settings'),
+            icon: Icon(Icons.mail),
+            label: tr('mainScreen_RequestsLabel'),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat),
+            label: tr('mainScreen_chatLabel'),
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: tr('mainScreen_settingsLabel'),
+          ),
         ],
+        // Current selected index of the navigation bar
         currentIndex: _selectedIndex,
+        // Callback when tapping on a navigation item
         onTap: _onItemTapped,
-        selectedItemColor: Colors.red, // Selected Icon color
-        unselectedItemColor: Colors.grey, // Unselected Icon color
-        backgroundColor:
-            Colors.blue, // Background color of the BottomNavigationBar
+        // Styling for the navigation bar
+        selectedItemColor: Colors.red,
+        unselectedItemColor: Colors.grey,
+        backgroundColor: Colors.lightBlue,
       ),
     );
   }

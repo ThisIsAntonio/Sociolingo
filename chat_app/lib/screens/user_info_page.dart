@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:intl/intl.dart';
+import 'dart:async';
+import 'package:easy_localization/easy_localization.dart';
+//import 'package:intl/intl.dart';
 import 'package:chat_app/model/user.dart';
 import 'package:chat_app/screens/edit_user_info_page.dart';
+import 'package:chat_app/main.dart';
 
 class UserInfoPage extends StatefulWidget {
   final String userEmail;
@@ -21,6 +24,11 @@ class _UserInfoPageState extends State<UserInfoPage> {
   void initState() {
     super.initState();
     _fetchUserInfo();
+    languageChangeStreamController.stream.listen((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   Future<void> _fetchUserInfo() async {
@@ -33,7 +41,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
       print('Response status code: ${response.statusCode}');
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print("Received user info: $data");
+        //print("Received user info: $data");
         setState(() {
           _user = User.fromJson(data);
         });
@@ -59,7 +67,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
     } else {
       // If there is no user image, show a default image
       return Image.asset(
-        'lib/img/photo.jpg', // Asegúrate de que la ruta de acceso sea correcta
+        'assets/img/photo.jpg',
         width: 100,
         height: 100,
         fit: BoxFit.cover,
@@ -71,7 +79,26 @@ class _UserInfoPageState extends State<UserInfoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('User Info'),
+        leading: Container(), // To hide the back button.
+        title: Column(
+          mainAxisSize:
+              MainAxisSize.max, // To occupy the minimum space necessary.
+          mainAxisAlignment:
+              MainAxisAlignment.center, // Center vertically on the AppBar.
+          crossAxisAlignment: CrossAxisAlignment
+              .stretch, // Stretch the children along the crossed axis.
+          children: [
+            Text(
+              tr('userInfo_title'),
+              textAlign: TextAlign.start, // Center the text.
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        centerTitle: true, // Ensures the title is centered in the AppBar.
       ),
       body: _user == null
           ? const Center(child: CircularProgressIndicator())
@@ -80,6 +107,11 @@ class _UserInfoPageState extends State<UserInfoPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Divider(
+                    color: Colors.white70, // Line color.
+                    thickness: 2, // Line thickness.
+                  ),
+                  const SizedBox(height: 20), // Separator (20 pixel height)
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -93,26 +125,29 @@ class _UserInfoPageState extends State<UserInfoPage> {
                                 style: const TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 8),
-                            const Text('Friends: 0'), // Static value for now
+                            Text(tr('userInfo_friends') +
+                                ': 0'), // Static value for now
                           ],
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 40), // Separator (40 pixels height)
-                  Text('Email: ${_user!.email}'),
+                  Text(tr('userInfo_emailLabel') + '${_user!.email}'),
                   const SizedBox(height: 20), // Separator (20 pixels height)
-                  Text('Phone: ${_user!.phoneNumber ?? 'N/A'}'),
+                  Text(tr('userInfo_phoneLabel') +
+                      '${_user!.phoneNumber ?? 'N/A'}'),
                   const SizedBox(height: 20), // Separator (20 pixels height)
-                  Text('Country: ${_user!.country}'),
+                  Text(tr('userInfo_countryLabel') + '${_user!.country}'),
                   const SizedBox(height: 20), // Separator (20 pixels height)
-                  Text('Bio: ${_user!.bio ?? 'Not provided'}'),
+                  Text(tr('userInfo_bioLabel') +
+                      '${_user!.bio ?? 'Not provided'}'),
                   const SizedBox(height: 20), // Separator (20 pixels height)
-                  Text(
-                      'Birthday: ${_user!.birthday != null ? DateFormat('yyyy-MM-dd').format(_user!.birthday!) : 'N/A'}'),
+                  Text(tr('userInfo_birthdayLabel') +
+                      '${_user!.birthday != null ? DateFormat('yyyy-MM-dd').format(_user!.birthday!) : 'N/A'}'),
                   const SizedBox(height: 20), // Separator (20 pixels height)
-                  const Text(
-                      'Interests, Languages, etc. will go here'), // Placeholder for relational data
+                  Text(tr(
+                      'userInfo_InterestsLabel')), // Placeholder for relational data
                   const SizedBox(height: 20), // Separator (20 pixels height)
                   ElevatedButton(
                     onPressed: () => Navigator.pushReplacement(
@@ -124,7 +159,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                         // Optional: Reload user information when returning from editing page
                         _fetchUserInfo();
                       }),
-                    child: const Text('Edit Profile'),
+                    child: Text(tr('userInfo_buttonEditProfile')),
                   ),
                 ],
               ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:country_picker/country_picker.dart';
@@ -30,6 +31,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _birthdayController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   // Sends data to the backend for registration
   void _register() async {
@@ -68,26 +72,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (response.statusCode == 201) {
         // Successful registration
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('User registered successfully')));
+            SnackBar(content: Text(tr('register_registerAccepted'))));
         Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => LoginScreen()));
       } else {
         // Failure to register user
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Failed to register user')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(tr('register_registerFailed'))));
       }
     } catch (e) {
       // Failed to connect to server
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error connecting to the server')));
+          SnackBar(content: Text(tr('register_errorConnectingServer'))));
       print('Exception caught: $e');
     }
   }
 
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
+      _password = _passwordController.text;
       _formKey.currentState?.save();
       _register();
+
+      _passwordController.clear();
+      _confirmPasswordController.clear();
     }
   }
 
@@ -112,13 +120,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
+        title: const Row(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset('lib/img/logo.png', fit: BoxFit.contain, height: 20.0),
-            const SizedBox(width: 8.0),
-            const Text('SocioLingo Chat - Register'),
-          ],
         ),
       ),
       body: Padding(
@@ -128,24 +131,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: SingleChildScrollView(
             child: Column(
               children: <Widget>[
+                const SizedBox(height: 20),
+                Text(
+                  tr('register_title'),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  tr('register_subtitle'),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 35),
                 TextFormField(
-                  decoration: const InputDecoration(labelText: 'First Name'),
+                  decoration:
+                      InputDecoration(labelText: tr('register_labelFirstName')),
                   onSaved: (value) => _firstName = value ?? '',
                   validator: (value) =>
-                      value!.isEmpty ? 'Please enter your first name' : null,
+                      value!.isEmpty ? tr('register_firstName') : null,
                 ),
                 const SizedBox(height: 20), // Separator (20 pixels height)
                 TextFormField(
-                  decoration: const InputDecoration(labelText: 'Last Name'),
+                  decoration:
+                      InputDecoration(labelText: tr('register_labeLastName')),
                   onSaved: (value) => _lastName = value ?? '',
                   validator: (value) =>
-                      value!.isEmpty ? 'Please enter your last name' : null,
+                      value!.isEmpty ? tr('register_lastName') : null,
                 ),
                 const SizedBox(height: 20), // Separator (20 pixels height)
                 TextFormField(
                   controller: _birthdayController,
-                  decoration: const InputDecoration(
-                    labelText: 'Birthday',
+                  decoration: InputDecoration(
+                    labelText: tr('register_labelBirthday'),
                     hintText: 'YYYY-MM-DD',
                   ),
                   keyboardType: TextInputType.datetime,
@@ -185,12 +204,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       }
 
                       if (age < 18) {
-                        return 'You must be at least 18 years old';
+                        return tr('register_errorBirthday');
                       }
 
                       return null; // If the date is valid
                     } catch (e) {
-                      return 'Please enter a valid date format (YYYY-MM-DD)';
+                      return tr('register_invalidFormatBirthday');
                     }
                   },
                   onSaved: (value) {
@@ -202,11 +221,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 20), // Separator (20 pixels height)
                 TextFormField(
-                  decoration: const InputDecoration(labelText: 'Email'),
+                  decoration:
+                      InputDecoration(labelText: tr('register_labelEmail')),
                   keyboardType: TextInputType.emailAddress,
                   onSaved: (value) => _email = value ?? '',
                   validator: (value) => value!.isEmpty || !value.contains('@')
-                      ? 'Please enter a valid email'
+                      ? tr('register_errorEmail')
                       : null,
                 ),
                 Row(
@@ -228,9 +248,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     //const SizedBox(width: 10),
                     Expanded(
                       child: TextFormField(
-                        decoration: const InputDecoration(
-                          labelText: 'Phone Number',
-                          hintText: 'Enter your phone number',
+                        decoration: InputDecoration(
+                          labelText: tr('register_labelPhoneNumber'),
+                          hintText: tr('register_phoneNumber'),
                         ),
                         keyboardType: TextInputType.phone,
                         controller: _phoneNumberController,
@@ -241,7 +261,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           if (value == null || value.isEmpty) {
                             return 'Please enter your phone number';
                           } else if (!regExp.hasMatch(value)) {
-                            return 'Please enter a valid phone number format: +[country code] [number]';
+                            return tr('register_invalidFormat');
                           }
                           // You can add additional validations here if you need it
                           return null;
@@ -257,16 +277,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 20), // Separator (20 pixels height)
                 TextFormField(
-                  decoration: const InputDecoration(labelText: 'Password'),
+                  controller: _passwordController,
+                  decoration:
+                      InputDecoration(labelText: tr('register_labelPassword')),
                   obscureText: true,
-                  onSaved: (value) => _password = value ?? '',
-                  validator: (value) => value!.isEmpty || value.length < 6
-                      ? 'Password must be at least 6 characters long'
-                      : null,
+                  validator: (value) {
+                    if (value == null || value.isEmpty || value.length < 6) {
+                      return tr('register_errorPasswordLong');
+                    }
+                    return null;
+                  },
                 ),
+
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  decoration: InputDecoration(
+                      labelText: tr('register_confirmPassword')),
+                  obscureText: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return tr('register_confirmPasswordRequired');
+                    }
+                    if (value != _passwordController.text) {
+                      return tr('register_confirmPasswordNoMatch');
+                    }
+                    return null;
+                  },
+                ),
+
                 const SizedBox(height: 20), // Separator (20 pixels height)
                 ListTile(
-                  title: Text(_selectedCountry?.name ?? 'No country selected'),
+                  title: Text(
+                      _selectedCountry?.name ?? tr('register_countryError')),
                   trailing: const Icon(Icons.arrow_drop_down),
                   onTap: () {
                     showCountryPicker(
@@ -282,13 +324,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 if (_imageFile != null) Image.file(File(_imageFile!.path)),
                 OutlinedButton(
                   onPressed: _pickImage,
-                  child: const Text('Pick Profile Image'),
+                  child: Text(tr('register_pickProfileImage')),
                 ),
                 const SizedBox(height: 20), // Separator (20 pixels height)
                 TextFormField(
                   controller: _bioController,
-                  decoration: const InputDecoration(
-                    labelText: 'Bio (Optional)',
+                  decoration: InputDecoration(
+                    labelText: tr('register_labelBio'),
                   ),
                   maxLength:
                       255, // Sets the maximum number of characters allowed.
@@ -313,7 +355,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 20), // Separator (20 pixels height)
                 ElevatedButton(
                   onPressed: _submit,
-                  child: const Text('Register'),
+                  child: Text(tr('register_buttonRegister')),
                 ),
               ],
             ),

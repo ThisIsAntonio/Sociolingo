@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:chat_app/screens/register_screen.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:chat_app/screens/forgot_password.dart';
 import 'package:chat_app/screens/main_screen.dart';
 
 // Define the LoginScreen widget
@@ -39,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         // Login successful
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Login successful')));
+            .showSnackBar(SnackBar(content: Text(tr('login_successful'))));
 
         var data = jsonDecode(response.body);
         String userEmail = data['email'];
@@ -49,14 +50,13 @@ class _LoginScreenState extends State<LoginScreen> {
             builder: (context) => MainScreen(userEmail: userEmail)));
       } else {
         // Login failed
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(
-                'Failed to login. Please check your email and password.')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(tr('login_failed'))));
       }
     } catch (e) {
       // Handle errors in sending the request or receiving the response
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error connecting to the server')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(tr('login_errorConnecting'))));
     }
   }
 
@@ -72,76 +72,169 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize
-              .min, // Asegura que el Row ocupe el mínimo espacio necesario
-          children: [
-            Image.asset(
-              'lib/img/logo.png', // Asegúrate de que la ruta de la imagen sea correcta
-              fit: BoxFit.contain,
-              height: 20.0, // Ajusta la altura según necesites
-            ),
-            const SizedBox(width: 8.0), // Espacio entre el logo y el texto
-            const Text('SocioLingo Chat - Log In'),
-          ],
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              CircleAvatar(
-                radius: 60, // Adjust the size to your liking
-                backgroundColor: Colors.transparent, // Transparent background
-                child: ClipOval(
-                  child: Image.asset('lib/img/logo.png', // rute of your image
-                      fit: BoxFit.cover, // Cover the space of the circle
-                      width: 120, // Adjust the width
-                      height: 120), //Adjust the height
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                const SizedBox(height: 20),
+                Text(
+                  tr('login_title'),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              // Field TextFormField for Email and Password
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Email'),
-                keyboardType: TextInputType.emailAddress,
-                onSaved: (value) => _email = value ?? '',
-                validator: (value) {
-                  if (value == null || value.isEmpty || !value.contains('@')) {
-                    return 'Please enter a valid email address.';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Password'),
-                obscureText: true,
-                onSaved: (value) => _password = value ?? '',
-                validator: (value) {
-                  if (value == null || value.isEmpty || value.length < 5) {
-                    return 'Password must be at least 5 characters long.';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _submit,
-                child: const Text('Log In'),
-              ),
-              TextButton(
-                onPressed: () {
-                  // Navega a RegisterScreen cuando se presione el botón
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => RegisterScreen()));
-                },
-                child: const Text(
-                    'Register'), // Texto del botón para navegar a la pantalla de registro
-              ),
-            ],
+                const SizedBox(height: 20),
+                CircleAvatar(
+                  radius: 60, // Adjust the size to your liking
+                  backgroundColor: Colors.transparent, // Transparent background
+                  child: ClipOval(
+                    child:
+                        Image.asset('assets/img/logo.png', // rute of your image
+                            fit: BoxFit.cover, // Cover the space of the circle
+                            width: 120, // Adjust the width
+                            height: 120), //Adjust the height
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  tr('login_subtitle'),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 25),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment
+                      .spaceEvenly, // Distribuye los botones uniformemente
+                  children: [
+                    SocialButton(
+                      iconPath: 'assets/img/facebook.png',
+                      onPressed: () {
+                        // Facebook action
+                      },
+                      size: 40.0, // Button size
+                    ),
+                    SocialButton(
+                      iconPath: 'assets/img/google.png',
+                      onPressed: () {
+                        // Google action
+                      },
+                      size: 40.0, // Button size
+                    ),
+                    SocialButton(
+                      iconPath: 'assets/img/apple.png',
+                      onPressed: () {
+                        // Apple action
+                      },
+                      size: 40.0, // Button size
+                    ),
+                  ],
+                ),
+                //const Spacer(),
+                const SizedBox(height: 25),
+                const Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Divider(
+                        color: Colors.white70,
+                        thickness: 1,
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text(
+                        'OR',
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                    ),
+                    Expanded(
+                      child: Divider(
+                        color: Colors.white70,
+                        thickness: 1,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 30),
+                // Field TextFormField for Email and Password
+                TextFormField(
+                  decoration: const InputDecoration(labelText: 'Email'),
+                  keyboardType: TextInputType.emailAddress,
+                  onSaved: (value) => _email = value ?? '',
+                  validator: (value) {
+                    if (value == null ||
+                        value.isEmpty ||
+                        !value.contains('@')) {
+                      return tr('login_invalidPassword');
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  decoration: const InputDecoration(labelText: 'Password'),
+                  obscureText: true,
+                  onSaved: (value) => _password = value ?? '',
+                  validator: (value) {
+                    if (value == null || value.isEmpty || value.length < 5) {
+                      return tr('login_errorLongPassword');
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: _submit,
+                  child: Text(tr('login_buttonLogin')),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // Navigate to RegisterScreen when button is pressed
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ForgotPasswordScreen()));
+                  },
+                  child: Text(tr("login_buttonForgotPassword")),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SocialButton extends StatelessWidget {
+  final String iconPath;
+  final VoidCallback onPressed;
+  final double size; // Add a parameter for size
+
+  const SocialButton({
+    Key? key,
+    required this.iconPath,
+    required this.onPressed,
+    this.size = 24.0, // Default button size
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onPressed,
+      child: CircleAvatar(
+        backgroundColor: Colors.white, // Fondo blanco del círculo
+        radius: size / 2, // El radio se basa en el tamaño proporcionado
+        child: ClipOval(
+          child: Image.asset(
+            iconPath,
+            width: size, // Ajusta la anchura basada en el tamaño proporcionado
+            height: size, // Ajusta la altura basada en el tamaño proporcionado
+            fit: BoxFit.cover, // Cubre el área del widget sin deformarse
           ),
         ),
       ),
