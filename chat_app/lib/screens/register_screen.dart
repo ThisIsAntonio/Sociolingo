@@ -40,7 +40,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     var url = Uri.parse(
         'https://serverchat2.onrender.com/register'); // Adjust the URL for your environment //localhost is 100.20.92.101:300
     try {
-      // Prepara el request
+      // Prepare the request
       var request = http.MultipartRequest('POST', url)
         ..fields['first_name'] = _firstName
         ..fields['last_name'] = _lastName
@@ -88,20 +88,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+// Method to handle form submission
   void _submit() {
+    // Check if form is valid
     if (_formKey.currentState?.validate() ?? false) {
+      // Save password from text field
       _password = _passwordController.text;
+      // Save form fields
       _formKey.currentState?.save();
+      // Call the register method
       _register();
 
+      // Clear text fields
       _passwordController.clear();
       _confirmPasswordController.clear();
     }
   }
 
+// Method to pick an image from the device's gallery
   Future<void> _pickImage() async {
+    // Use ImagePicker to pick an image from the gallery
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    // Check if image is selected
     if (image != null) {
+      // Update the state with the selected image file
       setState(() {
         _imageFile = image;
       });
@@ -132,6 +142,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               children: <Widget>[
                 const SizedBox(height: 20),
+                // Title and subtitle
                 Text(
                   tr('register_title'),
                   style: TextStyle(
@@ -145,6 +156,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 35),
+                // First name
                 TextFormField(
                   decoration:
                       InputDecoration(labelText: tr('register_labelFirstName')),
@@ -153,6 +165,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       value!.isEmpty ? tr('register_firstName') : null,
                 ),
                 const SizedBox(height: 20), // Separator (20 pixels height)
+                // Last Name
                 TextFormField(
                   decoration:
                       InputDecoration(labelText: tr('register_labeLastName')),
@@ -161,6 +174,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       value!.isEmpty ? tr('register_lastName') : null,
                 ),
                 const SizedBox(height: 20), // Separator (20 pixels height)
+                // Birthday
                 TextFormField(
                   controller: _birthdayController,
                   decoration: InputDecoration(
@@ -220,6 +234,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: 20), // Separator (20 pixels height)
+                // Email
                 TextFormField(
                   decoration:
                       InputDecoration(labelText: tr('register_labelEmail')),
@@ -246,11 +261,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     //   child: Text(_countryCode),
                     // ),
                     //const SizedBox(width: 10),
+                    // Phone number
                     Expanded(
                       child: TextFormField(
                         decoration: InputDecoration(
                           labelText: tr('register_labelPhoneNumber'),
                           hintText: tr('register_phoneNumber'),
+                          hintStyle: TextStyle(
+                              color: Colors.grey), // Placeholder Style
+                          prefixIcon: Icon(Icons.phone),
                         ),
                         keyboardType: TextInputType.phone,
                         controller: _phoneNumberController,
@@ -276,6 +295,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ],
                 ),
                 const SizedBox(height: 20), // Separator (20 pixels height)
+                // Password
                 TextFormField(
                   controller: _passwordController,
                   decoration:
@@ -288,7 +308,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     return null;
                   },
                 ),
-
+                // Confirm password
                 TextFormField(
                   controller: _confirmPasswordController,
                   decoration: InputDecoration(
@@ -306,6 +326,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
 
                 const SizedBox(height: 20), // Separator (20 pixels height)
+                // Country
                 ListTile(
                   title: Text(
                       _selectedCountry?.name ?? tr('register_countryError')),
@@ -322,11 +343,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
                 if (_imageFile != null) Image.file(File(_imageFile!.path)),
+                // Image
                 OutlinedButton(
                   onPressed: _pickImage,
                   child: Text(tr('register_pickProfileImage')),
                 ),
                 const SizedBox(height: 20), // Separator (20 pixels height)
+                // Bio
                 TextFormField(
                   controller: _bioController,
                   decoration: InputDecoration(
@@ -353,6 +376,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: 20), // Separator (20 pixels height)
+                // Button
                 ElevatedButton(
                   onPressed: _submit,
                   child: Text(tr('register_buttonRegister')),

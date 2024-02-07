@@ -8,11 +8,15 @@ void main() => runApp(MyApp());
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    // Return a MaterialApp widget which is the root of the application.
     return MaterialApp(
+      // Set the title of the application.
       title: 'SocioLingo',
+      // Define the theme data for the application.
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.blue, // Set the primary color swatch to blue.
       ),
+      // Set the home screen of the application to the WelcomeScreen widget.
       home: WelcomeScreen(),
     );
   }
@@ -35,6 +39,7 @@ class WelcomeScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Spacer(),
+            // Title and subtitle
             Text(
               tr('w_mainTitle'),
               textAlign: TextAlign.center,
@@ -85,6 +90,7 @@ class WelcomeScreen extends StatelessWidget {
             ),
             //const Spacer(),
             const SizedBox(height: 20),
+            // line divider
             const Row(
               children: <Widget>[
                 Expanded(
@@ -109,6 +115,7 @@ class WelcomeScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 20),
+            // Button widget
             MaterialButton(
               color: Colors.white,
               shape: RoundedRectangleBorder(
@@ -158,30 +165,38 @@ class WelcomeScreen extends StatelessWidget {
 }
 
 class SocialButton extends StatelessWidget {
-  final String iconPath;
-  final VoidCallback onPressed;
-  final double size; // Add a parameter for size
+  final String iconPath; // Path to the icon image asset.
+  final VoidCallback
+      onPressed; // Function to be executed when the button is pressed.
+  final double size; // Size of the button.
 
+  // Constructor for the SocialButton class.
   const SocialButton({
-    Key? key,
-    required this.iconPath,
-    required this.onPressed,
-    this.size = 24.0, // Default button size
-  }) : super(key: key);
+    Key? key, // Optional parameter to specify the key for the widget.
+    required this.iconPath, // Required parameter for the icon path.
+    required this.onPressed, // Required parameter for the onPressed function.
+    this.size = 24.0, // Default button size if not provided.
+  }) : super(
+            key:
+                key); // Call the constructor of the StatelessWidget superclass.
 
   @override
   Widget build(BuildContext context) {
+    // InkWell provides the ripple effect for touch feedback.
+    // When tapped, it executes the onPressed function.
     return InkWell(
       onTap: onPressed,
       child: CircleAvatar(
         backgroundColor: Colors.white, // Circle white background
-        radius: size / 2,
+        radius: size / 2, // Set the radius of the circle avatar.
         child: ClipOval(
+          // ClipOval clips its child (Image.asset) in an oval shape.
           child: Image.asset(
-            iconPath,
-            width: size,
-            height: size,
-            fit: BoxFit.cover,
+            iconPath, // Path to the icon image asset.
+            width: size, // Set the width of the image.
+            height: size, // Set the height of the image.
+            fit: BoxFit
+                .cover, // Scale the image to cover the entire circle avatar.
           ),
         ),
       ),

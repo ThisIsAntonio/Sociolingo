@@ -85,6 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 const SizedBox(height: 20),
+                // Title
                 Text(
                   tr('login_title'),
                   style: TextStyle(
@@ -93,6 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
+                // Program Logo
                 CircleAvatar(
                   radius: 60, // Adjust the size to your liking
                   backgroundColor: Colors.transparent, // Transparent background
@@ -105,11 +107,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
+                // Subtitle
                 Text(
                   tr('login_subtitle'),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 25),
+                // Social Media Buttons
                 Row(
                   mainAxisAlignment: MainAxisAlignment
                       .spaceEvenly, // Distribuye los botones uniformemente
@@ -139,6 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 //const Spacer(),
                 const SizedBox(height: 25),
+                // Divider
                 const Row(
                   children: <Widget>[
                     Expanded(
@@ -177,6 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                 ),
+                // Password
                 TextFormField(
                   decoration: const InputDecoration(labelText: 'Password'),
                   obscureText: true,
@@ -189,10 +195,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                 ),
                 const SizedBox(height: 20),
+                // Login Button
                 ElevatedButton(
                   onPressed: _submit,
                   child: Text(tr('login_buttonLogin')),
                 ),
+                // Forgot Password Button
                 TextButton(
                   onPressed: () {
                     // Navigate to RegisterScreen when button is pressed

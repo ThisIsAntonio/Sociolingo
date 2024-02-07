@@ -1,6 +1,7 @@
 import 'dart:convert';
 //import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,19 +11,25 @@ import 'package:chat_app/model/user.dart';
 import 'package:chat_app/screens/main_screen.dart';
 
 class EditUserInfoPage extends StatefulWidget {
+  // Properties for receiving user data and email
   final User? user;
   final String userEmail;
 
+  // Constructor for initializing the widget
   const EditUserInfoPage(
       {Key? key, required this.user, required this.userEmail})
       : super(key: key);
 
+  // Method to create the state for this widget
   @override
   _EditUserInfoPageState createState() => _EditUserInfoPageState();
 }
 
 class _EditUserInfoPageState extends State<EditUserInfoPage> {
+  // GlobalKey for managing the Form state
   final _formKey = GlobalKey<FormState>();
+
+  // Text editing controllers for managing form fields
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
   late TextEditingController _bioController;
@@ -30,16 +37,25 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
   late TextEditingController _birthdayController;
+
+  // Variables to store user data and selected values
   DateTime? _birthday;
   String _countryCode = '';
   String? _selectedCountry;
   String? _phoneNumber = '';
+
+  // Variable to store selected image file
   XFile? _imageFile;
+
+  // ImagePicker instance for picking images
   final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
+    // Call the initState method of the superclass
     super.initState();
+
+    // Initialize text editing controllers and other variables
     _firstNameController = TextEditingController(text: widget.user?.firstName);
     _lastNameController = TextEditingController(text: widget.user?.lastName);
     _bioController = TextEditingController(text: widget.user?.bio ?? '');
@@ -49,6 +65,8 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
     _passwordController = TextEditingController(); // No pre-fill for password
     _birthday = widget.user?.birthday;
     _selectedCountry = widget.user?.country;
+
+    // Initialize birthday controller with formatted date if available
     _birthdayController = TextEditingController(
       text: widget.user?.birthday != null
           ? DateFormat('yyyy-MM-dd').format(widget.user!.birthday!)
@@ -58,6 +76,7 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
 
   @override
   void dispose() {
+    // Dispose all text editing controllers to free up resources
     _firstNameController.dispose();
     _lastNameController.dispose();
     _bioController.dispose();
@@ -65,50 +84,66 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
     _emailController.dispose();
     _passwordController.dispose();
     _birthdayController.dispose();
+
+    // Call the dispose method of the superclass
     super.dispose();
   }
 
+// Method to update user information
   Future<void> _updateUserInfo() async {
-    var url = Uri.parse(
-        'https://serverchat2.onrender.com/updateUserInfo'); // Adjust the URL for your environment //localhost is 100.20.92.101:300
+    // Adjust the URL for your environment
+    // For example, if running locally, change 'serverchat2.onrender.com' to 'localhost' or your local IP address
+    var url = Uri.parse('https://serverchat2.onrender.com/updateUserInfo');
+
     String? base64Image;
+    // Convert selected image to base64 if available
     if (_imageFile != null) {
       final bytes = await _imageFile!.readAsBytes();
       base64Image = base64Encode(bytes);
     }
 
+    // Create the request body with user information
     Map<String, dynamic> body = {
       'email': _emailController.text,
       'first_name': _firstNameController.text,
       'last_name': _lastNameController.text,
       'bio': _bioController.text,
-      'phone_number': _countryCode + _phoneNumberController.text,
-      'birthday':
-          _birthday != null ? DateFormat('yyyy-MM-dd').format(_birthday!) : '',
+      'phone_number': _countryCode +
+          _phoneNumberController.text, // Combine country code with phone number
+      'birthday': _birthday != null
+          ? DateFormat('yyyy-MM-dd').format(_birthday!)
+          : '', // Format birthday if available
       'country': _selectedCountry,
       if (_passwordController.text.isNotEmpty)
-        'password': _passwordController.text,
-      if (base64Image != null) 'profile_picture_base64': base64Image,
+        'password': _passwordController.text, // Include password if not empty
+      if (base64Image != null)
+        'profile_picture_base64':
+            base64Image, // Include profile picture if available
     };
 
     try {
+      // Send PUT request to update user info
       var response = await http.put(url,
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode(body));
 
+      // Handle response based on status code
       if (response.statusCode == 200) {
+        // Show success message and navigate to main screen if successful
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('User info updated successfully')));
+            SnackBar(content: Text(tr('editUserInfo_updateSuccessfully'))));
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (context) =>
                 MainScreen(userEmail: _emailController.text)));
       } else {
+        // Show error message if request failed
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to update user info')));
+            SnackBar(content: Text(tr('editUserInfo_updateFailed'))));
       }
     } catch (e) {
+      // Show error message if there's a connection error
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error connecting to the server: $e')));
+          SnackBar(content: Text(tr('editUserInfo_errorConnecting') + '$e')));
     }
   }
 
@@ -124,7 +159,7 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit User Info')),
+      appBar: AppBar(title: Text(tr('editUserInfo_title'))),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -132,18 +167,25 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
           child: SingleChildScrollView(
             child: Column(
               children: [
+                // First Name
                 TextFormField(
                     controller: _firstNameController,
-                    decoration: const InputDecoration(labelText: 'First Name')),
+                    decoration: InputDecoration(
+                        labelText: tr('edifUserInfo_labelFirstName'))),
                 const SizedBox(height: 20), // Separator (20 pixels height)
+                // Last Name
                 TextFormField(
                     controller: _lastNameController,
-                    decoration: const InputDecoration(labelText: 'Last Name')),
+                    decoration: InputDecoration(
+                        labelText: tr('editUserInfo_labelLastName'))),
                 const SizedBox(height: 20), // Separator (20 pixels height)
+                // Email
                 TextFormField(
                     controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'Email')),
+                    decoration: InputDecoration(
+                        labelText: tr('editUserInfo_labelEmail'))),
                 const SizedBox(height: 20), // Separator (20 pixels height)
+                // Phone number
                 Row(
                   children: [
                     // Button to select the country code for the phone number
@@ -161,11 +203,14 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                     //   child: Text(_countryCode),
                     // ),
                     //const SizedBox(width: 10),
+                    // Phone number
                     Expanded(
                       child: TextFormField(
-                        decoration: const InputDecoration(
-                          labelText: 'Phone Number',
-                          hintText: 'Enter your phone number',
+                        decoration: InputDecoration(
+                          labelText: tr('editUserInfo_labelPhoneNumber'),
+                          hintText: tr('editUserInfo_phoneNumber'),
+                          hintStyle: TextStyle(
+                              color: Colors.grey), // Placeholder Style
                         ),
                         keyboardType: TextInputType.phone,
                         controller: _phoneNumberController,
@@ -174,9 +219,9 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                           String pattern = r'^\+\d+\s\d+$';
                           RegExp regExp = RegExp(pattern);
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your phone number';
+                            return tr('editUserInfo_enterPhoneNumber');
                           } else if (!regExp.hasMatch(value)) {
-                            return 'Please enter a valid phone number format: +[country code] [number]';
+                            return tr('editUserInfo_invalidFormat');
                           }
                           // You can add additional validations here if you need it
                           return null;
@@ -191,10 +236,12 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                   ],
                 ),
                 const SizedBox(height: 20), // Separator (20 pixels height)
+                // Birthday
                 TextFormField(
                   controller: _birthdayController,
-                  decoration: const InputDecoration(
-                      labelText: 'Birthday', hintText: 'YYYY-MM-DD'),
+                  decoration: InputDecoration(
+                      labelText: tr('editUserInfo_labelBirthday'),
+                      hintText: 'YYYY-MM-DD'),
                   onTap: () async {
                     FocusScope.of(context).requestFocus(FocusNode());
                     final DateTime? picked = await showDatePicker(
@@ -213,8 +260,10 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                   },
                 ),
                 const SizedBox(height: 20), // Separator (20 pixels height)
+                // Country
                 ListTile(
-                  title: Text(_selectedCountry ?? 'No country selected'),
+                  title: Text(
+                      _selectedCountry ?? tr('editUserInfo_noCountrySelected')),
                   trailing: const Icon(Icons.arrow_drop_down),
                   onTap: () {
                     showCountryPicker(
@@ -229,16 +278,17 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                   },
                 ),
                 const SizedBox(height: 20), // Separator (20 pixels height)
+                // Password
                 TextFormField(
                     controller: _passwordController,
-                    decoration: const InputDecoration(
-                        labelText:
-                            'New Password (leave blank to keep the current)')),
+                    decoration: InputDecoration(
+                        labelText: tr('editUserInfo_newPassword'))),
                 const SizedBox(height: 20), // Separator (20 pixels height)
+                // Bio
                 TextFormField(
                   controller: _bioController,
-                  decoration: const InputDecoration(
-                    labelText: 'Bio',
+                  decoration: InputDecoration(
+                    labelText: tr('editUserInfo_labelBio'),
                   ),
                   maxLength:
                       255, // Sets the maximum number of characters allowed.
@@ -263,12 +313,13 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                 const SizedBox(height: 20), // Separator (20 pixels height)
                 OutlinedButton(
                     onPressed: _pickImage,
-                    child: Text(
-                        _imageFile != null ? 'Change Image' : 'Pick Image')),
+                    child: Text(_imageFile != null
+                        ? tr('editUserInfo_changeImage')
+                        : tr('editUserInfo_pickImage'))),
                 const SizedBox(height: 20), // Separator (20 pixels height)
                 ElevatedButton(
                     onPressed: _updateUserInfo,
-                    child: const Text('Save Changes')),
+                    child: Text(tr('editUserInfo_buttonUpdate'))),
               ],
             ),
           ),
