@@ -1,5 +1,6 @@
 import 'dart:convert';
 //import 'dart:io';
+import 'package:chat_app/screens/user_info_page.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:http/http.dart' as http;
@@ -159,7 +160,9 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(tr('editUserInfo_title'))),
+      appBar: AppBar(
+          leading: Container(), // To hide the back button.
+          title: Text(tr('editUserInfo_title'))),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -317,9 +320,23 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                         ? tr('editUserInfo_changeImage')
                         : tr('editUserInfo_pickImage'))),
                 const SizedBox(height: 20), // Separator (20 pixels height)
-                ElevatedButton(
-                    onPressed: _updateUserInfo,
-                    child: Text(tr('editUserInfo_buttonUpdate'))),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                            builder: (context) =>
+                                MainScreen(userEmail: widget.userEmail)));
+                      },
+                      child: Text(tr('editUserInfo_buttonCancel')),
+                    ),
+                    ElevatedButton(
+                      onPressed: _updateUserInfo,
+                      child: Text(tr('editUserInfo_buttonUpdate')),
+                    ),
+                  ],
+                )
               ],
             ),
           ),

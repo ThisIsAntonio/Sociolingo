@@ -81,5 +81,6 @@
     "editUserInfo_labelBio": "Bio (Optional)",
     "editUserInfo_changeImage": "Change Image",
     "editUserInfo_pickImage": "Pick Image",
-    "editUserInfo_buttonUpdate": "Sabe Changes"
+    "editUserInfo_buttonUpdate": "Save Changes",
+    "editUserInfo_buttonCancel": "Cancel"
 }

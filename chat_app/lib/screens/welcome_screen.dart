@@ -150,6 +150,7 @@ class WelcomeScreen extends StatelessWidget {
                     tr('w_logIn'),
                     style: TextStyle(
                         color: Colors.white70,
+                        fontWeight: FontWeight.bold,
                         decoration: TextDecoration.underline),
                   ),
                 ),

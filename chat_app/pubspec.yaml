@@ -51,6 +51,13 @@ dev_dependencies:
   flutter_launcher_icons: 0.13.1
   flutter_test:
     sdk: flutter
+  flutter_native_splash: any
+
+flutter_native_splash:
+  color: "#6df6ea"
+  image: assets/img/logo.png
+  android: true
+  ios: true
 
 # Icons for app
 flutter_icons:
