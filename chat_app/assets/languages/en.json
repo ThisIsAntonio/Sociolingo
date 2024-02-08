@@ -19,7 +19,7 @@
     "login_password": "Password",
     "login_errorLongPassword": "Password must be at least 5 characters long.",
     "login_buttonLogin": "Log In",
-    "login_buttonForgotPassword": "Foorgot Password?",
+    "login_buttonForgotPassword": "Forgot Password?",
     "register_registerAccepted": "User registered successfully",
     "register_registerFailed": "Failed to register user",
     "register_errorConnectingServer":"Error connecting to the server",
