@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-// Friend Suggestion Page
-class FriendSuggestionsPage extends StatelessWidget {
+// Topics Page
+class TopicsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Text('Friend Suggestions'),
+      child: Text('Topics Page'),
     );
   }
 }

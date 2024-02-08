@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:chat_app/screens/user_info_page.dart';
-import 'package:chat_app/screens/friend_suggestions_page.dart';
+import 'package:chat_app/screens/topics_page.dart';
 import 'package:chat_app/screens/friend_requests_page.dart';
 import 'package:chat_app/screens/chat_page.dart';
 import 'package:chat_app/screens/settings_page.dart';
@@ -24,7 +24,7 @@ class _MainScreenState extends State<MainScreen> {
       case 0:
         return UserInfoPage(userEmail: widget.userEmail);
       case 1:
-        return FriendSuggestionsPage();
+        return TopicsPage();
       case 2:
         return FriendRequestsPage();
       case 3:
@@ -64,7 +64,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.people),
-            label: tr('mainScreen_suggestionsLabel'),
+            label: tr('mainScreen_topicsLabel'),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.mail),

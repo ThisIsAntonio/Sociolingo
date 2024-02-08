@@ -5,7 +5,7 @@ class FriendRequestsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Text('Friend Requests'),
+      child: Text('Friend Requests/Suggestions'),
     );
   }
 }
