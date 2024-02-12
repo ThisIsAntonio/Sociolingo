@@ -54,7 +54,22 @@ app.post('/login', (req, res) => {
             // Comparing hashed password with the one provided by user
             const comparison = await bcrypt.compare(password, result[0].password);
             if (comparison) {
-                res.status(200).json({messaje: 'Login successful', email: result[0].email, userId: result[0].id});
+                // Check if it's the first time the user logs in
+                if (result[0].first_time) {
+                    // It's the first time, update first_time to false
+                    const updateFirstTimeQuery = 'UPDATE User SET first_time = FALSE WHERE email = ?';
+                    db.execute(updateFirstTimeQuery, [email], (updateErr, updateResult) => {
+                        if (updateErr) {
+                            console.error('Error updating first_time', updateErr);
+                            // You might choose to still login the user but log this error
+                        }
+                        // Proceed to login the user
+                        res.status(200).json({message: 'Login successful and first_time updated', email: result[0].email, userId: result[0].id});
+                    });
+                } else {
+                    // Not the first time, just log in the user
+                    res.status(200).json({message: 'Login successful', email: result[0].email, userId: result[0].id});
+                }
             } else {
                 res.status(401).send('Incorrect password');
             }
@@ -63,6 +78,7 @@ app.post('/login', (req, res) => {
         }
     });
 });
+
 
 // Endpoint for user info
 app.get('/userInfo', (req, res) => {
@@ -193,13 +209,14 @@ app.put('/updateUserInfo', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
         const join_date = new Date(); // Current date and time
         const is_active = 1; // Assuming '1' means active
+        const first_time = true; // Set first_time to true for new registrations
 
-        // Insert the user into the database
+        // Insert the user into the database including first_time
         const userQuery = `
-        INSERT INTO User (first_name, last_name, email, password, birthday, country, join_date, is_active)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO User (first_name, last_name, email, password, birthday, country, join_date, first_time, is_active)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
-        db.execute(userQuery, [first_name, last_name, email, hashedPassword, birthday, country, join_date, is_active],
+        db.execute(userQuery, [first_name, last_name, email, hashedPassword, birthday, country, join_date, first_time, is_active, ],
         (err, userResult) => {
             if (err) {
             console.error('Error registering the user', err);

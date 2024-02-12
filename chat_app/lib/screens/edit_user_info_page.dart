@@ -101,6 +101,7 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
     if (_imageFile != null) {
       final bytes = await _imageFile!.readAsBytes();
       base64Image = base64Encode(bytes);
+      print(base64Image);
     }
 
     // Create the request body with user information
@@ -127,6 +128,7 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
       var response = await http.put(url,
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode(body));
+      print(base64Image);
 
       // Handle response based on status code
       if (response.statusCode == 200) {

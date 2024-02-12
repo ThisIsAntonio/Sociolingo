@@ -12,6 +12,7 @@ CREATE TABLE User (
     country VARCHAR(100),
     bio varchar(1000),
     join_date DATETIME,
+    first_time TINYINT(1) DEFAULT 1,
     is_active TINYINT
 );
 
