@@ -29,19 +29,27 @@ flutter pub outdated
 flutter run
 
 Note:
-  If you want to create an APK to later Install it follow these commands:
-    1. flutter build apk --release (to create an Android version)
-    2. flutter build ios --release (to create an IOS version)
+If you want to create an APK to later Install it follow these commands:
+  
+  a. flutter build apk --release (to create an Android version)
+  
+  b. flutter build ios --release (to create an IOS version)
 
-  To install it:
-    1. Android use:
+To install it:
+    
+  1. Android use:
       flutter install apk
-    2. IOS:
+  2. IOS:
+      
       1. Open Xcode: Open the generated iOS project within your Flutter project. This is located in <your_flutter_project>/ios/Runner.xcworkspace.
+      
       2. Connect Your iOS Device: Connect your iOS device to your computer using a USB cable.
+      
       3. Select Your Device in Xcode: In Xcode's toolbar, select your iOS device from the dropdown menu of available devices.
+      
       4. Code Signing the App: Before you can install your app on a device, you need to configure code signing. Go to Project > Runner > Signing & Capabilities and make sure you have selected a team under the "Team" section. 
           If you're developing for personal use, you can select your Apple ID account as your team.
+      
       5. Install the App on the Device: With your device selected and code signing configured, you can install the app directly from Xcode. Click the play button (▶️) on the toolbar in Xcode or select Product > Run from the menu bar. 
           Xcode will compile the app and install it on your device.
 
