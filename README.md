@@ -75,7 +75,8 @@ note: right now, I've deployed a node server to check how works the app, however
 
 ### SQL files:
 
-There is an example of the DBA working on my own server, if you want to use your own, please feel free to do it, however, check the .sql file because this has all the first tables to start this interesting project.
+There is added an example of the DBA working on my own server, if you want to use your own, please feel free to do it, however, check the .sql file because this has all the first tables to start this interesting project.
+
 
 ## License
 
