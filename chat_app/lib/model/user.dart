@@ -7,7 +7,7 @@ class User {
   final DateTime? birthday;
   final String country;
   final String? bio;
-  final String? imageBase64; // Can be null if the user does not have an image
+  final String? imageUrl; // Can be null if the user does not have an image
   final int friendsCount; // For now, it will be a static value
 
   User({
@@ -19,7 +19,7 @@ class User {
     this.birthday,
     required this.country,
     this.bio = '',
-    this.imageBase64 = '',
+    this.imageUrl,
     this.friendsCount = 0, // Initialize in 0 by default
   });
 
@@ -35,8 +35,8 @@ class User {
           json['birthday'] != null ? DateTime.parse(json['birthday']) : null,
       country: json['country'] ?? '',
       bio: json['bio'] ?? '',
-      imageBase64: json['image_base64'] ??
-          '', // Assume this field exists in your JSON for the image
+      imageUrl: json['user_img']
+          as String?, // Assume this field exists in your JSON for the image
       // FriendsCount and other relational data handling can be added later.
     );
   }

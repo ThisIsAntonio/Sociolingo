@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:chat_app/screens/forgot_password.dart';
 import 'package:chat_app/screens/main_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 // Define the LoginScreen widget
 class LoginScreen extends StatefulWidget {
@@ -68,6 +70,68 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // Google Log In
+  Future<User?> signInWithGoogle() async {
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+    if (googleUser != null) {
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      final User? user = userCredential.user;
+
+      if (user != null) {
+        // Here you get the Firebase Auth token
+        String? token = await user.getIdToken();
+
+        // Send the data to the server
+        await sendRegistrationData(token, user, 'google');
+
+        // Navigate to the main screen or handle the logged-in user
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (context) => MainScreen(userEmail: user.email!)));
+      }
+      return user;
+    }
+    return null;
+  }
+
+// Sending data to the server
+  Future<void> sendRegistrationData(
+      String? token, User user, String authType) async {
+    var url = Uri.parse('https://serverchat2.onrender.com/register');
+    try {
+      var response = await http.post(
+        url,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'email': user.email,
+          'displayName': user.displayName,
+          'authType': authType,
+          'token': token,
+        }),
+      );
+      // Handle the response...
+      if (response.statusCode == 200) {
+        print("Registration successful");
+      } else {
+        print("Registration error");
+      }
+    } catch (e) {
+      // Handle the exception...
+      print("Error connecting to the server: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -129,6 +193,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       iconPath: 'assets/img/google.png',
                       onPressed: () {
                         // Google action
+                        signInWithGoogle().then((user) {
+                          if (user != null) {
+                            Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        MainScreen(userEmail: user.email!)));
+                          }
+                        });
                       },
                       size: 40.0, // Button size
                     ),

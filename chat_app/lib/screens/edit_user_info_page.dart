@@ -1,12 +1,11 @@
 import 'dart:convert';
-//import 'dart:io';
-//import 'package:chat_app/screens/user_info_page.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+import 'dart:io';
 import 'package:country_picker/country_picker.dart';
 import 'package:chat_app/model/user.dart';
 import 'package:chat_app/screens/main_screen.dart';
@@ -43,10 +42,10 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
   DateTime? _birthday;
   String _countryCode = '';
   String? _selectedCountry;
-  String? _phoneNumber = '';
 
   // Variable to store selected image file
   XFile? _imageFile;
+  String? _imageUrl;
 
   // ImagePicker instance for picking images
   final ImagePicker _picker = ImagePicker();
@@ -88,21 +87,26 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
 
     // Call the dispose method of the superclass
     super.dispose();
+    print('all dispose');
   }
 
-// Method to update user information
+  Future<void> _attemptUpdateUserInfo() async {
+    if (_imageFile != null) {
+      // Si hay una imagen seleccionada, primero sube la imagen y luego actualiza la información del usuario.
+      await _uploadImageToFirebase(_imageFile!).then((_) {
+        _updateUserInfo();
+      });
+    } else {
+      // Si no hay una nueva imagen seleccionada, simplemente actualiza la información del usuario.
+      _updateUserInfo();
+    }
+  }
+
+  // Method to update user information
   Future<void> _updateUserInfo() async {
     // Adjust the URL for your environment
     // For example, if running locally, change 'serverchat2.onrender.com' to 'localhost' or your local IP address
     var url = Uri.parse('https://serverchat2.onrender.com/updateUserInfo');
-
-    String? base64Image;
-    // Convert selected image to base64 if available
-    if (_imageFile != null) {
-      final bytes = await _imageFile!.readAsBytes();
-      base64Image = base64Encode(bytes);
-      print(base64Image);
-    }
 
     // Create the request body with user information
     Map<String, dynamic> body = {
@@ -116,11 +120,9 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
           ? DateFormat('yyyy-MM-dd').format(_birthday!)
           : '', // Format birthday if available
       'country': _selectedCountry,
+      'imageUrl': _imageUrl, // Include profile picture if available
       if (_passwordController.text.isNotEmpty)
         'password': _passwordController.text, // Include password if not empty
-      if (base64Image != null)
-        'profile_picture_base64':
-            base64Image, // Include profile picture if available
     };
 
     try {
@@ -128,7 +130,6 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
       var response = await http.put(url,
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode(body));
-      print(base64Image);
 
       // Handle response based on status code
       if (response.statusCode == 200) {
@@ -153,9 +154,40 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
+      // Upload the image to Firebase Storage and get the URL
+      _uploadImageToFirebase(image);
+    }
+  }
+
+  Future<void> _uploadImageToFirebase(XFile image) async {
+    try {
+      // Defines the name of the file in storage, it could be unique per user
+      String fileName =
+          "user_images/${widget.userEmail}/${DateTime.now().millisecondsSinceEpoch.toString()}";
+
+      // Upload the file to Firebase Storage
+      firebase_storage.UploadTask task = firebase_storage
+          .FirebaseStorage.instance
+          .ref(fileName)
+          .putFile(File(image.path));
+
+      // Wait for the upload to complete
+      await task.whenComplete(() {});
+
+      // Get the download URL
+      var imageUrl = await firebase_storage.FirebaseStorage.instance
+          .ref(fileName)
+          .getDownloadURL();
+
+      // Update the state variable with the new image
+      if (!mounted) return;
       setState(() {
-        _imageFile = image;
+        _imageUrl = imageUrl;
       });
+      print("Image URL: $imageUrl");
+      print("_Image URL: $_imageUrl");
+    } catch (e) {
+      print("Error uploading image to Firebase Storage: $e");
     }
   }
 
@@ -219,7 +251,6 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                         ),
                         keyboardType: TextInputType.phone,
                         controller: _phoneNumberController,
-                        onSaved: (value) => _phoneNumber = value ?? '',
                         validator: (value) {
                           String pattern = r'^\+\d+\s\d+$';
                           RegExp regExp = RegExp(pattern);
@@ -334,7 +365,7 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                       child: Text(tr('editUserInfo_buttonCancel')),
                     ),
                     ElevatedButton(
-                      onPressed: _updateUserInfo,
+                      onPressed: _attemptUpdateUserInfo,
                       child: Text(tr('editUserInfo_buttonUpdate')),
                     ),
                   ],

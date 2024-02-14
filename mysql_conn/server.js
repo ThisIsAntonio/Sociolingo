@@ -1,3 +1,5 @@
+
+
 const express = require('express');
 const mysql = require('mysql2');    //Please install 'npm install mysql2'
 const bodyParser = require('body-parser');
@@ -5,11 +7,20 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');   //Please install 'npm install bcrypt'
 const multer = require('multer');   //Please install 'npm install multer'
 const upload = multer();            // Initialize multer, adjust configurations as needed
+const admin = require('firebase-admin');
 const app = express();
 const port = 3000;
 
 app.use(cors());
 app.use(bodyParser.json({limit: '50mb'}));
+
+// Initialize Firebase App
+var serviceAccount = require("./project1-a9af7-firebase-adminsdk-8ebm6-7f99a39016.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
 
 // Database connection configuration
 const db = mysql.createConnection({
@@ -27,13 +38,13 @@ db.connect((err) => {
     }
     console.log('Connected to the MySQL database');
     console.log('')
-    // Suponiendo que 'db' es tu conexión a la base de datos
+    // Assuming 'db' is your database connection
     db.query('SELECT * FROM User', (error, results, fields) => {
     if (error) {
-        // Si hay un error en la consulta, lo imprime en la consola
+        // If there is an error in the query, print it to the console
         return console.error(error.message);
     }
-    // Imprime los resultados en la consola
+    // Print the results on console
     //console.log(results);
     });
 
@@ -106,16 +117,16 @@ app.get('/userInfo', (req, res) => {
 
         if (results.length > 0) {
             const user = results[0];
-            const imageBase64 = user.user_img ? Buffer.from(user.user_img).toString('base64') : '';
+            const imageUrl = user.user_img ? user.user_img : '';
             const userInfo = {
                 ...user,
-                imageBase64: imageBase64,
+                imageUrl: imageUrl,
                 // Convert birthday to string or provide a default value
                 birthday: user.birthday ? user.birthday.toISOString().split('T')[0] : '',
             };
-            delete userInfo.user_img; // Remove the BLOB field
+            delete userInfo.user_img; // Remove the user_img
 
-            //console.log('User Info:', userInfo);
+            console.log('User Info:', userInfo);
             res.status(200).json(userInfo);
         } else {
             res.status(404).send('User not found');
@@ -126,6 +137,9 @@ app.get('/userInfo', (req, res) => {
 
 // Endpoint for update user info
 app.put('/updateUserInfo', async (req, res) => {
+
+    console.log("Datos recibidos:", req.body);
+
     const {
         email,
         first_name,
@@ -135,7 +149,7 @@ app.put('/updateUserInfo', async (req, res) => {
         country,
         bio,
         password,
-        profile_picture_base64
+        imageUrl
     } = req.body;
 
     // Hash the new password if it's provided
@@ -145,7 +159,7 @@ app.put('/updateUserInfo', async (req, res) => {
     }
 
     // Prepare SQL query to update user info
-    const userUpdateQuery = `
+    let userUpdateQuery = `
         UPDATE User
         SET 
             first_name = ?, 
@@ -158,7 +172,7 @@ app.put('/updateUserInfo', async (req, res) => {
         WHERE email = ?
     `;
 
-    const userUpdateParams = [
+    let userUpdateParams = [
         first_name, 
         last_name, 
         phone_number, 
@@ -177,21 +191,38 @@ app.put('/updateUserInfo', async (req, res) => {
         }
 
         // Handle profile picture update separately if provided
-        if (profile_picture_base64) {
-            const imageBuffer = Buffer.from(profile_picture_base64, 'base64');
+
+        if (imageUrl) {
+        // Primero, obtén el user_id del usuario basado en el email
+        const getUserIdQuery = 'SELECT user_id FROM User WHERE email = ?';
+        db.execute(getUserIdQuery, [email], (err, results) => {
+        if (err) {
+            console.error('Error fetching user ID', err);
+            return res.status(500).send('Error updating user image');
+        }
+
+        if (results.length > 0) {
+            const userId = results[0].user_id;
+
+            // Now that you have the user_id, update the entry in the Image table
             const imageUpdateQuery = `
                 INSERT INTO Image (user_img, User_user_id) 
-                VALUES (?, (SELECT user_id FROM User WHERE email = ?))
-                ON DUPLICATE KEY UPDATE user_img = VALUES(user_img)
+                VALUES (?, ?)
+                ON DUPLICATE KEY UPDATE user_img = VALUES(user_img);
             `;
-
-            db.execute(imageUpdateQuery, [imageBuffer, email], (imageErr, imageResult) => {
+            db.execute(imageUpdateQuery, [imageUrl, userId], (imageErr) => {
                 if (imageErr) {
                     console.error('Error saving user image', imageErr);
                     return res.status(500).send('Error saving user image');
                 }
             });
+        } else {
+            console.error('User not found for the given email');
+            return res.status(404).send('User not found');
         }
+        });
+    }
+
 
         res.status(200).send('User info updated successfully');
     });
@@ -199,13 +230,16 @@ app.put('/updateUserInfo', async (req, res) => {
 
     // Register endpoint
     app.post('/register', upload.any(), async (req, res) => {
-    const { first_name, last_name, email, password, birthday, country, profile_picture_base64 } = req.body;
+    const { first_name, last_name, email, token, password, birthday, country, imageUrl } = req.body;
     
     try {
-        //console.log('Received fields:', req.body);
-        //if (req.files) console.log('Received files:', req.files);
-       // console.log('Password to hash:', req.body.password);
-        
+        // Verify the Firebase Auth token
+        const decodedToken = await admin.auth().verifyIdToken(token);
+        if (!decodedToken) {
+            return res.status(401).send('Invalid Firebase token.');
+        }
+
+        // Continue with the registration logic since the token is valid
         const hashedPassword = await bcrypt.hash(password, 10); // Hash the password
         const join_date = new Date(); // Current date and time
         const is_active = 1; // Assuming '1' means active
@@ -213,10 +247,10 @@ app.put('/updateUserInfo', async (req, res) => {
 
         // Insert the user into the database including first_time
         const userQuery = `
-        INSERT INTO User (first_name, last_name, email, password, birthday, country, join_date, first_time, is_active)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO User (first_name, last_name, email, password, birthday, country, join_date, first_time, is_active, firebase_uid)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
-        db.execute(userQuery, [first_name, last_name, email, hashedPassword, birthday, country, join_date, first_time, is_active, ],
+        db.execute(userQuery, [first_name, last_name, email, hashedPassword, birthday, country, join_date, first_time, is_active, token],
         (err, userResult) => {
             if (err) {
             console.error('Error registering the user', err);
@@ -225,11 +259,11 @@ app.put('/updateUserInfo', async (req, res) => {
             }
 
             // If an image is provided, insert it into the images table
-            if (profile_picture_base64) {
+            if (imageUrl) {
             const userId = userResult.insertId; // Get the inserted user's ID
-            const imageBuffer = Buffer.from(profile_picture_base64, 'base64');
+            const imageUrl = imageUrl;
             const imageQuery = 'INSERT INTO Image (user_img, User_user_id) VALUES (?, ?)';
-            db.execute(imageQuery, [imageBuffer, userId], (imageErr) => {
+            db.execute(imageQuery, [imageUrl, userId], (imageErr) => {
                 if (imageErr) {
                 console.error('Error saving user image', imageErr);
                 res.status(500).send('Error saving user image');

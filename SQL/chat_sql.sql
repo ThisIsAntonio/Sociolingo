@@ -18,7 +18,7 @@ CREATE TABLE User (
 
 CREATE TABLE Image (
     image_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_img BLOB,
+    user_img VARCHAR(255),
     update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     User_user_id INT UNIQUE,
     FOREIGN KEY(User_user_id) REFERENCES User(user_id)

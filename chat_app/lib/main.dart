@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
-//import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:easy_localization/easy_localization.dart ';
 import 'package:chat_app/screens/welcome_screen.dart';
 import 'package:chat_app/model/theme_provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 // A stream controller for handling language changes.
 final StreamController<void> languageChangeStreamController =
@@ -17,6 +17,9 @@ void main() async {
 
   // Ensure that Easy Localization is initialized.
   await EasyLocalization.ensureInitialized();
+
+  // Initialize Firebase.
+  await Firebase.initializeApp();
 
   // Run the application with EasyLocalization widget as the root.
   runApp(

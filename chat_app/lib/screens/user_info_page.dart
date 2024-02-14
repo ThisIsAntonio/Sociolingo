@@ -19,6 +19,7 @@ class UserInfoPage extends StatefulWidget {
 
 class _UserInfoPageState extends State<UserInfoPage> {
   User? _user;
+  String? imageUrl;
 
   @override
   void initState() {
@@ -41,9 +42,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
       print('Response status code: ${response.statusCode}');
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        //print("Received user info: $data");
+        print("Received user info: $data");
         setState(() {
           _user = User.fromJson(data);
+
+          imageUrl = data['imageUrl'] as String?;
+          print("Image URL: $imageUrl");
         });
       } else {
         print('Failed to load user info, status code: ${response.statusCode}');
@@ -54,25 +58,31 @@ class _UserInfoPageState extends State<UserInfoPage> {
   }
 
   Widget _userImageWidget() {
-    if (_user != null &&
-        _user!.imageBase64 != null &&
-        _user!.imageBase64!.isNotEmpty) {
-      // If a user image exists, display the decoded image
-      return Image.memory(
-        base64Decode(_user!.imageBase64!),
+    if (imageUrl != null) {
+      return Image.network(
+        imageUrl!,
         width: 100,
         height: 100,
         fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          // Opción para manejar errores, como mostrar una imagen predeterminada
+          return _defaultUserImageWidget();
+        },
       );
     } else {
-      // If there is no user image, show a default image
-      return Image.asset(
-        'assets/img/photo.jpg',
-        width: 100,
-        height: 100,
-        fit: BoxFit.cover,
-      );
+      // Si no hay URL de imagen, mostrar una imagen predeterminada
+      return _defaultUserImageWidget();
     }
+  }
+
+  Widget _defaultUserImageWidget() {
+    // Método para mostrar una imagen predeterminada
+    return Image.asset(
+      'assets/img/photo.jpg', // Asegúrate de que la ruta de acceso sea correcta
+      width: 100,
+      height: 100,
+      fit: BoxFit.cover,
+    );
   }
 
   @override

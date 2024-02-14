@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:io';
 import 'package:flutter/services.dart';
@@ -22,12 +23,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String _lastName = '';
   DateTime? _birthday;
   String _email = '';
-  //String _countryCode = '';
   String _phoneNumber = '';
   String _password = '';
   final String _bio = '';
   Country? _selectedCountry;
   XFile? _imageFile;
+  //String? _imageUrl = '';
   final TextEditingController _birthdayController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
@@ -40,6 +41,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
     var url = Uri.parse(
         'https://serverchat2.onrender.com/register'); // Adjust the URL for your environment //localhost is 100.20.92.101:300
     try {
+      final userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _email,
+        password: _password,
+      );
+
+      // Obtener el token de Firebase Auth
+      final token = await userCredential.user!.getIdToken();
+
+      // Opcional: Subir imagen a Firebase Storage y obtener URL
+      String imageUrl = await _uploadImageToFirebase(_imageFile);
+
       // Prepare the request
       var request = http.MultipartRequest('POST', url)
         ..fields['first_name'] = _firstName
@@ -50,18 +63,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ..fields['country'] = _selectedCountry?.name ?? ''
         ..fields['birthday'] =
             _birthday != null ? DateFormat('yyyy-MM-dd').format(_birthday!) : ''
-        ..fields['bio'] = _bio;
+        ..fields['bio'] = _bio
+        ..fields['user_img'] = imageUrl
+        ..fields['token'] = token ?? ''; // Token de Firebase Auth
 
+      // Si tienes un archivo de imagen para subir junto con los otros campos
       if (_imageFile != null) {
-        request.files.add(await http.MultipartFile.fromPath(
-            'profile_picture', _imageFile!.path));
+        request.files.add(
+            await http.MultipartFile.fromPath('userImage', _imageFile!.path));
       }
 
       // Prints the information being sent for debugging
       print('Sending registration data: ${request.fields}');
-      if (_imageFile != null) {
-        print('Sending image: ${_imageFile!.path}');
-      }
 
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
@@ -115,6 +128,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
       setState(() {
         _imageFile = image;
       });
+
+      _uploadImageToFirebase(image);
+    }
+  }
+
+  Future<String> _uploadImageToFirebase(XFile? imageFile) async {
+    if (imageFile == null) return '';
+    String filePath = 'profile_pictures/${DateTime.now()}.png';
+    try {
+      // Sube la imagen a Firebase Storage
+      await firebase_storage.FirebaseStorage.instance
+          .ref(filePath)
+          .putFile(File(imageFile.path));
+      // Obtiene la URL de la imagen
+      String downloadURL = await firebase_storage.FirebaseStorage.instance
+          .ref(filePath)
+          .getDownloadURL();
+      return downloadURL;
+    } catch (e) {
+      print("Error to upload the image: $e");
+      return '';
     }
   }
 
