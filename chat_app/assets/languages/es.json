@@ -78,9 +78,14 @@
     "editUserInfo_invalidFormat": "Por favor ingrese un formato válido de número de teléfono: +567 6134011122",
     "editUserInfo_noCountrySelected": "Ningún país seleccionado",
     "editUserInfo_newPassword": "Nueva contraseña (deje en blanco para mantener la actual)",
+    "editUserInfo_errorPasswordLong": "La contraseña debe tener al menos 6 caracteres",
+    "editUserInfo_confirmPassword": "Confirmar Contraseña",
+    "editUserInfo_confirmPasswordRequired": "La confirmación de la contraseña es obligatoria",
+    "editUserInfo_confirmPasswordNoMatch": "Las contraseñas no coinciden",
     "editUserInfo_labelBio": "Bio (Opcional)",
     "editUserInfo_changeImage": "Cambiar imagen",
     "editUserInfo_pickImage": "Seleccionar imagen",
     "editUserInfo_buttonUpdate": "Guardar cambios",
-    "editUserInfo_buttonCancel": "Cancelar"
+    "editUserInfo_buttonCancel": "Cancelar",
+    "editUserInfo_validationFailed": "La validación del formulario falló"
 }

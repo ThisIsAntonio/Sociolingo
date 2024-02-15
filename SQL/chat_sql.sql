@@ -13,7 +13,8 @@ CREATE TABLE User (
     bio varchar(1000),
     join_date DATETIME,
     first_time TINYINT(1) DEFAULT 1,
-    is_active TINYINT
+    is_active TINYINT,
+    firebase_uid VARCHAR(255) UNIQUE
 );
 
 CREATE TABLE Image (
@@ -111,8 +112,15 @@ CREATE TABLE Conversation_has_Message (
 );
 **/
 
+
+/**
+* These lines are not necesary right now
+* Now the creation of user need to do based by the register screen because it now is working with firebase server to auth users
+**/
+
 -- Adding 10 users 
 -- Insert 10 users -- all user passwords are 123456
+/**
 INSERT INTO User (first_name, last_name, email, phone_number, password, birthday, country, bio, join_date, is_active)
 VALUES 
 ('John', 'Doe', 'john.doe@example.com', '+1234567890', '$2b$10$hJkCghzt99tT2EDNN2cJLecaiQ1nFmzVre5BjDgtSaIfEqZl.CtZG', '1990-01-01', 'USA', 'Bio of John Doe', NOW(), 1),
@@ -139,3 +147,4 @@ VALUES
 (NULL, 8),
 (NULL, 9),
 (NULL, 10);
+**/

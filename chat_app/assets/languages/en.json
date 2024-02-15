@@ -78,9 +78,14 @@
     "editUserInfo_invalidFormat": "Please enter a valid phone number format: +567 6134011122",
     "editUserInfo_noCountrySelected": "No country selected",
     "editUserInfo_newPassword": "New Password (leave blank to keep the current)",
+    "editUserInfo_errorPasswordLong": "Password must be at least 6 characters long",
+    "editUserInfo_confirmPassword": "Confirm Password",
+    "editUserInfo_confirmPasswordRequired": "Confirm Password is required",
+    "editUserInfo_confirmPasswordNoMatch": "Passwords do not match",
     "editUserInfo_labelBio": "Bio (Optional)",
     "editUserInfo_changeImage": "Change Image",
     "editUserInfo_pickImage": "Pick Image",
     "editUserInfo_buttonUpdate": "Save Changes",
-    "editUserInfo_buttonCancel": "Cancel"
+    "editUserInfo_buttonCancel": "Cancel",
+    "editUserInfo_validationFailed": "Validation failed"
 }

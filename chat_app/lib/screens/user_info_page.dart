@@ -65,20 +65,20 @@ class _UserInfoPageState extends State<UserInfoPage> {
         height: 100,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
-          // Opción para manejar errores, como mostrar una imagen predeterminada
+          // Option to handle errors, such as showing a default image
           return _defaultUserImageWidget();
         },
       );
     } else {
-      // Si no hay URL de imagen, mostrar una imagen predeterminada
+      // If there is no image URL, show a default image
       return _defaultUserImageWidget();
     }
   }
 
   Widget _defaultUserImageWidget() {
-    // Método para mostrar una imagen predeterminada
+    // Method to display a default image
     return Image.asset(
-      'assets/img/photo.jpg', // Asegúrate de que la ruta de acceso sea correcta
+      'assets/img/photo.jpg',
       width: 100,
       height: 100,
       fit: BoxFit.cover,

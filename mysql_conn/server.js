@@ -138,7 +138,7 @@ app.get('/userInfo', (req, res) => {
 // Endpoint for update user info
 app.put('/updateUserInfo', async (req, res) => {
 
-    console.log("Datos recibidos:", req.body);
+    //console.log("Datos recibidos:", req.body);
 
     const {
         email,
@@ -230,8 +230,8 @@ app.put('/updateUserInfo', async (req, res) => {
 
     // Register endpoint
     app.post('/register', upload.any(), async (req, res) => {
-    const { first_name, last_name, email, token, password, birthday, country, imageUrl } = req.body;
-    
+    const { first_name, last_name, email, phone_number, token, password, birthday, country, imageUrl } = req.body;
+    console.log('Datos recividos: ', req.body);
     try {
         // Verify the Firebase Auth token
         const decodedToken = await admin.auth().verifyIdToken(token);
@@ -247,10 +247,10 @@ app.put('/updateUserInfo', async (req, res) => {
 
         // Insert the user into the database including first_time
         const userQuery = `
-        INSERT INTO User (first_name, last_name, email, password, birthday, country, join_date, first_time, is_active, firebase_uid)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO User (first_name, last_name, email, phone_number, password, birthday, country, join_date, first_time, is_active, firebase_uid)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
-        db.execute(userQuery, [first_name, last_name, email, hashedPassword, birthday, country, join_date, first_time, is_active, token],
+        db.execute(userQuery, [first_name, last_name, email, phone_number, hashedPassword, birthday, country, join_date, first_time, is_active, token],
         (err, userResult) => {
             if (err) {
             console.error('Error registering the user', err);
@@ -261,7 +261,7 @@ app.put('/updateUserInfo', async (req, res) => {
             // If an image is provided, insert it into the images table
             if (imageUrl) {
             const userId = userResult.insertId; // Get the inserted user's ID
-            const imageUrl = imageUrl;
+            //const imageUrl = imageUrl;
             const imageQuery = 'INSERT INTO Image (user_img, User_user_id) VALUES (?, ?)';
             db.execute(imageQuery, [imageUrl, userId], (imageErr) => {
                 if (imageErr) {

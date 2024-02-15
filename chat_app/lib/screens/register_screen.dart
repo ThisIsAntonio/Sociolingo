@@ -47,10 +47,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         password: _password,
       );
 
-      // Obtener el token de Firebase Auth
+      // Get Firebase Auth token
       final token = await userCredential.user!.getIdToken();
 
-      // Opcional: Subir imagen a Firebase Storage y obtener URL
+      // Optional: Upload image to Firebase Storage and get URL
       String imageUrl = await _uploadImageToFirebase(_imageFile);
 
       // Prepare the request
@@ -64,10 +64,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ..fields['birthday'] =
             _birthday != null ? DateFormat('yyyy-MM-dd').format(_birthday!) : ''
         ..fields['bio'] = _bio
-        ..fields['user_img'] = imageUrl
+        ..fields['imageUrl'] = imageUrl
         ..fields['token'] = token ?? ''; // Token de Firebase Auth
 
-      // Si tienes un archivo de imagen para subir junto con los otros campos
+      // If you have an image file to upload along with the other fields
       if (_imageFile != null) {
         request.files.add(
             await http.MultipartFile.fromPath('userImage', _imageFile!.path));

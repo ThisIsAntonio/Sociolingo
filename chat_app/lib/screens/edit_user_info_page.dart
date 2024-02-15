@@ -37,6 +37,8 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
   late TextEditingController _birthdayController;
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   // Variables to store user data and selected values
   DateTime? _birthday;
@@ -84,6 +86,7 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
     _emailController.dispose();
     _passwordController.dispose();
     _birthdayController.dispose();
+    _confirmPasswordController.clear();
 
     // Call the dispose method of the superclass
     super.dispose();
@@ -91,14 +94,21 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
   }
 
   Future<void> _attemptUpdateUserInfo() async {
-    if (_imageFile != null) {
-      // Si hay una imagen seleccionada, primero sube la imagen y luego actualiza la información del usuario.
-      await _uploadImageToFirebase(_imageFile!).then((_) {
+    if (_formKey.currentState!.validate()) {
+      if (_imageFile != null) {
+        // If there is an image selected, first upload the image and then update the user information.
+        await _uploadImageToFirebase(_imageFile!).then((_) {
+          _updateUserInfo();
+        });
+      } else {
+        // If there is no new image selected, it simply updates the user information.
         _updateUserInfo();
-      });
+      }
     } else {
-      // Si no hay una nueva imagen seleccionada, simplemente actualiza la información del usuario.
-      _updateUserInfo();
+      // If the form is invalid, display a message or perform some action
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr('editUserInfo_validationFailed'))),
+      );
     }
   }
 
@@ -316,9 +326,31 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                 const SizedBox(height: 20), // Separator (20 pixels height)
                 // Password
                 TextFormField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(
-                        labelText: tr('editUserInfo_newPassword'))),
+                  controller: _passwordController,
+                  decoration: InputDecoration(
+                      labelText: tr('editUserInfo_newPassword')),
+                  obscureText: true,
+                  validator: (value) {
+                    if (value!.isNotEmpty && value.length < 6) {
+                      return tr('editUserInfo_errorPasswordLong');
+                    }
+                    return null;
+                  },
+                ),
+                // Confirm password
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  decoration: InputDecoration(
+                      labelText: tr('editUserInfo_confirmPassword')),
+                  obscureText: true,
+                  validator: (value) {
+                    if (_passwordController.text.isNotEmpty &&
+                        value != _passwordController.text) {
+                      return tr('editUserInfo_confirmPasswordNoMatch');
+                    }
+                    return null;
+                  },
+                ),
                 const SizedBox(height: 20), // Separator (20 pixels height)
                 // Bio
                 TextFormField(
