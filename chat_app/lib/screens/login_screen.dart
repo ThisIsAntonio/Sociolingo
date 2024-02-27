@@ -6,6 +6,8 @@ import 'package:chat_app/screens/forgot_password.dart';
 import 'package:chat_app/screens/main_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:chat_app/model/MathChallenge.dart';
+//import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 // Define the LoginScreen widget
 class LoginScreen extends StatefulWidget {
@@ -18,10 +20,19 @@ class LoginScreen extends StatefulWidget {
 // Define the state for LoginScreen
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _mathChallenge = MathChallenge();
+  final _mathAnswerController = TextEditingController();
 
   // Variables to store user input
   String _email = '';
   String _password = '';
+
+  // Dispose
+  @override
+  void dispose() {
+    _mathAnswerController.dispose();
+    super.dispose();
+  }
 
   // Function to handle user login
   void _login() async {
@@ -50,6 +61,10 @@ class _LoginScreenState extends State<LoginScreen> {
         // Navigate to the MainScreen
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (context) => MainScreen(userEmail: userEmail)));
+      } else if (response.statusCode == 403) {
+        // User is not active
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(tr('login_userNotActive'))));
       } else {
         // Login failed
         ScaffoldMessenger.of(context)
@@ -66,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
       _formKey.currentState?.save();
-      _login();
+      _showMathChallengeDialog();
     }
   }
 
@@ -103,6 +118,31 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
+  // Future<User?> signInWithFacebook() async {
+  //   final LoginResult result = await FacebookAuth.instance
+  //       .login(); // Start the process of logging in with Facebook
+
+  //   if (result.status == LoginStatus.success) {
+  //     // Logged in successfully
+  //     final OAuthCredential facebookAuthCredential =
+  //         FacebookAuthProvider.credential(result.accessToken!.token);
+
+  //     // Sign in with the credential
+  //     final UserCredential userCredential = await FirebaseAuth.instance
+  //         .signInWithCredential(facebookAuthCredential);
+  //     final User? user = userCredential.user;
+
+  //     if (user != null) {
+  //       Navigator.of(context).pushReplacement(MaterialPageRoute(
+  //           builder: (context) => MainScreen(userEmail: user.email!)));
+  //     }
+  //     return user;
+  //   } else {
+  //     print('The login failed with status: ${result.status}');
+  //     return null;
+  //   }
+  // }
+
 // Sending data to the server
   Future<void> sendRegistrationData(
       String? token, User user, String authType) async {
@@ -130,6 +170,58 @@ class _LoginScreenState extends State<LoginScreen> {
       // Handle the exception...
       print("Error connecting to the server: $e");
     }
+  }
+
+  // Math widget
+  void _showMathChallengeDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Don't close the dialog when tapping outside
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(tr('login_mathChallengeTitle')),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(tr('login_mathChallengeMessage') +
+                    '${_mathChallenge.getQuestion()}'),
+                TextFormField(
+                  controller: _mathAnswerController,
+                  keyboardType: TextInputType.number,
+                  decoration:
+                      InputDecoration(labelText: tr('login_yourAnswer')),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(tr('login_cancelButton')),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+            TextButton(
+              child: Text(tr('login_confirmButton')),
+              onPressed: () {
+                if (_mathChallenge.checkAnswer(
+                    int.tryParse(_mathAnswerController.text) ?? -1)) {
+                  Navigator.of(context).pop(); // Close the dialog
+                  _login(); // Continue with the login
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(tr('login_wrongAnswer'))),
+                  );
+                  setState(() {
+                    _mathChallenge;
+                  });
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -186,6 +278,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       iconPath: 'assets/img/facebook.png',
                       onPressed: () {
                         // Facebook action
+                        // signInWithFacebook().then((user) {
+                        //   if (user != null) {
+                        //     Navigator.of(context).pushReplacement(
+                        //         MaterialPageRoute(
+                        //             builder: (context) =>
+                        //                 MainScreen(userEmail: user.email!)));
+                        //   }
+                        // });
                       },
                       size: 40.0, // Button size
                     ),

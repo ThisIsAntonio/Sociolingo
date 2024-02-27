@@ -38,7 +38,7 @@ dependencies:
   intl: ^0.18.1
   flutter_localizations:
     sdk: flutter
-  easy_localization: ^3.0.0
+  easy_localization: ^3.0.4
   firebase_core: ^2.25.4
   firebase_storage: ^11.6.5
   google_sign_in: ^5.4.2 # Google dependencie to work with google authentication
@@ -50,6 +50,8 @@ dependencies:
   # http connection
   http: ^1.2.0
   firebase_auth: ^4.17.4
+  cloud_functions: ^4.6.5
+  flutter_facebook_auth: ^6.1.1
 
 dev_dependencies:
   flutter_launcher_icons: 0.13.1

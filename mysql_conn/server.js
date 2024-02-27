@@ -18,7 +18,7 @@ app.use(bodyParser.json({limit: '50mb'}));
 var serviceAccount = require("./project1-a9af7-firebase-adminsdk-8ebm6-7f99a39016.json");
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+    credential: admin.credential.cert(serviceAccount)
 });
 
 
@@ -65,6 +65,11 @@ app.post('/login', (req, res) => {
             // Comparing hashed password with the one provided by user
             const comparison = await bcrypt.compare(password, result[0].password);
             if (comparison) {
+                // Check if account is active or not
+                if (result[0].is_active !== 1) {
+                    res.status(403).send('Account is not active');
+                    return;
+                }
                 // Check if it's the first time the user logs in
                 if (result[0].first_time) {
                     // It's the first time, update first_time to false
@@ -85,7 +90,7 @@ app.post('/login', (req, res) => {
                 res.status(401).send('Incorrect password');
             }
         } else {
-            res.status(404).send('User not found');
+            res.status(404).send('User not found.');
         }
     });
 });
@@ -126,7 +131,7 @@ app.get('/userInfo', (req, res) => {
             };
             delete userInfo.user_img; // Remove the user_img
 
-            console.log('User Info:', userInfo);
+            //console.log('User Info:', userInfo);
             res.status(200).json(userInfo);
         } else {
             res.status(404).send('User not found');
@@ -282,7 +287,94 @@ app.put('/updateUserInfo', async (req, res) => {
     }
     });
 
+// Remove user from the app
+app.post('/deleteUser', (req, res) => {
+    const { email } = req.body;
+    const query = 'UPDATE User SET is_active = 0 WHERE email = ?';
+
+    db.execute(query, [email], (err, result) => {
+        if (err) {
+            res.status(500).send('Error deleting user');
+            return;
+        }
+
+        res.status(200).send('User successfully deleted');
+    });
+});
+
+
 // Start the server
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
+
+
+// < =================================================================== >
+//              SEND RESET PASSWORD INSTRUCTIONS VIA EMAIL
+// < =================================================================== >
+
+const nodemailer = require('nodemailer');
+
+// Configure the transporter for the email service (e.g., Gmail)
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'sociolingo.project@gmail.com', // Change this to your email address
+        pass: 'xtgy nblg pkyo fxvk' // Change this to your email password
+    }
+});
+
+// Function to send email with verification code
+function sendVerificationEmail(email, randomCode) {
+    const mailOptions = {
+        from: 'sociolingo.project@gmail.com', // Sender's email address
+        to: email, // Recipient's email address
+        subject: 'Verification Code to Reset Password', // Email subject
+        text: `Your verification code is: ${randomCode}` // Email body
+    };
+
+    // Send the email
+    transporter.sendMail(mailOptions, function(error, info){
+        if (error) {
+            console.error('Error sending email:', error);
+        } else {
+            console.log('Email sent:', info.response);
+        }
+    });
+}
+
+// Endpoint to send reset password instructions via email
+app.post('/sendEmailInstructions', (req, res) => {
+    const { email, code } = req.body;
+    sendVerificationEmail(email, code); // Call the function to send the email
+    res.status(200).send('Email sent successfully');
+});
+
+// Endpoint to reset password
+app.post('/resetPassword', async (req, res) => {
+    const { email, newPassword } = req.body;
+
+    // Imprimir el correo electrónico y la nueva contraseña recibidos
+    console.log('Correo electrónico recibido:', email);
+    console.log('Nueva contraseña recibida:', newPassword);
+
+    try {
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update the user's password in the database
+        const query = 'UPDATE User SET password = ? WHERE email = ?';
+        db.execute(query, [hashedPassword, email], (err, result) => {
+            if (err) {
+                console.error('Error updating password:', err);
+                res.status(500).send('Error updating password');
+                return;
+            }
+            res.status(200).send('Password updated successfully');
+        });
+    } catch (error) {
+        console.error('Error hashing password:', error);
+        res.status(500).send('Error updating password');
+    }
+});
+

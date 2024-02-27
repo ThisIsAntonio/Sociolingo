@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:chat_app/screens/login_screen.dart';
+import 'package:chat_app/model/MathChallenge.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -35,6 +36,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
+  final _mathChallenge = MathChallenge();
+  final _mathAnswerController = TextEditingController();
+
+  bool _acceptTerms = false; // Variable para mantener el estado del checkbox
 
   // Sends data to the backend for registration
   void _register() async {
@@ -86,8 +91,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
         // Successful registration
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(tr('register_registerAccepted'))));
-        Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => LoginScreen()));
+
+        // Clear navigation stack before navigating to login screen
+        //Navigator.of(context).popUntil((route) => route.isFirst);
+
+        // Navigate to login screen
+        // Navigator.of(context).pushReplacement(
+        //     MaterialPageRoute(builder: (context) => LoginScreen()));
+        // redirection to login screen
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          (Route<dynamic> route) => false,
+        );
       } else {
         // Failure to register user
         ScaffoldMessenger.of(context).showSnackBar(
@@ -105,16 +120,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _submit() {
     // Check if form is valid
     if (_formKey.currentState?.validate() ?? false) {
-      // Save password from text field
-      _password = _passwordController.text;
-      // Save form fields
-      _formKey.currentState?.save();
-      // Call the register method
-      _register();
-
-      // Clear text fields
-      _passwordController.clear();
-      _confirmPasswordController.clear();
+      if (!_acceptTerms) {
+        // Error message if the user does not accept the terms
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(tr('register_errorNotAcceptTerms'))),
+        );
+        return; // Stop the registration process
+      }
+      // Call matchChallengerDialog method
+      _showMathChallengeDialog();
     }
   }
 
@@ -150,6 +164,66 @@ class _RegisterScreenState extends State<RegisterScreen> {
       print("Error to upload the image: $e");
       return '';
     }
+  }
+
+  // Math widget
+  void _showMathChallengeDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Don't close the dialog when tapping outside
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(tr('register_mathChallengeTitle')),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(tr('register_mathChallengeMessage') +
+                    '${_mathChallenge.getQuestion()}'),
+                TextFormField(
+                  controller: _mathAnswerController,
+                  keyboardType: TextInputType.number,
+                  decoration:
+                      InputDecoration(labelText: tr('register_yourAnswer')),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(tr('register_cancelButton')),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+            TextButton(
+              child: Text(tr('register_confirmButton')),
+              onPressed: () {
+                if (_mathChallenge.checkAnswer(
+                    int.tryParse(_mathAnswerController.text) ?? -1)) {
+                  print('entro');
+                  Navigator.of(context).pop(); // Close the dialog
+                  // Save password from text field
+                  _password = _passwordController.text;
+                  // Save form fields
+                  _formKey.currentState?.save();
+                  _register(); // Continue with the login
+                  // Clear text fields
+                  _passwordController.clear();
+                  _confirmPasswordController.clear();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(tr('register_wrongAnswer'))),
+                  );
+                  setState(() {
+                    _mathChallenge;
+                  });
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -410,7 +484,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: 20), // Separator (20 pixels height)
-                // Button
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _acceptTerms,
+                          onChanged: (value) {
+                            setState(() {
+                              _acceptTerms = value!;
+                            });
+                          },
+                        ),
+                        Text(
+                          tr('register_AcceptTerm'),
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            // Show pop up with terms and conditions
+                            _showTermsAndConditionsDialog();
+                          },
+                          child: Text(
+                            tr('register_TermsAndConditions'),
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors
+                                  .blue, // Change the color to look like a message
+                              decoration: TextDecoration
+                                  .underline, // underline the text
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20), // Separator (20 pixels height)
+                // Register Button
                 ElevatedButton(
                   onPressed: _submit,
                   child: Text(tr('register_buttonRegister')),
@@ -420,6 +533,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showTermsAndConditionsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(tr('register_termsAndConditionTitle')),
+          content: SingleChildScrollView(
+            child: Text(
+              // Terms and conditions info
+              tr('register_termsAndConditionContent'),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: Text(tr('register_buttonClose')),
+            ),
+          ],
+        );
+      },
     );
   }
 }

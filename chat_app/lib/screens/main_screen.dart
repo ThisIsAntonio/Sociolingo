@@ -22,17 +22,17 @@ class _MainScreenState extends State<MainScreen> {
   Widget _buildPage() {
     switch (_selectedIndex) {
       case 0:
-        return UserInfoPage(userEmail: widget.userEmail);
+        return ChatPage(); // Main Page
       case 1:
         return TopicsPage();
       case 2:
         return FriendRequestsPage();
       case 3:
-        return ChatPage();
+        return UserInfoPage(userEmail: widget.userEmail);
       case 4:
-        return SettingsPage();
+        return SettingsPage(userEmail: widget.userEmail);
       default:
-        return UserInfoPage(userEmail: widget.userEmail); // Fallback page
+        return ChatPage(); // Fallback page
     }
   }
 
@@ -58,22 +58,27 @@ class _MainScreenState extends State<MainScreen> {
       bottomNavigationBar: BottomNavigationBar(
         // Navigation bar items with localized labels
         items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle),
-            label: tr('mainScreen_profileLabel'),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: tr('mainScreen_topicsLabel'),
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.mail),
-            label: tr('mainScreen_RequestsLabel'),
-          ),
+          // Chat Page
           BottomNavigationBarItem(
             icon: Icon(Icons.chat),
             label: tr('mainScreen_chatLabel'),
           ),
+          // Topics Page
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: tr('mainScreen_topicsLabel'),
+          ),
+          // Friend Requests Page
+          BottomNavigationBarItem(
+            icon: Icon(Icons.mail),
+            label: tr('mainScreen_RequestsLabel'),
+          ),
+          // User Info Page
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_circle),
+            label: tr('mainScreen_profileLabel'),
+          ),
+          // Settings Page
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: tr('mainScreen_settingsLabel'),
