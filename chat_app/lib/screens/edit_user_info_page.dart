@@ -1,10 +1,10 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'dart:io';
 import 'package:country_picker/country_picker.dart';
 import 'package:chat_app/model/user.dart';
@@ -42,12 +42,10 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
 
   // Variables to store user data and selected values
   DateTime? _birthday;
-  String _countryCode = '';
-  String? _selectedCountry;
+  String? _country = '';
 
   // Variable to store selected image file
   XFile? _imageFile;
-  String? _imageUrl;
 
   // ImagePicker instance for picking images
   final ImagePicker _picker = ImagePicker();
@@ -66,7 +64,7 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
     _emailController = TextEditingController(text: widget.user?.email);
     _passwordController = TextEditingController(); // No pre-fill for password
     _birthday = widget.user?.birthday;
-    _selectedCountry = widget.user?.country;
+    _country = widget.user?.country;
 
     // Initialize birthday controller with formatted date if available
     _birthdayController = TextEditingController(
@@ -90,16 +88,15 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
 
     // Call the dispose method of the superclass
     super.dispose();
-    print('all dispose');
   }
 
   Future<void> _attemptUpdateUserInfo() async {
     if (_formKey.currentState!.validate()) {
+      String? imageUrl;
       if (_imageFile != null) {
         // If there is an image selected, first upload the image and then update the user information.
-        await _uploadImageToFirebase(_imageFile!).then((_) {
-          _updateUserInfo();
-        });
+        imageUrl = await _uploadImageToFirebase(_imageFile!);
+        _updateUserInfo(imageUrl);
       } else {
         // If there is no new image selected, it simply updates the user information.
         _updateUserInfo();
@@ -113,92 +110,72 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
   }
 
   // Method to update user information
-  Future<void> _updateUserInfo() async {
-    // Adjust the URL for your environment
-    // For example, if running locally, change 'serverchat2.onrender.com' to 'localhost' or your local IP address
-    var url = Uri.parse('https://serverchat2.onrender.com/updateUserInfo');
+  Future<void> _updateUserInfo([String? imageUrl]) async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        Map<String, dynamic> updateData = {
+          if (_firstNameController.text != widget.user?.firstName)
+            'first_name': _firstNameController.text,
+          if (_lastNameController.text != widget.user?.lastName)
+            'last_name': _lastNameController.text,
+          if (_bioController.text != widget.user?.bio)
+            'bio': _bioController.text,
+          if (_phoneNumberController.text != widget.user?.phoneNumber)
+            'phone_number': _phoneNumberController.text,
+          if (_emailController.text != widget.user?.email)
+            'email': _emailController.text,
+          if (_birthday != widget.user?.birthday)
+            'birthday': _birthday != null
+                ? DateFormat('yyyy-MM-dd').format(_birthday!)
+                : null,
+          if (_country != widget.user?.country) 'country': _country,
+          if (imageUrl != null) 'imageUrl': imageUrl,
+        };
 
-    // Create the request body with user information
-    Map<String, dynamic> body = {
-      'email': _emailController.text,
-      'first_name': _firstNameController.text,
-      'last_name': _lastNameController.text,
-      'bio': _bioController.text,
-      'phone_number': _countryCode +
-          _phoneNumberController.text, // Combine country code with phone number
-      'birthday': _birthday != null
-          ? DateFormat('yyyy-MM-dd').format(_birthday!)
-          : '', // Format birthday if available
-      'country': _selectedCountry,
-      'imageUrl': _imageUrl, // Include profile picture if available
-      if (_passwordController.text.isNotEmpty)
-        'password': _passwordController.text, // Include password if not empty
-    };
+        // Update Firestore
+        String? uid = auth.FirebaseAuth.instance.currentUser?.uid;
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .update(updateData);
 
-    try {
-      // Send PUT request to update user info
-      var response = await http.put(url,
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode(body));
+        // Update password if necessary
+        if (_passwordController.text.isNotEmpty) {
+          await auth.FirebaseAuth.instance.currentUser
+              ?.updatePassword(_passwordController.text);
+        }
 
-      // Handle response based on status code
-      if (response.statusCode == 200) {
-        // Show success message and navigate to main screen if successful
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(tr('editUserInfo_updateSuccessfully'))));
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (context) =>
-                MainScreen(userEmail: _emailController.text)));
-      } else {
-        // Show error message if request failed
+                MainScreen(userEmail: widget.userEmail, returnScreen: 3)));
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(tr('editUserInfo_updateFailed'))));
+            SnackBar(content: Text(tr('editUserInfo_updateFailed') + ' $e')));
       }
-    } catch (e) {
-      // Show error message if there's a connection error
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr('editUserInfo_errorConnecting') + '$e')));
     }
   }
 
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
-      // Upload the image to Firebase Storage and get the URL
-      _uploadImageToFirebase(image);
+      setState(() {
+        _imageFile = image; // Asegúrate de que se establece _imageFile
+      });
+      print("Image Path: ${_imageFile?.path}");
     }
   }
 
-  Future<void> _uploadImageToFirebase(XFile image) async {
-    try {
-      // Defines the name of the file in storage, it could be unique per user
-      String fileName =
-          "user_images/${widget.userEmail}/${DateTime.now().millisecondsSinceEpoch.toString()}";
-
-      // Upload the file to Firebase Storage
-      firebase_storage.UploadTask task = firebase_storage
-          .FirebaseStorage.instance
-          .ref(fileName)
-          .putFile(File(image.path));
-
-      // Wait for the upload to complete
-      await task.whenComplete(() {});
-
-      // Get the download URL
-      var imageUrl = await firebase_storage.FirebaseStorage.instance
-          .ref(fileName)
-          .getDownloadURL();
-
-      // Update the state variable with the new image
-      if (!mounted) return;
-      setState(() {
-        _imageUrl = imageUrl;
-      });
-      print("Image URL: $imageUrl");
-      print("_Image URL: $_imageUrl");
-    } catch (e) {
-      print("Error uploading image to Firebase Storage: $e");
-    }
+  Future<String> _uploadImageToFirebase(XFile image) async {
+    String filePath =
+        'profile_pictures/${widget.userEmail}/${DateTime.now()}.png';
+    await firebase_storage.FirebaseStorage.instance
+        .ref(filePath)
+        .putFile(File(image.path));
+    return await firebase_storage.FirebaseStorage.instance
+        .ref(filePath)
+        .getDownloadURL();
   }
 
   @override
@@ -308,16 +285,15 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                 const SizedBox(height: 20), // Separator (20 pixels height)
                 // Country
                 ListTile(
-                  title: Text(
-                      _selectedCountry ?? tr('editUserInfo_noCountrySelected')),
+                  title: Text(_country ?? tr('editUserInfo_noCountrySelected')),
                   trailing: const Icon(Icons.arrow_drop_down),
                   onTap: () {
                     showCountryPicker(
                       context: context,
                       onSelect: (Country country) {
                         setState(() {
-                          _selectedCountry = country.name;
-                          _countryCode = '+${country.phoneCode}';
+                          _country = country.name;
+                          //_countryCode = '+${country.phoneCode}';
                         });
                       },
                     );
@@ -391,8 +367,8 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                     ElevatedButton(
                       onPressed: () {
                         Navigator.of(context).pushReplacement(MaterialPageRoute(
-                            builder: (context) =>
-                                MainScreen(userEmail: widget.userEmail)));
+                            builder: (context) => MainScreen(
+                                userEmail: widget.userEmail, returnScreen: 3)));
                       },
                       child: Text(tr('editUserInfo_buttonCancel')),
                     ),

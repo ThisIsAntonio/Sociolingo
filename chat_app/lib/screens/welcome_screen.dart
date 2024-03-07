@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:chat_app/screens/register_screen.dart';
 import 'package:chat_app/screens/login_screen.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 void main() => runApp(MyApp());
 
@@ -22,7 +23,26 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class WelcomeScreen extends StatelessWidget {
+class WelcomeScreen extends StatefulWidget {
+  @override
+  _WelcomeScreenState createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends State<WelcomeScreen> {
+  String appVersion = "";
+  @override
+  void initState() {
+    super.initState();
+    _getAppVersion();
+  }
+
+  Future<void> _getAppVersion() async {
+    final PackageInfo info = await PackageInfo.fromPlatform();
+    setState(() {
+      appVersion = "${info.version}+${info.buildNumber}";
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -158,6 +178,14 @@ class WelcomeScreen extends StatelessWidget {
             ),
 
             const Spacer(),
+            Text(
+              'Version $appVersion',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 8),
           ],
         ),
       ),

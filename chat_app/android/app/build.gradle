@@ -22,8 +22,6 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
-apply plugin: 'com.google.gms.google-services'
-
 android {
     namespace "com.example.chat_app"
     compileSdkVersion flutter.compileSdkVersion
@@ -69,7 +67,7 @@ flutter {
 dependencies {
     implementation platform('com.google.firebase:firebase-bom:26.2.0')
     implementation platform('com.google.firebase:firebase-analytics-ktx')
+    implementation 'com.google.android.play:integrity:1.0.0'
 }
 
-
-
+apply plugin: 'com.google.gms.google-services'

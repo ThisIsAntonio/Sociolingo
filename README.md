@@ -3,9 +3,15 @@ Note: This is a College project for the class Project1.
 
 This is a project in development that uses Flutter to create a chat application and an API in Node.js for database management. Currently, the project includes the following features:
 
-- User registration screen.
-- Login screen.
-- Node.js API for database management.
+- User registration and authentication using Firebase Auth.
+- Real-time chat functionality.
+- Chat windows to talk between users in real time.
+- User status updates (Online/Offline).
+- Notifications for new messages using Firebase Cloud Messaging (FCM).
+- Data storage and real-time updates with Firestore.
+- User profile and settings.
+- Friend List.
+- Multilanguage (the app can switch between English, Spanish and French).
 
 ## Initial setup
 
@@ -55,28 +61,19 @@ To install it:
 
   Note: Remember that to install apps directly on iOS devices, you need an Apple developer account. If you're using a free account, there are limitations, such as needing to manually reinstall your app every 7 days.
 
-### API configuration in Node.js
+## Firebase Configuration
+Ensure you have set up a Firebase project and linked it with your Flutter app. Follow the Firebase documentation to add Firebase to your Flutter project: https://firebase.flutter.dev/docs/overview
 
-The API in Node.js is designed to manage the database of the application. Make sure the API code is located in the "Project1/node-api" directory. Then, configure the API by following these steps:
+## Database and Authentication Setup
+- Use Firebase Console to create authentication providers (Email/Password, Google, etc.).
+- Set up Firestore database rules for secure data access.
+- Configure Cloud Functions for server-side logic, like sending notifications.
 
-1. Clone the API repository:
-https://github.com/ThisIsAntonio/Project1.git
-
-2. Navigate to the API directory in Node.js:
-cd Project1/mysql_conn
-
-3. Install Node.js dependencies:
-npm install
-
-4. Run the Node js application
-node server.js
-
-note: right now, I've deployed a node server to check how works the app, however, if you need to modify the server.js file, you need to change the url for login, register, user info, modify user info by the localhost url.
-
-### SQL files:
-
-There is added an example of the DBA working on my own server, if you want to use your own, please feel free to do it, however, check the .sql file because this has all the first tables to start this interesting project.
-
+## Important Updates
+- Migration from a local Node.js server and SQL database to Firebase for more streamlined development and real-time features.
+- Introduction of real-time status updates and message notifications to enhance user experience.
+- Enhanced security and ease of development using Firebase's suite of tools.
+- Added chat between users in real time and Online/Offline status.
 
 ## License
 

@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:easy_localization/easy_localization.dart ';
 import 'package:chat_app/screens/welcome_screen.dart';
+import 'package:chat_app/screens/main_screen.dart';
 import 'package:chat_app/model/theme_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+//import 'package:chat_app/model/topics_info.dart';
+//import 'package:chat_app/model/user_test.dart';
 
 // A stream controller for handling language changes.
 final StreamController<void> languageChangeStreamController =
@@ -20,6 +27,21 @@ void main() async {
 
   // Initialize Firebase.
   await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  // Activate Firebase App Check.
+  if (defaultTargetPlatform == TargetPlatform.android) {
+    await FirebaseAppCheck.instance.activate();
+  }
+
+  // Loading topics and hobbies into the DBA (only one time or each time that the info is updated)
+  // FirestoreDataLoader().uploadTopicsAndHobbies().then((_) {
+  //   print("Topics and hobbies uploaded successfully!");
+  // }).catchError((error) {
+  //   print("Error uploading topics and hobbies: $error");
+  // });
+  // Loading user info into the DBA (only for testing)
+  // UserSeeder userSeeder = UserSeeder();
+  // userSeeder.seedUsers(10);
 
   // Run the application with EasyLocalization widget as the root.
   runApp(
@@ -36,6 +58,10 @@ void main() async {
       child: MyApp(),
     ),
   );
+}
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Handling a background message: ${message.messageId}");
 }
 
 // This is the state class for the MyApp widget.
@@ -68,7 +94,26 @@ class _MyAppState extends State<MyApp> {
             supportedLocales: context.supportedLocales,
             locale: context.locale,
             key: key, // Use the key for identifying widget for rebuild.
-            home: WelcomeScreen(), // Set the home screen of the app.
+            home: StreamBuilder<User?>(
+              stream: FirebaseAuth.instance.authStateChanges(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.active) {
+                  if (snapshot.hasData) {
+                    // the user is authenticate go to the MainScreen
+                    return MainScreen(
+                      userEmail: snapshot.data!.email!,
+                    );
+                  } else {
+                    // the user is not authenticate go to welcome screen
+                    return WelcomeScreen();
+                  }
+                }
+                //
+                return Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              },
+            ),
           );
         },
       ),

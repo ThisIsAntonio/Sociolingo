@@ -2,120 +2,85 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:chat_app/screens/login_screen.dart';
-import 'package:chat_app/model/theme_provider.dart'; // Ensure you have defined this class as shown previously
-//import 'package:chat_app/main.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:chat_app/model/theme_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-// Define SettingsPage as a StatelessWidget to manage theme changes through Provider.
 class SettingsPage extends StatelessWidget {
   final String userEmail;
 
   const SettingsPage({Key? key, required this.userEmail}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    // Accessing ThemeProvider using Provider.of
     final themeProvider = Provider.of<ThemeProvider>(context);
 
-    // void _changeLanguage(Locale locale) {
-    //   context.setLocale(locale);
-    //   languageChangeStreamController.add(null); // Emitir el evento
-    // }
-
-    // Build the UI of SettingsPage
     return Scaffold(
       appBar: AppBar(
-        leading: Container(), // Hide the back button.
-        title: Column(
-          mainAxisSize:
-              MainAxisSize.max, // To occupy the minimum space necessary.
-          mainAxisAlignment:
-              MainAxisAlignment.center, // Center vertically on the AppBar.
-          crossAxisAlignment: CrossAxisAlignment
-              .stretch, // Stretch the children along the crossed axis.
-          children: [
-            Text(
-              tr('settings_title'),
-              textAlign: TextAlign.start, // Center the text
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+        leading: Container(), // Para ocultar el botón de retroceso.
+        title: Text(
+          tr('settings_title'),
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const SizedBox(height: 25),
-            // Language dropdownButton
-            ListTile(
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Text(tr('settings_selectLanguage')), // Change Language
-                  Text(
-                    _localeName(context.locale),
-                    style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ],
-              ),
-              onTap: () => _showLanguageDialog(context),
-            ),
-            const SizedBox(height: 25),
-            // Theme switcherbuttons
-            ListTile(
-              title: Text(tr('settings_darkModeSwitch')),
-              // Using a Switch to toggle between dark and light theme
-              trailing: Switch(
-                value: themeProvider.themeMode == ThemeMode.dark,
-                onChanged: (value) {
-                  // Updating the themeMode in ThemeProvider which triggers UI rebuild
-                  themeProvider.themeMode =
-                      value ? ThemeMode.dark : ThemeMode.light;
-                },
-              ),
-            ),
-            // Delete account button
-            const SizedBox(height: 25),
-            ElevatedButton(
-              onPressed: () => _showDeleteConfirmation(context),
-              child: Text(tr('settings_deleteProfileButton')),
-            ),
-            const SizedBox(height: 45),
-            // About us button
-            ElevatedButton(
-              onPressed: () {
-                // Show about us dialog
-                _showAboutUsDialog(context);
-              },
-              child: Text(tr('settings_aboutUsButton')),
-            ),
-            const SizedBox(height: 45),
-            // Log out button
-            ElevatedButton(
-              onPressed: () {
-                // Logging out and redirecting user to LoginScreen
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  (Route<dynamic> route) =>
-                      false, // Removing all previous routes
-                );
-              },
-              child: Text(tr('settings_logOutButton')),
-            ),
-          ],
+      body: ListView(
+        children: [
+          const SizedBox(height: 40),
+          _buildButton(
+            context,
+            text: tr('settings_selectLanguage'),
+            onPressed: () => _showLanguageDialog(context),
+          ),
+          const Divider(),
+          SwitchListTile(
+            title: Text(tr('settings_darkModeSwitch')),
+            value: themeProvider.themeMode == ThemeMode.dark,
+            onChanged: (bool value) {
+              themeProvider.themeMode =
+                  value ? ThemeMode.dark : ThemeMode.light;
+            },
+          ),
+          const Divider(),
+          _buildButton(
+            context,
+            text: tr('settings_deleteProfileButton'),
+            onPressed: () => _showDeleteConfirmation(context),
+          ),
+          const Divider(),
+          _buildButton(
+            context,
+            text: tr('settings_aboutUsButton'),
+            onPressed: () => _showAboutUsDialog(context),
+          ),
+          const Divider(),
+          _buildButton(
+            context,
+            text: tr('settings_logOutButton'),
+            onPressed: () => _logout(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildButton(BuildContext context,
+      {required String text, VoidCallback? onPressed}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: ElevatedButton(
+        onPressed: onPressed,
+        child: Text(text),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).primaryColor, // Background color
+          foregroundColor: Colors.white, // Text color
+          minimumSize: Size(double.infinity, 50), // Size of the bottom
         ),
       ),
     );
   }
 
-  // Function to show the language dialog
+// Function to show the language dialog
   void _showLanguageDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -133,6 +98,7 @@ class SettingsPage extends StatelessWidget {
                         title: Text(_localeName(locale)),
                         onTap: () {
                           context.setLocale(locale);
+                          _updateUserLanguagePreference(locale.languageCode);
                           Navigator.of(context).pop();
                         },
                       ))
@@ -142,6 +108,14 @@ class SettingsPage extends StatelessWidget {
         );
       },
     );
+  }
+
+// Function to update user language preference in Firestore
+  Future<void> _updateUserLanguagePreference(String languageCode) async {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+    await FirebaseFirestore.instance.collection('users').doc(uid).update({
+      'language_preference': languageCode,
+    });
   }
 
   // Function to get the name of the language based on its locale code.
@@ -187,31 +161,31 @@ class SettingsPage extends StatelessWidget {
 
   // Function to delete user account from the database and logout of the app
   void _deleteUser(BuildContext context, String email) async {
-    final response = await http.post(
-      Uri.parse('https://serverchat2.onrender.com/deleteUser'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'email': email,
-      }),
-    );
+    try {
+      // Get the user from the database
+      String uid = FirebaseAuth.instance.currentUser!.uid;
 
-    if (response.statusCode == 200) {
-      // Showing message accepted
+      // Update the instance is_active to false
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({
+        'is_active': false,
+      });
+
+      // Show the confirmation message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(tr('settings_accountDeletedMessage')),
           duration: const Duration(seconds: 3),
         ),
       );
-      // redirection to login screen
+
+      // Close the sesion and redirect to LoginScreen
+      await FirebaseAuth.instance.signOut();
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const LoginScreen()),
         (Route<dynamic> route) => false,
       );
-    } else {
-      // Error to delete account
+    } catch (e) {
+      // Show the error message if something went wrong
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('settings_errorDeleteAccount'),
       ));
@@ -241,5 +215,30 @@ class SettingsPage extends StatelessWidget {
         );
       },
     );
+  }
+
+  // Function to logout of the app
+  void _logout(BuildContext context) async {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+    String lastSeen = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+
+    // Update the user state and last seen timestamp
+    await FirebaseFirestore.instance.collection('users').doc(uid).update({
+      'isOnline': false,
+      'lastSeen': lastSeen,
+    }).then((_) async {
+      // Close the session
+      await FirebaseAuth.instance.signOut();
+      // Redirect to the loginScreen
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+        (Route<dynamic> route) => false,
+      );
+    }).catchError((error) {
+      // Error showing them on SnackBar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr('settings_logoutError'))),
+      );
+    });
   }
 }

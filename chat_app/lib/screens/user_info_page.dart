@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
-//import 'package:intl/intl.dart';
 import 'package:chat_app/model/user.dart';
 import 'package:chat_app/screens/edit_user_info_page.dart';
+import 'package:chat_app/screens/friend_detail_page.dart';
 import 'package:chat_app/main.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:chat_app/screens/topics_screen.dart';
 
 class UserInfoPage extends StatefulWidget {
   final String userEmail;
@@ -20,11 +21,16 @@ class UserInfoPage extends StatefulWidget {
 class _UserInfoPageState extends State<UserInfoPage> {
   User? _user;
   String? imageUrl;
+  int _friendCount = 0;
+  List<Map<String, dynamic>> _friendsData = [];
+  List<String> selectedHobbies = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchUserInfo();
+    _fetchUserInfo(widget.userEmail);
+    _fetchFriends();
+    _fetchSelectedHobbies();
     languageChangeStreamController.stream.listen((_) {
       if (mounted) {
         setState(() {});
@@ -32,28 +38,171 @@ class _UserInfoPageState extends State<UserInfoPage> {
     });
   }
 
-  Future<void> _fetchUserInfo() async {
+  // Function to fetch the user info
+  Future<void> _fetchUserInfo(String userEmail) async {
     try {
-      final response = await http.get(
-        Uri.parse(
-            'https://serverchat2.onrender.com/userInfo?email=${widget.userEmail}'), // Adjust the URL for your environment //localhost is 100.20.92.101:300
-      );
-      // Print the response status code
-      print('Response status code: ${response.statusCode}');
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        print("Received user info: $data");
+      final docSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: userEmail) // To search by the email
+          .get();
+
+      if (docSnapshot.docs.isNotEmpty) {
+        var userDoc = docSnapshot.docs.first;
+        Map<String, dynamic> data = userDoc.data();
         setState(() {
           _user = User.fromJson(data);
-
           imageUrl = data['imageUrl'] as String?;
-          print("Image URL: $imageUrl");
         });
       } else {
-        print('Failed to load user info, status code: ${response.statusCode}');
+        print('User document does not exist');
       }
     } catch (e) {
-      print('Error fetching user info: $e');
+      print('Error fetching user info from Firestore: $e');
+    }
+  }
+
+  // Function to fetch the list of friends
+  Future<void> _fetchFriends() async {
+    try {
+      String currentUserId = auth.FirebaseAuth.instance.currentUser!.uid;
+      var friendships = await FirebaseFirestore.instance
+          .collection('friendships')
+          .where('users', arrayContains: currentUserId)
+          .get();
+
+      List<Map<String, dynamic>> friendsData = [];
+
+      for (var doc in friendships.docs) {
+        String friendId = (doc.data()['users'] as List)
+            .firstWhere((id) => id != currentUserId);
+        var friendDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(friendId)
+            .get();
+        if (friendDoc.exists) {
+          Map<String, dynamic> friendData = friendDoc.data()!;
+          friendData['id'] = friendDoc.id;
+          friendsData.add(friendData);
+        }
+      }
+
+      setState(() {
+        // Update the variables of the state with the new values
+        _friendsData = friendsData;
+        _friendCount = friendsData.length;
+      });
+    } catch (e) {
+      print('Error fetching friends: $e');
+    }
+  }
+
+  // Function to show the list of friends in a dialog box
+  void _showFriendsList(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(tr('userInfo_popUpTitle')),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: _friendsData
+                  .map((friendData) => ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: NetworkImage(friendData[
+                                  'imageUrl'] ??
+                              'https://firebasestorage.googleapis.com/v0/b/sociolingo-project.appspot.com/o/photo.jpg?alt=media&token=b370db11-d8de-495d-93da-e7b10aabd841'),
+                        ),
+                        title: Text(
+                            '${friendData['first_name']} ${friendData['last_name']}'),
+                        onTap: () {
+                          Navigator.of(context).pop(); // Close the dialog
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => FriendDetailsPage(
+                                      email: friendData[
+                                          'email']))); // Go to FriendDetailsPage
+                        },
+                      ))
+                  .toList(),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(tr('userInfo_closeButton')),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Function to navigate to the TopicsScreen
+  void _navigateToTopicsScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) =>
+              TopicsScreen(userId: widget.userEmail, screenID: 2)),
+    );
+  }
+
+  // Function to fetch the selected hobbies
+  Future<void> _fetchSelectedHobbies() async {
+    try {
+      // Get the current user ID
+      String currentUserId = auth.FirebaseAuth.instance.currentUser!.uid;
+
+      // Get the user document
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .get();
+
+      if (userDoc.exists) {
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+
+        // OGet the language preference
+        String languagePreference =
+            userData['language_preference'] ?? 'en'; // English by default
+
+        // Check if the user has selected hobbies
+        if (userData.containsKey('selectedHobbies')) {
+          List<dynamic> selectedHobbiesIds = userData['selectedHobbies'];
+          //print(selectedHobbiesIds);
+
+          // List to store the selected hobbies
+          List<String> hobbiesNames = [];
+
+          // Fetch each topic
+          QuerySnapshot topicsSnapshot = await FirebaseFirestore.instance
+              .collection('topics_$languagePreference')
+              .get();
+
+          for (var topicDoc in topicsSnapshot.docs) {
+            // Fetch hobbies within each topic
+            QuerySnapshot hobbiesSnapshot =
+                await topicDoc.reference.collection('hobbies').get();
+
+            for (var hobbyDoc in hobbiesSnapshot.docs) {
+              // Check if the hobby ID is in the selected hobbies
+              if (selectedHobbiesIds.contains(hobbyDoc.id)) {
+                Map<String, dynamic> hobbyData =
+                    hobbyDoc.data() as Map<String, dynamic>;
+                hobbiesNames.add(hobbyData['name']);
+              }
+            }
+          }
+
+          // Update the selected hobbies
+          setState(() {
+            selectedHobbies = hobbiesNames;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error fetching selected hobbies: $e');
     }
   }
 
@@ -135,8 +284,11 @@ class _UserInfoPageState extends State<UserInfoPage> {
                                 style: const TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 8),
-                            Text(tr('userInfo_friends') +
-                                ': 0'), // Static value for now
+                            GestureDetector(
+                              onTap: () => _showFriendsList(context),
+                              child: Text(
+                                  tr('userInfo_friends') + ': $_friendCount'),
+                            ),
                           ],
                         ),
                       ),
@@ -156,20 +308,38 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   Text(tr('userInfo_birthdayLabel') +
                       '${_user!.birthday != null ? DateFormat('yyyy-MM-dd').format(_user!.birthday!) : 'N/A'}'),
                   const SizedBox(height: 20), // Separator (20 pixels height)
-                  Text(tr(
-                      'userInfo_InterestsLabel')), // Placeholder for relational data
+                  Text(
+                    selectedHobbies.isNotEmpty
+                        ? 'Hobbies: ${selectedHobbies.join(', ')}'
+                        : tr('userInfo_noHobbies'),
+                    style: TextStyle(fontSize: 14),
+                  ),
                   const SizedBox(height: 20), // Separator (20 pixels height)
-                  ElevatedButton(
-                    onPressed: () => Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => EditUserInfoPage(
-                                user: _user, userEmail: widget.userEmail)))
-                      ..then((value) {
-                        // Optional: Reload user information when returning from editing page
-                        _fetchUserInfo();
-                      }),
-                    child: Text(tr('userInfo_buttonEditProfile')),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _navigateToTopicsScreen,
+                          child: Text(tr('userInfo_buttonUpdateTopics')),
+                        ),
+                      ),
+                      const SizedBox(width: 8), // Space between the buttons
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => EditUserInfoPage(
+                                      user: _user,
+                                      userEmail: widget.userEmail)))
+                            ..then((value) {
+                              // Optional: Reload user information when returning from editing page
+                              _fetchUserInfo(widget.userEmail);
+                            }),
+                          child: Text(tr('userInfo_buttonEditProfile')),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

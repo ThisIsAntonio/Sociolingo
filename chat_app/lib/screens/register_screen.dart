@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:country_picker/country_picker.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:chat_app/screens/login_screen.dart';
 import 'package:chat_app/model/MathChallenge.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -26,7 +27,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String _email = '';
   String _phoneNumber = '';
   String _password = '';
-  final String _bio = '';
   Country? _selectedCountry;
   XFile? _imageFile;
   //String? _imageUrl = '';
@@ -39,80 +39,79 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _mathChallenge = MathChallenge();
   final _mathAnswerController = TextEditingController();
 
-  bool _acceptTerms = false; // Variable para mantener el estado del checkbox
+  bool _acceptTerms = false; // var to keep the current checkbox in false
 
   // Sends data to the backend for registration
   void _register() async {
-    var url = Uri.parse(
-        'https://serverchat2.onrender.com/register'); // Adjust the URL for your environment //localhost is 100.20.92.101:300
+    // Initielize firebase if it is not already initialized
+    if (!Firebase.apps.isNotEmpty) {
+      await Firebase.initializeApp();
+    }
+
     try {
-      final userCredential =
+      // Create a new instance of FirebaseAuth and use its signUp method
+      UserCredential userCredential =
           await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _email,
         password: _password,
       );
 
-      // Get Firebase Auth token
-      final token = await userCredential.user!.getIdToken();
+      // Get the UID from the user
+      String uid = userCredential.user!.uid;
 
-      // Optional: Upload image to Firebase Storage and get URL
+      // Get the Bio info
+      final String bio = _bioController.text;
+
+      // upload the image to Firebase
       String imageUrl = await _uploadImageToFirebase(_imageFile);
 
-      // Prepare the request
-      var request = http.MultipartRequest('POST', url)
-        ..fields['first_name'] = _firstName
-        ..fields['last_name'] = _lastName
-        ..fields['email'] = _email
-        ..fields['phone_number'] = _phoneNumber
-        ..fields['password'] = _password
-        ..fields['country'] = _selectedCountry?.name ?? ''
-        ..fields['birthday'] =
-            _birthday != null ? DateFormat('yyyy-MM-dd').format(_birthday!) : ''
-        ..fields['bio'] = _bio
-        ..fields['imageUrl'] = imageUrl
-        ..fields['token'] = token ?? ''; // Token de Firebase Auth
+      // Get the datetime now
+      String joinDate = DateTime.now().toUtc().toIso8601String();
 
-      // If you have an image file to upload along with the other fields
-      if (_imageFile != null) {
-        request.files.add(
-            await http.MultipartFile.fromPath('userImage', _imageFile!.path));
-      }
+      // Create an Object from the user data
+      Map<String, dynamic> userData = {
+        'first_name': _firstName,
+        'last_name': _lastName,
+        'email': _email,
+        'phone_number': _phoneNumber,
+        'country': _selectedCountry?.name ?? '',
+        'birthday': _birthday != null
+            ? DateFormat('yyyy-MM-dd').format(_birthday!)
+            : '',
+        'bio': bio,
+        'imageUrl': imageUrl,
+        'first_time': true, // show this is the first time to the user
+        'join_date': joinDate, // put the datetime now
+        'is_active': true, // The user is active on the app
+        'language_preference':
+            'en', // Default language preference set to English
+        'isOnline': true,
+        'lastSeen': '',
+      };
 
-      // Prints the information being sent for debugging
-      print('Sending registration data: ${request.fields}');
+      // Save the user data in Firebase Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .set(userData);
 
-      var streamedResponse = await request.send();
-      var response = await http.Response.fromStream(streamedResponse);
-
-      // Print the response status code
-      print('Response status code: ${response.statusCode}');
-
-      if (response.statusCode == 201) {
-        // Successful registration
+      // Comeback to the Login Screen
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        (Route<dynamic> route) => false,
+      );
+    } catch (e) {
+      // Show error messages
+      if (e is FirebaseAuthException && e.code == 'email-already-in-use') {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(tr('register_registerAccepted'))));
-
-        // Clear navigation stack before navigating to login screen
-        //Navigator.of(context).popUntil((route) => route.isFirst);
-
-        // Navigate to login screen
-        // Navigator.of(context).pushReplacement(
-        //     MaterialPageRoute(builder: (context) => LoginScreen()));
-        // redirection to login screen
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-          (Route<dynamic> route) => false,
+          SnackBar(content: Text(tr('register_emailInUse'))),
         );
       } else {
-        // Failure to register user
+        print('Failed to register user: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(tr('register_registerFailed'))));
+          SnackBar(content: Text(tr('register_errorToRegister') + '$e')),
+        );
       }
-    } catch (e) {
-      // Failed to connect to server
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(tr('register_errorConnectingServer'))));
-      print('Exception caught: $e');
     }
   }
 
@@ -147,15 +146,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  // Method to upload the image to Firebase
   Future<String> _uploadImageToFirebase(XFile? imageFile) async {
     if (imageFile == null) return '';
     String filePath = 'profile_pictures/${DateTime.now()}.png';
     try {
-      // Sube la imagen a Firebase Storage
+      // upload the image to firebase
       await firebase_storage.FirebaseStorage.instance
           .ref(filePath)
           .putFile(File(imageFile.path));
-      // Obtiene la URL de la imagen
+      // Get the image url
       String downloadURL = await firebase_storage.FirebaseStorage.instance
           .ref(filePath)
           .getDownloadURL();
@@ -311,7 +311,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your birthday';
+                      return tr('register_pleaseEnterYourBirthday');
                     }
                     try {
                       final date = DateFormat('yyyy-MM-dd').parseStrict(value);
@@ -386,7 +386,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           String pattern = r'^\+\d+\s\d+$';
                           RegExp regExp = RegExp(pattern);
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your phone number';
+                            return tr('register_pleaseEnterYourPhoneNumber');
                           } else if (!regExp.hasMatch(value)) {
                             return tr('register_invalidFormat');
                           }
