@@ -38,7 +38,7 @@ const OpenAI = require("openai");
 admin.initializeApp();
 
 const openai = new OpenAI({
-  apiKey: "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",
+  apiKey: functions.config().openai.key,
 });
 
 /**
