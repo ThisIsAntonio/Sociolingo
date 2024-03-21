@@ -8,6 +8,7 @@ import 'package:chat_app/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:chat_app/screens/topics_screen.dart';
+import 'package:chat_app/model/language_list.dart';
 
 class UserInfoPage extends StatefulWidget {
   final String userEmail;
@@ -24,6 +25,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
   int _friendCount = 0;
   List<Map<String, dynamic>> _friendsData = [];
   List<String> selectedHobbies = [];
+  List<Language> _selectedLanguages = [];
+  String _userPreferredLanguage = 'en';
 
   @override
   void initState() {
@@ -52,6 +55,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
         setState(() {
           _user = User.fromJson(data);
           imageUrl = data['imageUrl'] as String?;
+          if (docSnapshot.docs.isNotEmpty) {
+            var userDoc = docSnapshot.docs.first;
+            Map<String, dynamic> data = userDoc.data();
+            _userPreferredLanguage = data['language_preference'] ?? 'en';
+            _fetchUserLanguages(data['selectedLanguages'] ?? []);
+          }
         });
       } else {
         print('User document does not exist');
@@ -59,6 +68,37 @@ class _UserInfoPageState extends State<UserInfoPage> {
     } catch (e) {
       print('Error fetching user info from Firestore: $e');
     }
+  }
+
+  String getLanguageName(Language language, String userPreferredLanguage) {
+    switch (userPreferredLanguage) {
+      case 'en':
+        return language.nameInEnglish;
+      case 'fr':
+        return language.nameInFrench;
+      case 'es':
+        return language.nameInSpanish;
+      default:
+        return language.nameInEnglish; // Default to English
+    }
+  }
+
+  Future<void> _fetchUserLanguages(List<dynamic> languageIds) async {
+    List<Language> userLanguages = [];
+    for (String languageId in languageIds) {
+      var documentSnapshot = await FirebaseFirestore.instance
+          .collection('languages')
+          .doc(languageId)
+          .get();
+      if (documentSnapshot.exists) {
+        Language language =
+            Language.fromMap(documentSnapshot.data()!, documentSnapshot.id);
+        userLanguages.add(language);
+      }
+    }
+    setState(() {
+      _selectedLanguages = userLanguages;
+    });
   }
 
   // Function to fetch the list of friends
@@ -301,6 +341,24 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       '${_user!.phoneNumber ?? 'N/A'}'),
                   const SizedBox(height: 20), // Separator (20 pixels height)
                   Text(tr('userInfo_countryLabel') + '${_user!.country}'),
+                  const SizedBox(height: 20), // Separator (20 pixels height)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        tr('userInfo_languagesLabel'),
+                      ),
+                      Wrap(
+                        spacing: 8.0, // Espacio horizontal entre los chips
+                        children: _selectedLanguages
+                            .map((language) => Chip(
+                                  label: Text(getLanguageName(
+                                      language, _userPreferredLanguage)),
+                                ))
+                            .toList(),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 20), // Separator (20 pixels height)
                   Text(tr('userInfo_bioLabel') +
                       '${_user!.bio ?? 'Not provided'}'),

@@ -26,15 +26,24 @@
  * now, if you have problems with the code,
  * please use this to install the package
  * npm install eslint --save-dev
- *  and later execute this to check the code errors
+ * and later execute this to check the code errors
+ * inside the function folder
  * npm run lint -- --fix
  * to finaly run again the firebase deploy commands
  */
 
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const OpenAI = require("openai");
 admin.initializeApp();
 
+const openai = new OpenAI({
+  apiKey: "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",
+});
+
+/**
+ * Function to send push notification when new user is created
+ */
 exports.sendPushNotification = functions.https.onCall((data, context) => {
   // Check if the user is logged in
   if (!context.auth) {
@@ -70,3 +79,56 @@ exports.sendPushNotification = functions.https.onCall((data, context) => {
         "Failed to send push notification", error);
     });
 });
+
+// Function to translate text from one language to another
+exports.translateTextFunction = functions.https.onCall(
+  async (data, context) => {
+    if (!context.auth) {
+      // Throwing an HTTP error if the user is not authenticated.
+      throw new functions.https.HttpsError("unauthenticated",
+        "The function must be called while authenticated.");
+    }
+
+    const {text, fromLanguage, toLanguage} = data;
+    // const translatedText = `Translated from ${fromLanguage}
+    // to ${toLanguage}: ${text}`;
+    // console.log(translatedText);
+    try {
+      const translatedText = await charlie(fromLanguage, toLanguage, text);
+      // console.log("=====> Return: " + translatedText);
+      return {translatedText: translatedText};
+    } catch (error) {
+      console.error("Error during translation:", error);
+      throw new functions.https.HttpsError("unknown",
+        "Failed to translate text",
+        error);
+    }
+  });
+
+
+/**
+* Charlie when called upon will translate one language to another.
+* It is not perfect, but it is good enough for our purposes.
+* @param {string} baseLang The language of the message
+* @param {string} transLang The language the message must be translated to
+* @param {string} msg The message to be translated
+* @return {Promise<Object>} The translated message
+*/
+async function charlie(baseLang, transLang, msg) {
+  // Thought you'd love the name ;)
+  const completion = await openai.chat.completions.create({
+    messages: [{role: "system", content: "You are an expert language " +
+    "translator. You are skilled in translating " + baseLang + " to " +
+    transLang +" and correcting any grammatical errors."},
+    {"role": "user", "content": "Translate: " + msg + " From " +
+    baseLang + " to " + transLang + "."}],
+    model: "gpt-3.5-turbo",
+  });
+
+  // Returns a large nasty JSON file.
+  // This will grab only the response we want
+  const charlieAnswer = completion.choices[0].message;
+  // console.log(charlieAnswer["content"]);
+
+  return charlieAnswer["content"];
+}

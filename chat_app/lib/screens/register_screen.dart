@@ -10,6 +10,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:chat_app/screens/login_screen.dart';
 import 'package:chat_app/model/MathChallenge.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
+import 'package:chat_app/model/language_list.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -38,8 +40,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
       TextEditingController();
   final _mathChallenge = MathChallenge();
   final _mathAnswerController = TextEditingController();
+  List<Language> _selectedLanguages = [];
+  List<Language> _allLanguages =
+      []; // Deberías llenar esta lista con los idiomas disponibles
 
   bool _acceptTerms = false; // var to keep the current checkbox in false
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLanguages();
+  }
 
   // Sends data to the backend for registration
   void _register() async {
@@ -87,6 +98,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             'en', // Default language preference set to English
         'isOnline': true,
         'lastSeen': '',
+        'selectedLanguages':
+            _selectedLanguages.map((language) => language.id).toList(),
       };
 
       // Save the user data in Firebase Firestore
@@ -113,6 +126,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
       }
     }
+  }
+
+  Future<void> _loadLanguages() async {
+    final querySnapshot =
+        await FirebaseFirestore.instance.collection('languages').get();
+    _allLanguages = querySnapshot.docs
+        .map((doc) => Language.fromMap(doc.data(), doc.id))
+        .toList();
+    setState(() {});
   }
 
 // Method to handle form submission
@@ -200,7 +222,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               onPressed: () {
                 if (_mathChallenge.checkAnswer(
                     int.tryParse(_mathAnswerController.text) ?? -1)) {
-                  print('entro');
+                  //print('entro');
                   Navigator.of(context).pop(); // Close the dialog
                   // Save password from text field
                   _password = _passwordController.text;
@@ -484,6 +506,45 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: 20), // Separator (20 pixels height)
+                MultiSelectDialogField<Language>(
+                  items: _allLanguages
+                      .map((language) => MultiSelectItem<Language>(
+                          language, language.nameInEnglish))
+                      .toList(),
+                  title: Text(tr('register_labelLanguagesTitle')),
+                  buttonText: Text(
+                    tr('register_selectButton'),
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                  onConfirm: (values) {
+                    setState(() {
+                      _selectedLanguages = values;
+                    });
+                  },
+                  chipDisplay: MultiSelectChipDisplay(
+                    onTap: (value) {
+                      setState(() {
+                        _selectedLanguages.remove(value);
+                      });
+                    },
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .primaryColor, // Use the main color of the app
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  buttonIcon: Icon(
+                    Icons.language, // Icon to display in the button
+                    color: Colors.white, // Icon color
+                  ),
+                  itemsTextStyle: TextStyle(color: Colors.white),
+                  selectedItemsTextStyle: TextStyle(color: Colors.lightBlue),
+                  cancelText: Text(tr('register_cancelButton'),
+                      style: TextStyle(color: Colors.white)),
+                  confirmText: Text(tr('register_confirmButton'),
+                      style: TextStyle(color: Colors.white)),
+                ),
+                const SizedBox(height: 20), // Separator (20 pixels height)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -522,6 +583,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 20), // Separator (20 pixels height)
                 // Register Button
                 ElevatedButton(

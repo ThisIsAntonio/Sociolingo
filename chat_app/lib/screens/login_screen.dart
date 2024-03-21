@@ -398,16 +398,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     SocialButton(
                       iconPath: 'assets/img/google.png',
                       onPressed: () {
-                        // Google action
-                        signInWithGoogle(context).then((user) {
-                          if (user != null) {
-                            Navigator.of(context)
-                                .pushReplacement(MaterialPageRoute(
-                                    builder: (context) => MainScreen(
-                                          userEmail: user.email!,
-                                        )));
-                          }
-                        });
+                        //   // Google action
+                        //   signInWithGoogle(context).then((user) {
+                        //     if (user != null) {
+                        //       Navigator.of(context)
+                        //           .pushReplacement(MaterialPageRoute(
+                        //               builder: (context) => MainScreen(
+                        //                     userEmail: user.email!,
+                        //                   )));
+                        //     }
+                        //   });
+                        showComingSoonDialog();
                       },
                       size: 40.0, // Button size
                     ),

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:chat_app/screens/main_screen.dart';
+import 'package:chat_app/model/language_list.dart';
 
 class ChatWindow extends StatefulWidget {
   final String friendId;
@@ -24,6 +25,7 @@ class _ChatWindowState extends State<ChatWindow> {
   String? _friendName;
   String? _currentUserName;
   bool _isFriendOnline = false;
+  String userPreferredLanguage = 'en';
 
   @override
   void initState() {
@@ -31,6 +33,7 @@ class _ChatWindowState extends State<ChatWindow> {
     _chatId = widget.chatId;
     _fetchFriendDetails();
     _fetchCurrentUserName();
+    fetchUserPreferredLanguage();
     if (_chatId == null) {
       _checkForExistingChat();
     }
@@ -166,6 +169,7 @@ class _ChatWindowState extends State<ChatWindow> {
     }
   }
 
+  // Function to mark messages as read
   void markMessagesAsRead(String chatId) {
     _firestore
         .collection('chats')
@@ -181,6 +185,7 @@ class _ChatWindowState extends State<ChatWindow> {
     });
   }
 
+  // Function to send a push notification
   void sendPushNotification(String message, String toUserToken, String title,
       String senderName) async {
     HttpsCallable callable =
@@ -198,12 +203,59 @@ class _ChatWindowState extends State<ChatWindow> {
     }
   }
 
+  // Function to get the recipient's FCM token
   Future<String> getRecipientToken(String userId) async {
     DocumentSnapshot userSnapshot =
         await _firestore.collection('users').doc(userId).get();
     Map<String, dynamic>? userData =
         userSnapshot.data() as Map<String, dynamic>?;
     return userData?['messaging_token'] ?? '';
+  }
+
+  Future<String> translateText(
+      String text, String fromLanguage, String toLanguage) async {
+    // Call the Cloud Function to translate the text
+    HttpsCallable callable =
+        FirebaseFunctions.instance.httpsCallable('translateTextFunction');
+    try {
+      final result = await callable.call({
+        'text': text,
+        'fromLanguage': fromLanguage,
+        'toLanguage': toLanguage,
+      });
+
+      return result.data[
+          'translatedText']; // Extract the translated text from the response.
+    } on FirebaseFunctionsException catch (e) {
+      print('Error al llamar a la función de traducción: ${e.message}');
+      return text; // Return the original text if there's an error.
+    }
+  }
+
+  // Function to load languages from Firestore
+  Future<List<Language>> loadLanguagesFromFirestore() async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    QuerySnapshot querySnapshot = await firestore.collection('languages').get();
+
+    List<Language> languages = querySnapshot.docs.map((doc) {
+      return Language.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+    }).toList();
+
+    return languages;
+  }
+
+  // Function to fetch the user's preferred language
+  Future<void> fetchUserPreferredLanguage() async {
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    DocumentSnapshot userDoc =
+        await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    if (userDoc.exists) {
+      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+      setState(() {
+        userPreferredLanguage = userData['language_preference'] ??
+            'en'; // Asume 'en' como predeterminado
+      });
+    }
   }
 
   @override
@@ -272,6 +324,7 @@ class _ChatWindowState extends State<ChatWindow> {
                               messages[index].data() as Map<String, dynamic>;
                           final isMine =
                               messageData['senderId'] == _auth.currentUser!.uid;
+                          final messageText = messageData['text'];
                           return Align(
                             alignment: isMine
                                 ? Alignment.centerRight
@@ -305,21 +358,7 @@ class _ChatWindowState extends State<ChatWindow> {
                                   ),
                                   child: InkWell(
                                     onTap: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                          content: Text(
-                                              tr('chatWindow_AItranslate')),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.of(context).pop(),
-                                              child: Text(tr(
-                                                  'chatWindow_AIcloseButton')),
-                                            ),
-                                          ],
-                                        ),
-                                      );
+                                      showTranslateDialog(context, messageText);
                                     },
                                     child: Text(
                                       tr('chatWindow_translateWithAI'),
@@ -361,6 +400,202 @@ class _ChatWindowState extends State<ChatWindow> {
           ),
         ],
       ),
+    );
+  }
+
+  // Function to get the language preference of the current user
+  Future<String> getCurrentUserLanguagePreference() async {
+    String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    DocumentSnapshot currentUserDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUserId)
+        .get();
+    Map<String, dynamic> userData =
+        currentUserDoc.data() as Map<String, dynamic>;
+    return userData['language_preference'];
+  }
+
+  // Function to get the language preference of the current user
+  Future<String> getFriendLanguagePreference(String friendId) async {
+    DocumentSnapshot friendDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(friendId)
+        .get();
+    Map<String, dynamic> friendData = friendDoc.data() as Map<String, dynamic>;
+    return friendData['language_preference'];
+  }
+
+  // Function to show the translation dialog box for a given message and language code
+  void showTranslateDialog(BuildContext context, String textToTranslate) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // Asynchronously fetch the user and friend's language preferences
+        return FutureBuilder<Map<String, dynamic>>(
+          future: Future.wait([
+            getCurrentUserLanguagePreference(),
+            getFriendLanguagePreference(widget.friendId),
+          ]).then((List<String> preferences) => {
+                "currentUserLanguagePreference": preferences[0],
+                "friendLanguagePreference": preferences[1],
+              }),
+          builder: (context,
+              AsyncSnapshot<Map<String, dynamic>> preferencesSnapshot) {
+            if (!preferencesSnapshot.hasData) {
+              return AlertDialog(
+                content: CircularProgressIndicator(),
+              );
+            }
+
+            // Fetch the list of languages from Firestore
+            return FutureBuilder<List<Language>>(
+              future: loadLanguagesFromFirestore(),
+              builder: (BuildContext context,
+                  AsyncSnapshot<List<Language>> snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(child: CircularProgressIndicator());
+                }
+
+                List<Language> languages = snapshot.data!;
+                // Find the language objects based on the preferences
+                Language currentUserLanguage = languages.firstWhere(
+                  (lang) =>
+                      lang.id ==
+                      preferencesSnapshot
+                          .data!["currentUserLanguagePreference"],
+                  orElse: () => languages.first,
+                );
+                Language friendLanguage = languages.firstWhere(
+                  (lang) =>
+                      lang.id ==
+                      preferencesSnapshot.data!["friendLanguagePreference"],
+                  orElse: () => languages.first,
+                );
+
+                Language? selectedLanguageFrom = friendLanguage;
+                Language? selectedLanguageTo = currentUserLanguage;
+                String? translatedText = '';
+
+                // Auxiliary function to get the name of the language based on user preference
+                String getLanguageName(
+                    Language language, String userPreferredLanguage) {
+                  switch (userPreferredLanguage) {
+                    case 'en':
+                      return language.nameInEnglish;
+                    case 'fr':
+                      return language.nameInFrench;
+                    case 'es':
+                      return language.nameInSpanish;
+                    default:
+                      return language.nameInEnglish; // Default to English
+                  }
+                }
+
+                return StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                    return AlertDialog(
+                      title: Text(tr('chatWindow_translateTitle')),
+                      content: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Expanded(
+                                  child: DropdownButton<Language>(
+                                    isExpanded: true,
+                                    value: selectedLanguageFrom,
+                                    onChanged: (Language? newValue) {
+                                      setState(() {
+                                        selectedLanguageFrom = newValue;
+                                      });
+                                    },
+                                    items: languages
+                                        .map<DropdownMenuItem<Language>>(
+                                            (Language language) {
+                                      return DropdownMenuItem<Language>(
+                                        value: language,
+                                        child: Text(getLanguageName(
+                                            language,
+                                            preferencesSnapshot.data![
+                                                "currentUserLanguagePreference"])),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                                SizedBox(
+                                    width:
+                                        20), // Space between dropdown buttons
+                                Expanded(
+                                  child: DropdownButton<Language>(
+                                    isExpanded: true,
+                                    value: selectedLanguageTo,
+                                    onChanged: (Language? newValue) {
+                                      setState(() {
+                                        selectedLanguageTo = newValue;
+                                      });
+                                    },
+                                    items: languages
+                                        .map<DropdownMenuItem<Language>>(
+                                            (Language language) {
+                                      return DropdownMenuItem<Language>(
+                                        value: language,
+                                        child: Text(getLanguageName(
+                                            language,
+                                            preferencesSnapshot.data![
+                                                "currentUserLanguagePreference"])),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                                height: 20), // Space between dropdown and text
+                            Text(textToTranslate), // Show original text
+                            if (translatedText != null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 20),
+                                child: Text(translatedText!,
+                                    style:
+                                        TextStyle(fontStyle: FontStyle.italic)),
+                              ),
+                          ],
+                        ),
+                      ),
+                      actions: <Widget>[
+                        TextButton(
+                          child: Text(tr('chatWindow_translateButton')),
+                          onPressed: () {
+                            if (selectedLanguageFrom != null &&
+                                selectedLanguageTo != null) {
+                              translateText(
+                                      textToTranslate,
+                                      getLanguageName(selectedLanguageFrom!,
+                                          userPreferredLanguage),
+                                      getLanguageName(selectedLanguageTo!,
+                                          userPreferredLanguage))
+                                  .then((result) {
+                                setState(() => translatedText =
+                                    result); // Update text with translation
+                              });
+                            }
+                          },
+                        ),
+                        TextButton(
+                          child: Text(tr('chatWindow_cancelButton')),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 }

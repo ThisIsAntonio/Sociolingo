@@ -36,11 +36,33 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     _getAppVersion();
   }
 
+  // Get app version
   Future<void> _getAppVersion() async {
     final PackageInfo info = await PackageInfo.fromPlatform();
     setState(() {
       appVersion = "${info.version}+${info.buildNumber}";
     });
+  }
+
+  // Comming soon dialog
+  void showComingSoonDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Coming Soon"),
+          content: Text("This feature will be available soon."),
+          actions: <Widget>[
+            TextButton(
+              child: Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -89,6 +111,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   iconPath: 'assets/img/facebook.png',
                   onPressed: () {
                     // Facebook action
+                    showComingSoonDialog();
                   },
                   size: 40.0, // Button size
                 ),
@@ -96,6 +119,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   iconPath: 'assets/img/google.png',
                   onPressed: () {
                     // Google action
+                    showComingSoonDialog();
                   },
                   size: 40.0, // Button size
                 ),
@@ -103,6 +127,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   iconPath: 'assets/img/apple.png',
                   onPressed: () {
                     // Apple action
+                    showComingSoonDialog();
                   },
                   size: 40.0, // Button size
                 ),

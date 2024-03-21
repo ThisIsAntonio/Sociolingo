@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:chat_app/model/user.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:easy_localization/easy_localization.dart';
+import 'package:chat_app/model/language_list.dart';
 
 class FriendDetailsPage extends StatefulWidget {
   final String
@@ -21,6 +22,10 @@ class _FriendDetailsPageState extends State<FriendDetailsPage> {
   bool _isFriend = false;
   String? _friendshipDocId;
   List<String> _friendHobbies = [];
+  int _friendCount = 0;
+  List<Map<String, dynamic>> _friendsData = [];
+  List<Language> _selectedLanguages = [];
+  String _userPreferredLanguage = 'en';
 
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
   auth.FirebaseAuth _auth = auth.FirebaseAuth.instance;
@@ -30,6 +35,7 @@ class _FriendDetailsPageState extends State<FriendDetailsPage> {
     super.initState();
     _fetchFriendInfo();
     _checkFriendshipStatus();
+    _fetchFriends();
   }
 
   // FetchFriendInfo from Firebase Firestore and set the state with the data of the friend
@@ -46,7 +52,95 @@ class _FriendDetailsPageState extends State<FriendDetailsPage> {
         final selectedHobbiesIds =
             List<String>.from(userData['selectedHobbies'] ?? []);
         _fetchFriendHobbiesNames(selectedHobbiesIds);
+        if (userDoc.docs.isNotEmpty) {
+          var userDocs = userDoc.docs.first;
+          Map<String, dynamic> data = userDocs.data();
+          _userPreferredLanguage = data['language_preference'] ?? 'en';
+          _fetchUserLanguages(data['selectedLanguages'] ?? []);
+        }
       });
+    }
+  }
+
+  String getLanguageName(Language language, String userPreferredLanguage) {
+    switch (userPreferredLanguage) {
+      case 'en':
+        return language.nameInEnglish;
+      case 'fr':
+        return language.nameInFrench;
+      case 'es':
+        return language.nameInSpanish;
+      default:
+        return language.nameInEnglish; // Default to English
+    }
+  }
+
+  Future<void> _fetchUserLanguages(List<dynamic> languageIds) async {
+    List<Language> userLanguages = [];
+    for (String languageId in languageIds) {
+      var documentSnapshot = await FirebaseFirestore.instance
+          .collection('languages')
+          .doc(languageId)
+          .get();
+      if (documentSnapshot.exists) {
+        Language language =
+            Language.fromMap(documentSnapshot.data()!, documentSnapshot.id);
+        userLanguages.add(language);
+      }
+    }
+    setState(() {
+      _selectedLanguages = userLanguages;
+    });
+  }
+
+  // Add a new function to get the friend's user ID from their email
+  Future<String?> _getUserIdFromEmail(String email) async {
+    final usersQuerySnapshot = await _firestore
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .limit(1)
+        .get();
+
+    if (usersQuerySnapshot.docs.isNotEmpty) {
+      return usersQuerySnapshot.docs.first.id;
+    }
+    return null;
+  }
+
+  // Function to fetch the list of friends
+  Future<void> _fetchFriends() async {
+    try {
+      final friendId = await _getUserIdFromEmail(widget.email);
+      if (friendId == null) {
+        print("Friend user ID not found");
+        return;
+      }
+
+      var friendships = await _firestore
+          .collection('friendships')
+          .where('users', arrayContains: friendId)
+          .get();
+
+      List<Map<String, dynamic>> friendsData = [];
+
+      for (var doc in friendships.docs) {
+        String _friendId =
+            (doc.data()['users'] as List).firstWhere((id) => id != friendId);
+        var friendDoc =
+            await _firestore.collection('users').doc(_friendId).get();
+        if (friendDoc.exists) {
+          Map<String, dynamic> friendData = friendDoc.data()!;
+          friendData['id'] = friendDoc.id;
+          friendsData.add(friendData);
+        }
+      }
+
+      setState(() {
+        _friendsData = friendsData;
+        _friendCount = friendsData.length;
+      });
+    } catch (e) {
+      print('Error fetching friends: $e');
     }
   }
 
@@ -135,11 +229,53 @@ class _FriendDetailsPageState extends State<FriendDetailsPage> {
     });
   }
 
+  // Function to show the list of friends in a dialog box
+  void _showFriendsList(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(tr('userInfo_popUpTitle')),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: _friendsData
+                  .map((friendData) => ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: NetworkImage(friendData[
+                                  'imageUrl'] ??
+                              'https://firebasestorage.googleapis.com/v0/b/sociolingo-project.appspot.com/o/photo.jpg?alt=media&token=b370db11-d8de-495d-93da-e7b10aabd841'),
+                        ),
+                        title: Text(
+                            '${friendData['first_name']} ${friendData['last_name']}'),
+                        onTap: () {
+                          Navigator.of(context).pop(); // Close the dialog
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => FriendDetailsPage(
+                                      email: friendData[
+                                          'email']))); // Go to FriendDetailsPage
+                        },
+                      ))
+                  .toList(),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(tr('userInfo_closeButton')),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(tr('friendDetails_text1')),
+        title: Text(tr('friendInfo_text1')),
       ),
       body: _friend == null
           ? Center(child: CircularProgressIndicator())
@@ -166,6 +302,12 @@ class _FriendDetailsPageState extends State<FriendDetailsPage> {
                                 style: TextStyle(
                                     fontSize: 24, fontWeight: FontWeight.bold)),
                             SizedBox(height: 20),
+                            SizedBox(width: 20),
+                            GestureDetector(
+                              onTap: () => _showFriendsList(context),
+                              child: Text(
+                                  tr('userInfo_friends') + ': $_friendCount'),
+                            ),
                             _isFriend
                                 ? IconButton(
                                     icon: Icon(Icons.delete_forever),
@@ -180,21 +322,41 @@ class _FriendDetailsPageState extends State<FriendDetailsPage> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 20),
-                  Text('Email: ${_friend!.email}'),
-                  SizedBox(height: 20),
-                  Text('Phone: ${_friend!.phoneNumber ?? 'N/A'}'),
-                  SizedBox(height: 20),
-                  Text('Country: ${_friend!.country}'),
-                  SizedBox(height: 20),
-                  Text('Bio: ${_friend!.bio ?? 'N/A'}'),
-                  SizedBox(height: 20),
-                  Text(
-                      'Birthday: ${_friend!.birthday != null ? DateFormat('yyyy-MM-dd').format(_friend!.birthday!) : 'N/A'}'),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        tr('friendInfo_languagesLabel'),
+                      ),
+                      Wrap(
+                        spacing: 8.0, // Espacio horizontal entre los chips
+                        children: _selectedLanguages
+                            .map((language) => Chip(
+                                  label: Text(getLanguageName(
+                                      language, _userPreferredLanguage)),
+                                ))
+                            .toList(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20), // Separator (20 pixels height)
+                  Text(tr('friendInfo_emailLabel') + ' ${_friend!.email}'),
+                  const SizedBox(height: 20),
+                  Text(tr('friendInfo_phoneLabel') +
+                      '${_friend!.phoneNumber ?? 'N/A'}'),
+                  const SizedBox(height: 20),
+                  Text(tr('friendInfo_countryLabel') + '${_friend!.country}'),
+                  const SizedBox(height: 20),
+                  Text(tr('friendInfo_bioLabel') + '${_friend!.bio ?? 'N/A'}'),
+                  const SizedBox(height: 20),
+                  Text(tr('friendInfo_birthdayLabel') +
+                      '${_friend!.birthday != null ? DateFormat('yyyy-MM-dd').format(_friend!.birthday!) : 'N/A'}'),
+                  const SizedBox(height: 20),
                   Text(
                     _friendHobbies.isNotEmpty
-                        ? 'Hobbies: ${_friendHobbies.join(', ')}'
+                        ? tr('friendInfo_hobbiesLabel') +
+                            '${_friendHobbies.join(', ')}'
                         : tr('userInfo_noHobbies'),
                     style: TextStyle(fontSize: 14),
                   ),

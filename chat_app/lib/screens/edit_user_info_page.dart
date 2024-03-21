@@ -9,6 +9,8 @@ import 'dart:io';
 import 'package:country_picker/country_picker.dart';
 import 'package:chat_app/model/user.dart';
 import 'package:chat_app/screens/main_screen.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
+import 'package:chat_app/model/language_list.dart';
 
 class EditUserInfoPage extends StatefulWidget {
   // Properties for receiving user data and email
@@ -50,10 +52,14 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
   // ImagePicker instance for picking images
   final ImagePicker _picker = ImagePicker();
 
+  List<Language> _selectedLanguages = [];
+  List<Language> _allLanguages = [];
+
   @override
   void initState() {
     // Call the initState method of the superclass
     super.initState();
+    _loadLanguages();
 
     // Initialize text editing controllers and other variables
     _firstNameController = TextEditingController(text: widget.user?.firstName);
@@ -109,6 +115,15 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
     }
   }
 
+  Future<void> _loadLanguages() async {
+    final querySnapshot =
+        await FirebaseFirestore.instance.collection('languages').get();
+    _allLanguages = querySnapshot.docs
+        .map((doc) => Language.fromMap(doc.data(), doc.id))
+        .toList();
+    setState(() {});
+  }
+
   // Method to update user information
   Future<void> _updateUserInfo([String? imageUrl]) async {
     if (_formKey.currentState!.validate()) {
@@ -128,6 +143,9 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
             'birthday': _birthday != null
                 ? DateFormat('yyyy-MM-dd').format(_birthday!)
                 : null,
+          if ('selectedLanguages' != widget.user?.selectedLanguages)
+            'selectedLanguages':
+                _selectedLanguages.map((lang) => lang.id).toList(),
           if (_country != widget.user?.country) 'country': _country,
           if (imageUrl != null) 'imageUrl': imageUrl,
         };
@@ -360,6 +378,45 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                     child: Text(_imageFile != null
                         ? tr('editUserInfo_changeImage')
                         : tr('editUserInfo_pickImage'))),
+                const SizedBox(height: 20), // Separator (20 pixels height)
+                MultiSelectDialogField<Language>(
+                  items: _allLanguages
+                      .map((language) => MultiSelectItem<Language>(
+                          language, language.nameInEnglish))
+                      .toList(),
+                  title: Text(tr('register_labelLanguagesTitle')),
+                  buttonText: Text(
+                    tr('register_selectButton'),
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                  onConfirm: (values) {
+                    setState(() {
+                      _selectedLanguages = values;
+                    });
+                  },
+                  chipDisplay: MultiSelectChipDisplay(
+                    onTap: (value) {
+                      setState(() {
+                        _selectedLanguages.remove(value);
+                      });
+                    },
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .primaryColor, // Use the main color of the app
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  buttonIcon: Icon(
+                    Icons.language, // Icon to display in the button
+                    color: Colors.white, // Icon color
+                  ),
+                  itemsTextStyle: TextStyle(color: Colors.white),
+                  selectedItemsTextStyle: TextStyle(color: Colors.lightBlue),
+                  cancelText: Text(tr('editUserInfo_buttonCancel'),
+                      style: TextStyle(color: Colors.white)),
+                  confirmText: Text(tr('editUserInfo_confirmButton'),
+                      style: TextStyle(color: Colors.white)),
+                ),
                 const SizedBox(height: 20), // Separator (20 pixels height)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

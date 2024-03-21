@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:chat_app/screens/hobbies_page.dart';
 
 // Topics Page
 class TopicsPage extends StatefulWidget {
@@ -12,6 +13,7 @@ class TopicsPage extends StatefulWidget {
 
 class _TopicsPageState extends State<TopicsPage> {
   String collectionName = 'topics_en'; // Default Collection name
+  String prefix = "en";
 
   @override
   void initState() {
@@ -31,13 +33,19 @@ class _TopicsPageState extends State<TopicsPage> {
       // Create the collection name based on the language preference
       setState(() {
         collectionName = 'topics_$languagePreference';
+        prefix = languagePreference;
       });
     }
   }
 
   // Function to generate random colors
   Color generateRandomColor() {
-    return Color((Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(1.0);
+    return Color.fromRGBO(
+      128 + Random().nextInt(128), // R
+      128 + Random().nextInt(128), // G
+      128 + Random().nextInt(128), // B
+      1, // Opacity
+    );
   }
 
   @override
@@ -67,24 +75,37 @@ class _TopicsPageState extends State<TopicsPage> {
             ),
             itemCount: topics.length,
             itemBuilder: (context, index) {
+              String topicId = topics[index].id;
               String topicName = topics[index]['name'];
 
-              return Card(
-                color: generateRandomColor(), // Random color for each card
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      topicName,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+              return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HobbiesPage(
+                          topicId: topicId,
+                          collectionPrefix: prefix,
+                        ),
                       ),
-                      textAlign: TextAlign.center,
+                    );
+                  },
+                  child: Card(
+                    color: generateRandomColor(), // Random color for each card
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          topicName,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              );
+                  ));
             },
           );
         },

@@ -16,7 +16,7 @@ class SettingsPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        leading: Container(), // Para ocultar el botón de retroceso.
+        leading: Container(), // To remove the back button
         title: Text(
           tr('settings_title'),
           textAlign: TextAlign.center,
@@ -90,9 +90,9 @@ class SettingsPage extends StatelessWidget {
           content: SingleChildScrollView(
             child: ListBody(
               children: <Locale>[
-                Locale('en', ''),
-                Locale('es', ''),
-                Locale('fr', ''),
+                Locale('en'),
+                Locale('es'),
+                Locale('fr'),
               ]
                   .map((locale) => ListTile(
                         title: Text(_localeName(locale)),

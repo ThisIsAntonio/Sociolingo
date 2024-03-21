@@ -1,3 +1,5 @@
 {
-    "java.configuration.updateBuildConfiguration": "automatic"
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "cmake.sourceDirectory": "D:/AC/Level5/Project1/chat_app/linux",
+    "vim.disableExtension": true
 }

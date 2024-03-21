@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
-import 'package:easy_localization/easy_localization.dart ';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:chat_app/screens/welcome_screen.dart';
 import 'package:chat_app/screens/main_screen.dart';
 import 'package:chat_app/model/theme_provider.dart';
@@ -12,6 +12,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 //import 'package:chat_app/model/topics_info.dart';
 //import 'package:chat_app/model/user_test.dart';
+//import 'package:chat_app/model/language_list.dart';
 
 // A stream controller for handling language changes.
 final StreamController<void> languageChangeStreamController =
@@ -26,7 +27,25 @@ void main() async {
   await EasyLocalization.ensureInitialized();
 
   // Initialize Firebase.
-  await Firebase.initializeApp();
+  // await Firebase.initializeApp();
+
+  if (kIsWeb) {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+          apiKey: "AIzaSyDb6GMwxxnc4O8Rh7Lw3TCG8jYCm1lui60",
+          authDomain: "sociolingo-project.firebaseapp.com",
+          projectId: "sociolingo-project",
+          storageBucket: "sociolingo-project.appspot.com",
+          messagingSenderId: "1065841467151",
+          appId: "1:1065841467151:web:df66b762cde6a6ff0b687a",
+          databaseURL:
+              "https://sociolingo-project-default-rtdb.firebaseio.com/", // Replace with your Firebase Realtime Database URL
+          measurementId: "G-D6SLD741Y9"),
+    );
+  } else {
+    await Firebase.initializeApp();
+  }
+
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   // Activate Firebase App Check.
   if (defaultTargetPlatform == TargetPlatform.android) {
@@ -41,17 +60,18 @@ void main() async {
   // });
   // Loading user info into the DBA (only for testing)
   // UserSeeder userSeeder = UserSeeder();
-  // userSeeder.seedUsers(10);
-
+  // userSeeder.seedUsers(90);
+  // Loading languages into the DBA (only one time or each time that the info is updated)
+  //await uploadLanguages();
   // Run the application with EasyLocalization widget as the root.
   runApp(
     EasyLocalization(
       // Define the supported locales for the app.
-      supportedLocales: [Locale('en', ''), Locale('es', ''), Locale('fr', '')],
+      supportedLocales: [Locale('en'), Locale('es'), Locale('fr')],
       // Specify the path where localization files are located.
       path: 'assets/languages',
       // Define the fallback locale in case the device locale is not supported.
-      fallbackLocale: Locale('en', ''),
+      fallbackLocale: Locale('en'),
       // Specify whether to use fallback translations if the translation for the current locale is missing.
       useFallbackTranslations: true,
       // Child widget of EasyLocalization is the root of the app.
