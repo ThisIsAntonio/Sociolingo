@@ -43,7 +43,9 @@ void main() async {
           measurementId: "G-D6SLD741Y9"),
     );
   } else {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp()
+        .catchError((e) => print('Error inicializando Firebase: $e'));
+    ;
   }
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
