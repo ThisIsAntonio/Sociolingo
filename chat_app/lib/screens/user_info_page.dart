@@ -1,3 +1,4 @@
+//import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
@@ -9,6 +10,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:chat_app/screens/topics_screen.dart';
 import 'package:chat_app/model/language_list.dart';
+//import 'package:flutter/rendering.dart';
+//import 'package:flutter/widgets.dart';
 
 class UserInfoPage extends StatefulWidget {
   final String userEmail;
@@ -246,162 +249,252 @@ class _UserInfoPageState extends State<UserInfoPage> {
     }
   }
 
-  Widget _userImageWidget() {
+  Widget _userImageWidget(double imageSize) {
     if (imageUrl != null) {
       return Image.network(
         imageUrl!,
-        width: 100,
-        height: 100,
+        width: imageSize,
+        height: imageSize,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
           // Option to handle errors, such as showing a default image
-          return _defaultUserImageWidget();
+          return _defaultUserImageWidget(imageSize);
         },
       );
     } else {
       // If there is no image URL, show a default image
-      return _defaultUserImageWidget();
+      return _defaultUserImageWidget(imageSize);
     }
   }
 
-  Widget _defaultUserImageWidget() {
+  Widget _defaultUserImageWidget(double imageSize) {
     // Method to display a default image
     return Image.asset(
       'assets/img/photo.jpg',
-      width: 100,
-      height: 100,
+      width: imageSize,
+      height: imageSize,
       fit: BoxFit.cover,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    // Def max and min width for buttons
+    const double maxButtonWidth = 400; // Max width for buttons
+    // Calculate sizes based on screen width
+    double titleSize = screenWidth > 600 ? 28 : 24;
+    double buttonWidth =
+        screenWidth > 600 ? screenWidth * 0.6 : screenWidth * 0.95;
+    double columnWidth =
+        screenWidth > 600 ? screenWidth * 0.5 : screenWidth * 0.90;
+    buttonWidth = buttonWidth > maxButtonWidth ? maxButtonWidth : buttonWidth;
+    double padding = screenWidth > 600 ? 30.0 : 16.0;
+    double fontSize = screenWidth > 600 ? 18 : 16;
+    double imageSize = screenWidth > 600 ? 150 : 100;
+
     return Scaffold(
       appBar: AppBar(
         leading: Container(), // To hide the back button.
-        title: Column(
-          mainAxisSize:
-              MainAxisSize.max, // To occupy the minimum space necessary.
-          mainAxisAlignment:
-              MainAxisAlignment.center, // Center vertically on the AppBar.
-          crossAxisAlignment: CrossAxisAlignment
-              .stretch, // Stretch the children along the crossed axis.
-          children: [
-            Text(
-              tr('userInfo_title'),
-              textAlign: TextAlign.start, // Center the text.
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+        title: Text(
+          tr('userInfo_title'),
+          textAlign: TextAlign.start, // Center the text.
+          style: TextStyle(
+            fontSize: titleSize,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true, // Ensures the title is centered in the AppBar.
       ),
-      body: _user == null
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Divider(
-                    color: Colors.white70, // Line color.
-                    thickness: 2, // Line thickness.
-                  ),
-                  const SizedBox(height: 20), // Separator (20 pixel height)
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _userImageWidget(),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('${_user!.firstName} ${_user!.lastName}',
-                                style: const TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.bold)),
-                            const SizedBox(height: 8),
-                            GestureDetector(
-                              onTap: () => _showFriendsList(context),
-                              child: Text(
-                                  tr('userInfo_friends') + ': $_friendCount'),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.all(padding),
+          child: _user == null
+              ? const Center(child: CircularProgressIndicator())
+              : Padding(
+                  padding: EdgeInsets.all(padding),
+                  child: Center(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: <Widget>[
+                          Divider(
+                            color: Colors.white70, // Line color.
+                            thickness: 2, // Line thickness.
+                          ),
+                          const SizedBox(
+                              height: 20), // Separator (20 pixel height)
+                          Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  constraints: BoxConstraints(
+                                    maxWidth:
+                                        200, // Max of the size that the image can take
+                                  ),
+                                  child: Column(children: [
+                                    _userImageWidget(imageSize),
+                                  ]),
+                                ),
+                                const SizedBox(width: 50),
+                                Column(
+                                  children: [
+                                    Text(
+                                        '${_user!.firstName} ${_user!.lastName}',
+                                        style: TextStyle(
+                                            fontSize: fontSize,
+                                            fontWeight: FontWeight.bold)),
+                                    const SizedBox(height: 8),
+                                    GestureDetector(
+                                      onTap: () => _showFriendsList(context),
+                                      child: Text(
+                                          tr('userInfo_friends') +
+                                              ': $_friendCount',
+                                          style: TextStyle(fontSize: fontSize)),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(
+                              height: 40), // Separator (40 pixels height)
+                          Center(
+                            child: Container(
+                              width: columnWidth,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                      tr('userInfo_emailLabel') +
+                                          '${_user!.email}',
+                                      style: TextStyle(fontSize: fontSize)),
+                                  const SizedBox(
+                                      height:
+                                          20), // Separator (20 pixels height)
+                                  Text(
+                                      tr('userInfo_phoneLabel') +
+                                          '${_user!.phoneNumber ?? 'N/A'}',
+                                      style: TextStyle(fontSize: fontSize)),
+                                  const SizedBox(
+                                      height:
+                                          20), // Separator (20 pixels height)
+                                  Text(
+                                      tr('userInfo_countryLabel') +
+                                          '${_user!.country}',
+                                      style: TextStyle(fontSize: fontSize)),
+                                  const SizedBox(
+                                      height:
+                                          20), // Separator (20 pixels height)
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        tr('userInfo_languagesLabel'),
+                                        style: TextStyle(fontSize: fontSize),
+                                      ),
+                                      Wrap(
+                                        spacing:
+                                            8.0, // Espacio horizontal entre los chips
+                                        children: _selectedLanguages
+                                            .map((language) => Chip(
+                                                  label: Text(getLanguageName(
+                                                      language,
+                                                      _userPreferredLanguage)),
+                                                ))
+                                            .toList(),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                      height:
+                                          20), // Separator (20 pixels height)
+                                  Text(
+                                      tr('userInfo_bioLabel') +
+                                          '${_user!.bio ?? 'Not provided'}',
+                                      style: TextStyle(fontSize: fontSize)),
+                                  const SizedBox(
+                                      height:
+                                          20), // Separator (20 pixels height)
+                                  Text(
+                                      tr('userInfo_birthdayLabel') +
+                                          '${_user!.birthday != null ? DateFormat('yyyy-MM-dd').format(_user!.birthday!) : 'N/A'}',
+                                      style: TextStyle(fontSize: fontSize)),
+                                  const SizedBox(
+                                      height:
+                                          20), // Separator (20 pixels height)
+                                  Text(
+                                    selectedHobbies.isNotEmpty
+                                        ? 'Hobbies: ${selectedHobbies.join(', ')}'
+                                        : tr('userInfo_noHobbies'),
+                                    style: TextStyle(fontSize: fontSize),
+                                  ),
+                                  const SizedBox(
+                                      height:
+                                          20), // Separator (20 pixels height)
+                                  ConstrainedBox(
+                                    constraints: BoxConstraints(maxWidth: 600),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Container(
+                                            width: buttonWidth,
+                                            child: ElevatedButton(
+                                              onPressed:
+                                                  _navigateToTopicsScreen,
+                                              child: Text(
+                                                  tr(
+                                                      'userInfo_buttonUpdateTopics'),
+                                                  style: TextStyle(
+                                                      fontSize: fontSize)),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          width: 10,
+                                        ),
+                                        Expanded(
+                                          child: Container(
+                                            width: buttonWidth,
+                                            child: ElevatedButton(
+                                              onPressed: () =>
+                                                  Navigator.pushReplacement(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (_) =>
+                                                              EditUserInfoPage(
+                                                                  user: _user,
+                                                                  userEmail: widget
+                                                                      .userEmail)))
+                                                    ..then((value) {
+                                                      // Optional: Reload user information when returning from editing page
+                                                      _fetchUserInfo(
+                                                          widget.userEmail);
+                                                    }),
+                                              child: Text(
+                                                  tr(
+                                                      'userInfo_buttonEditProfile'),
+                                                  style: TextStyle(
+                                                      fontSize: fontSize)),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 40), // Separator (40 pixels height)
-                  Text(tr('userInfo_emailLabel') + '${_user!.email}'),
-                  const SizedBox(height: 20), // Separator (20 pixels height)
-                  Text(tr('userInfo_phoneLabel') +
-                      '${_user!.phoneNumber ?? 'N/A'}'),
-                  const SizedBox(height: 20), // Separator (20 pixels height)
-                  Text(tr('userInfo_countryLabel') + '${_user!.country}'),
-                  const SizedBox(height: 20), // Separator (20 pixels height)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        tr('userInfo_languagesLabel'),
-                      ),
-                      Wrap(
-                        spacing: 8.0, // Espacio horizontal entre los chips
-                        children: _selectedLanguages
-                            .map((language) => Chip(
-                                  label: Text(getLanguageName(
-                                      language, _userPreferredLanguage)),
-                                ))
-                            .toList(),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20), // Separator (20 pixels height)
-                  Text(tr('userInfo_bioLabel') +
-                      '${_user!.bio ?? 'Not provided'}'),
-                  const SizedBox(height: 20), // Separator (20 pixels height)
-                  Text(tr('userInfo_birthdayLabel') +
-                      '${_user!.birthday != null ? DateFormat('yyyy-MM-dd').format(_user!.birthday!) : 'N/A'}'),
-                  const SizedBox(height: 20), // Separator (20 pixels height)
-                  Text(
-                    selectedHobbies.isNotEmpty
-                        ? 'Hobbies: ${selectedHobbies.join(', ')}'
-                        : tr('userInfo_noHobbies'),
-                    style: TextStyle(fontSize: 14),
-                  ),
-                  const SizedBox(height: 20), // Separator (20 pixels height)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: _navigateToTopicsScreen,
-                          child: Text(tr('userInfo_buttonUpdateTopics')),
-                        ),
-                      ),
-                      const SizedBox(width: 8), // Space between the buttons
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => EditUserInfoPage(
-                                      user: _user,
-                                      userEmail: widget.userEmail)))
-                            ..then((value) {
-                              // Optional: Reload user information when returning from editing page
-                              _fetchUserInfo(widget.userEmail);
-                            }),
-                          child: Text(tr('userInfo_buttonEditProfile')),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+                ),
+        ),
+      ),
     );
   }
 }

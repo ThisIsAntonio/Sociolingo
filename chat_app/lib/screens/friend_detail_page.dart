@@ -273,94 +273,144 @@ class _FriendDetailsPageState extends State<FriendDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    // Calculate sizes based on screen width
+    double titleSize = screenWidth > 600 ? 28 : 24;
+    double columnWidth =
+        screenWidth > 600 ? screenWidth * 0.5 : screenWidth * 0.90;
+    double padding = screenWidth > 600 ? 30.0 : 16.0;
+    double fontSize = screenWidth > 600 ? 18 : 16;
+    double imageSize = screenWidth > 600 ? 100 : 50;
     return Scaffold(
       appBar: AppBar(
-        title: Text(tr('friendInfo_text1')),
+        title: Text(
+          tr('friendInfo_text1'),
+          style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.bold),
+        ),
       ),
       body: _friend == null
           ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundImage: imageUrl != null
-                            ? NetworkImage(imageUrl!)
-                            : AssetImage('assets/img/photo.jpg')
-                                as ImageProvider,
-                      ),
-                      SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+          : Padding(
+              padding: EdgeInsets.all(padding),
+              child: Center(
+                child: Container(
+                  width: columnWidth,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      //crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('${_friend!.firstName} ${_friend!.lastName}',
-                                style: TextStyle(
-                                    fontSize: 24, fontWeight: FontWeight.bold)),
-                            SizedBox(height: 20),
-                            SizedBox(width: 20),
-                            GestureDetector(
-                              onTap: () => _showFriendsList(context),
-                              child: Text(
-                                  tr('userInfo_friends') + ': $_friendCount'),
+                            CircleAvatar(
+                              radius: imageSize,
+                              backgroundImage: imageUrl != null
+                                  ? NetworkImage(imageUrl!)
+                                  : AssetImage('assets/img/photo.jpg')
+                                      as ImageProvider,
                             ),
-                            _isFriend
-                                ? IconButton(
-                                    icon: Icon(Icons.delete_forever),
-                                    onPressed: _toggleFriendship,
-                                  )
-                                : IconButton(
-                                    icon: Icon(Icons.person_add),
-                                    onPressed: _toggleFriendship,
+                            SizedBox(width: 20),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${_friend!.firstName} ${_friend!.lastName}',
+                                  style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 8),
+                                GestureDetector(
+                                  onTap: () => _showFriendsList(context),
+                                  child: Text(
+                                    tr('userInfo_friends') + ': $_friendCount',
+                                    style: TextStyle(fontSize: fontSize),
                                   ),
+                                ),
+                                SizedBox(height: 8),
+                                _isFriend
+                                    ? IconButton(
+                                        icon: Icon(Icons.delete_forever),
+                                        onPressed: _toggleFriendship,
+                                      )
+                                    : IconButton(
+                                        icon: Icon(Icons.person_add),
+                                        onPressed: _toggleFriendship,
+                                      ),
+                              ],
+                            ),
                           ],
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 20),
+                        Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    tr('friendInfo_languagesLabel'),
+                                    style: TextStyle(fontSize: fontSize),
+                                  ),
+                                  Wrap(
+                                    spacing:
+                                        8.0, // Horizontal space between chips
+                                    children: _selectedLanguages
+                                        .map((language) => Chip(
+                                              label: Text(getLanguageName(
+                                                  language,
+                                                  _userPreferredLanguage)),
+                                            ))
+                                        .toList(),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(
+                                  height: 20), // Separator (20 pixels height)
+                              Text(
+                                  tr('friendInfo_emailLabel') +
+                                      ' ${_friend!.email}',
+                                  style: TextStyle(fontSize: fontSize)),
+                              const SizedBox(height: 20),
+                              Text(
+                                  tr('friendInfo_phoneLabel') +
+                                      '${_friend!.phoneNumber ?? 'N/A'}',
+                                  style: TextStyle(fontSize: fontSize)),
+                              const SizedBox(height: 20),
+                              Text(
+                                  tr('friendInfo_countryLabel') +
+                                      '${_friend!.country}',
+                                  style: TextStyle(fontSize: fontSize)),
+                              const SizedBox(height: 20),
+                              Container(
+                                width: double.infinity,
+                                child: Text(
+                                    tr('friendInfo_bioLabel') +
+                                        '${_friend!.bio ?? 'N/A'}',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: fontSize)),
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                  tr('friendInfo_birthdayLabel') +
+                                      '${_friend!.birthday != null ? DateFormat('yyyy-MM-dd').format(_friend!.birthday!) : 'N/A'}',
+                                  style: TextStyle(fontSize: fontSize)),
+                              const SizedBox(height: 20),
+                              Text(
+                                  _friendHobbies.isNotEmpty
+                                      ? tr('friendInfo_hobbiesLabel') +
+                                          '${_friendHobbies.join(', ')}'
+                                      : tr('userInfo_noHobbies'),
+                                  style: TextStyle(fontSize: fontSize)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        tr('friendInfo_languagesLabel'),
-                      ),
-                      Wrap(
-                        spacing: 8.0, // Espacio horizontal entre los chips
-                        children: _selectedLanguages
-                            .map((language) => Chip(
-                                  label: Text(getLanguageName(
-                                      language, _userPreferredLanguage)),
-                                ))
-                            .toList(),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20), // Separator (20 pixels height)
-                  Text(tr('friendInfo_emailLabel') + ' ${_friend!.email}'),
-                  const SizedBox(height: 20),
-                  Text(tr('friendInfo_phoneLabel') +
-                      '${_friend!.phoneNumber ?? 'N/A'}'),
-                  const SizedBox(height: 20),
-                  Text(tr('friendInfo_countryLabel') + '${_friend!.country}'),
-                  const SizedBox(height: 20),
-                  Text(tr('friendInfo_bioLabel') + '${_friend!.bio ?? 'N/A'}'),
-                  const SizedBox(height: 20),
-                  Text(tr('friendInfo_birthdayLabel') +
-                      '${_friend!.birthday != null ? DateFormat('yyyy-MM-dd').format(_friend!.birthday!) : 'N/A'}'),
-                  const SizedBox(height: 20),
-                  Text(
-                    _friendHobbies.isNotEmpty
-                        ? tr('friendInfo_hobbiesLabel') +
-                            '${_friendHobbies.join(', ')}'
-                        : tr('userInfo_noHobbies'),
-                    style: TextStyle(fontSize: 14),
-                  ),
-                ],
+                ),
               ),
             ),
     );

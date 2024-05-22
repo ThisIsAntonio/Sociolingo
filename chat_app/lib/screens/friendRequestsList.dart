@@ -52,51 +52,67 @@ class FriendRequestsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    // Calculate sizes based on screen width
+    double fontSize = screenWidth > 600 ? 18 : 16;
+    double columnWidth =
+        screenWidth > 600 ? screenWidth * 0.5 : screenWidth * 0.90;
+
     return StreamBuilder<QuerySnapshot>(
       stream: getPendingFriendRequests(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           var requests = snapshot.data!.docs;
-          return ListView.builder(
-            itemCount: requests.length,
-            itemBuilder: (context, index) {
-              var request = requests[index];
-              return FutureBuilder<Map<String, dynamic>?>(
-                future: getUserDetails(request['from']),
-                builder: (context, userSnapshot) {
-                  if (userSnapshot.connectionState == ConnectionState.done &&
-                      userSnapshot.data != null) {
-                    var userData = userSnapshot.data!;
-                    return ListTile(
-                      leading: userData['imageUrl'] != null
-                          ? CircleAvatar(
-                              backgroundImage:
-                                  NetworkImage(userData['imageUrl']),
-                            )
-                          : CircleAvatar(child: Icon(Icons.person)),
-                      title: Text(
-                          '${userData['first_name']} ${userData['last_name']}'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.check),
-                            onPressed: () =>
-                                respondToFriendRequest(request.id, true),
+          return Center(
+            child: SizedBox(
+              width: columnWidth,
+              child: ListView.builder(
+                itemCount: requests.length,
+                itemBuilder: (context, index) {
+                  var request = requests[index];
+                  return FutureBuilder<Map<String, dynamic>?>(
+                    future: getUserDetails(request['from']),
+                    builder: (context, userSnapshot) {
+                      if (userSnapshot.connectionState ==
+                              ConnectionState.done &&
+                          userSnapshot.data != null) {
+                        var userData = userSnapshot.data!;
+                        return ListTile(
+                          leading: userData['imageUrl'] != null
+                              ? CircleAvatar(
+                                  backgroundImage:
+                                      NetworkImage(userData['imageUrl']),
+                                )
+                              : CircleAvatar(child: Icon(Icons.person)),
+                          title: Text(
+                            '${userData['first_name']} ${userData['last_name']}',
+                            style: TextStyle(
+                              fontSize: fontSize,
+                            ),
                           ),
-                          IconButton(
-                            icon: Icon(Icons.close),
-                            onPressed: () =>
-                                respondToFriendRequest(request.id, false),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.check),
+                                onPressed: () =>
+                                    respondToFriendRequest(request.id, true),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.close),
+                                onPressed: () =>
+                                    respondToFriendRequest(request.id, false),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    );
-                  }
-                  return CircularProgressIndicator();
+                        );
+                      }
+                      return CircularProgressIndicator();
+                    },
+                  );
                 },
-              );
-            },
+              ),
+            ),
           );
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');

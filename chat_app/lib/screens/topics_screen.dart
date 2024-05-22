@@ -117,64 +117,102 @@ class _TopicsScreenState extends State<TopicsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    // Calculate sizes based on screen width
+    double padding = screenWidth > 600 ? 30.0 : 16.0;
+    double maxWidth =
+        screenWidth > 600 ? screenWidth * 0.6 : screenWidth * 0.95;
+    double titleSize = screenWidth > 600 ? 28 : 24;
+    double fontSize = screenWidth > 600 ? 18 : 16;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(tr('topicScreen_title')),
+        title: Text(
+          tr('topicScreen_title'),
+          style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.bold),
+        ),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection(topicsTable).snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData)
-            return Center(child: CircularProgressIndicator());
+      body: Padding(
+        padding: EdgeInsets.all(padding),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxWidth),
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection(topicsTable)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData)
+                  return Center(child: CircularProgressIndicator());
 
-          return ListView(
-            children: snapshot.data!.docs.map((DocumentSnapshot document) {
-              Map<String, dynamic> data =
-                  document.data() as Map<String, dynamic>;
-              String topicName =
-                  data['name'] ?? 'No name'; // the name of the topic is the id
+                return ListView(
+                  children:
+                      snapshot.data!.docs.map((DocumentSnapshot document) {
+                    Map<String, dynamic> data =
+                        document.data() as Map<String, dynamic>;
+                    String topicName = data['name'] ??
+                        'No name'; // the name of the topic is the id
 
-              // now, create a new StreamBuilder for each topic to get its data
-              return StreamBuilder<QuerySnapshot>(
-                stream: document.reference.collection('hobbies').snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData)
-                    return ListTile(title: Text(topicName));
+                    // now, create a new StreamBuilder for each topic to get its data
+                    return StreamBuilder<QuerySnapshot>(
+                      stream:
+                          document.reference.collection('hobbies').snapshots(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData)
+                          return ListTile(
+                              title: Text(
+                            topicName,
+                            style: TextStyle(
+                              fontSize: fontSize,
+                            ),
+                          ));
 
-                  List<Map<String, dynamic>> hobbies = snapshot.data!.docs
-                      .map((doc) => {'id': doc.id, 'name': doc['name']})
-                      .toList();
+                        List<Map<String, dynamic>> hobbies = snapshot.data!.docs
+                            .map((doc) => {'id': doc.id, 'name': doc['name']})
+                            .toList();
 
-                  return ExpansionTile(
-                    title: Text(topicName),
-                    children: hobbies.map<Widget>((hobby) {
-                      // Usa el ID del hobby para manejar la selección
-                      bool isSelected = selectedHobbies.contains(hobby['id']);
-                      return ListTile(
-                        title: Text(hobby['name']),
-                        onTap: () {
-                          setState(() {
-                            if (isSelected) {
-                              selectedHobbies.remove(hobby['id']);
-                            } else {
-                              selectedHobbies.add(hobby['id']);
-                            }
-                          });
-                        },
-                        trailing: Icon(
-                          isSelected
-                              ? Icons.check_circle
-                              : Icons.check_circle_outline,
-                          color: isSelected ? Colors.green : null,
-                        ),
-                      );
-                    }).toList(),
-                  );
-                },
-              );
-            }).toList(),
-          );
-        },
+                        return ExpansionTile(
+                          title: Text(
+                            topicName,
+                            style: TextStyle(
+                              fontSize: fontSize,
+                            ),
+                          ),
+                          children: hobbies.map<Widget>((hobby) {
+                            // Use the ID of the hobby to work the selecction
+                            bool isSelected =
+                                selectedHobbies.contains(hobby['id']);
+                            return ListTile(
+                              title: Text(
+                                hobby['name'],
+                                style: TextStyle(fontSize: fontSize),
+                              ),
+                              onTap: () {
+                                setState(() {
+                                  if (isSelected) {
+                                    selectedHobbies.remove(hobby['id']);
+                                  } else {
+                                    selectedHobbies.add(hobby['id']);
+                                  }
+                                });
+                              },
+                              trailing: Icon(
+                                isSelected
+                                    ? Icons.check_circle
+                                    : Icons.check_circle_outline,
+                                color: isSelected ? Colors.green : null,
+                              ),
+                            );
+                          }).toList(),
+                        );
+                      },
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _saveHobbies,

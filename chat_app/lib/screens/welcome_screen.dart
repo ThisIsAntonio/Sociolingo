@@ -67,9 +67,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    // Calculate sizes based on screen width
+    double titleSize = screenWidth > 600 ? 28 : 24;
+    double subtitleSize = screenWidth > 600 ? 18 : 14;
+    double padding = screenWidth > 600 ? 30.0 : 16.0;
+    double buttonWidth =
+        screenWidth > 600 ? screenWidth * 0.4 : screenWidth * 0.85;
+
     return Scaffold(
       body: Container(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(padding),
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFF4A148C), Color(0xFF6A1B9A)],
@@ -87,7 +95,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 28,
+                fontSize: titleSize,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -97,7 +105,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 24,
+                fontSize: subtitleSize,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -113,7 +121,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     // Facebook action
                     showComingSoonDialog();
                   },
-                  size: 40.0, // Button size
+                  size: screenWidth > 600 ? 50.0 : 40.0, // Button size
                 ),
                 SocialButton(
                   iconPath: 'assets/img/google.png',
@@ -121,7 +129,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     // Google action
                     showComingSoonDialog();
                   },
-                  size: 40.0, // Button size
+                  size: screenWidth > 600 ? 50.0 : 40.0, // Button size
                 ),
                 SocialButton(
                   iconPath: 'assets/img/apple.png',
@@ -129,7 +137,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     // Apple action
                     showComingSoonDialog();
                   },
-                  size: 40.0, // Button size
+                  size: screenWidth > 600 ? 50.0 : 40.0, // Button size
                 ),
               ],
             ),
@@ -161,20 +169,23 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             ),
             const SizedBox(height: 20),
             // Button widget
-            MaterialButton(
-              color: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+            Container(
+              width: buttonWidth,
+              child: MaterialButton(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                onPressed: () {
+                  // Navigate to registration screen
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const RegisterScreen()));
+                },
+                child: Text(tr('w_buttonSignUp')),
+                textColor: Colors.black,
               ),
-              onPressed: () {
-                // Navigate to registration screen
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const RegisterScreen()));
-              },
-              child: Text(tr('w_buttonSignUp')),
-              textColor: Colors.black,
             ),
             const SizedBox(height: 20),
             Row(

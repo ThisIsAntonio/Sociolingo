@@ -121,6 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // Function to handle updating the messaging token
   void _updateMessagingToken() async {
     String? token = await FirebaseMessaging.instance.getToken();
     User? user = FirebaseAuth.instance.currentUser;
@@ -158,13 +159,13 @@ class _LoginScreenState extends State<LoginScreen> {
       final User? user = userCredential.user;
 
       if (user != null) {
-        // Separar el nombre y el apellido
+        // Split the user into first name and last name
         List<String> nameParts = user.displayName?.split(' ') ?? [];
         String firstName = nameParts.isNotEmpty ? nameParts.first : '';
         String lastName =
             nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
 
-        // Datos del usuario
+        // User data
         Map<String, dynamic> userData = {
           'first_name': firstName,
           'last_name': lastName,
@@ -175,11 +176,11 @@ class _LoginScreenState extends State<LoginScreen> {
           'is_active': true,
         };
 
-        // Guardar datos del usuario
+        // Save the user data
         String uid = user.uid;
         await _database.child("users/$uid").set(userData);
 
-        // Navegar a la pantalla principal
+        // Return the user to the main screen
         Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (context) => MainScreen(
                   userEmail: user.email!,
@@ -331,6 +332,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+
+    // Calculate sizes based on screen width
+    double titleSize = screenWidth > 600 ? 28 : 24;
+    double subtitleSize = screenWidth > 600 ? 18 : 14;
+    double buttonWidth =
+        screenWidth > 600 ? screenWidth * 0.4 : screenWidth * 0.85;
+    double padding = screenWidth > 600 ? 30.0 : 16.0;
+    double inputWidth =
+        screenWidth > 600 ? screenWidth * 0.5 : screenWidth * 0.8;
+    double fontSize = screenWidth > 600 ? 18 : 16;
+
     return Scaffold(
       appBar: AppBar(
         title: const Row(
@@ -339,7 +352,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(padding),
           child: Form(
             key: _formKey,
             child: Column(
@@ -350,21 +363,24 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   tr('login_title'),
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: titleSize,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 20),
                 // Program Logo
                 CircleAvatar(
-                  radius: 60, // Adjust the size to your liking
+                  radius: screenWidth > 600
+                      ? 60
+                      : 40, // Adjust the size to your liking
                   backgroundColor: Colors.transparent, // Transparent background
                   child: ClipOval(
-                    child:
-                        Image.asset('assets/img/logo.png', // rute of your image
-                            fit: BoxFit.cover, // Cover the space of the circle
-                            width: 120, // Adjust the width
-                            height: 120), //Adjust the height
+                    child: Image.asset(
+                        'assets/img/logo.png', // rute of your image
+                        fit: BoxFit.cover, // Cover the space of the circle
+                        width: screenWidth > 600 ? 120 : 80, // Adjust the width
+                        height:
+                            screenWidth > 600 ? 120 : 80), //Adjust the height
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -372,8 +388,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   tr('login_subtitle'),
                   textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: subtitleSize),
                 ),
-                const SizedBox(height: 25),
+                const SizedBox(height: 20),
                 // Social Media Buttons
                 Row(
                   mainAxisAlignment: MainAxisAlignment
@@ -393,7 +410,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         // });
                         showComingSoonDialog();
                       },
-                      size: 40.0, // Button size
+                      size: screenWidth > 600 ? 50.0 : 40.0, // Button size
                     ),
                     SocialButton(
                       iconPath: 'assets/img/google.png',
@@ -410,7 +427,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         //   });
                         showComingSoonDialog();
                       },
-                      size: 40.0, // Button size
+                      size: screenWidth > 600 ? 50.0 : 40.0, // Button size
                     ),
                     SocialButton(
                       iconPath: 'assets/img/apple.png',
@@ -418,7 +435,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         // Apple action
                         showComingSoonDialog();
                       },
-                      size: 40.0, // Button size
+                      size: screenWidth > 600 ? 50.0 : 40.0, // Button size
                     ),
                   ],
                 ),
@@ -450,36 +467,52 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 30),
                 // Field TextFormField for Email and Password
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Email'),
-                  keyboardType: TextInputType.emailAddress,
-                  onSaved: (value) => _email = value ?? '',
-                  validator: (value) {
-                    if (value == null ||
-                        value.isEmpty ||
-                        !value.contains('@')) {
-                      return tr('login_invalidPassword');
-                    }
-                    return null;
-                  },
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: inputWidth),
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      labelText: tr('login_email'),
+                      labelStyle: TextStyle(fontSize: fontSize),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                    onSaved: (value) => _email = value ?? '',
+                    validator: (value) {
+                      if (value == null ||
+                          value.isEmpty ||
+                          !value.contains('@')) {
+                        return tr('login_invalidPassword');
+                      }
+                      return null;
+                    },
+                    style: TextStyle(fontSize: fontSize),
+                  ),
                 ),
                 // Password
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Password'),
-                  obscureText: true,
-                  onSaved: (value) => _password = value ?? '',
-                  validator: (value) {
-                    if (value == null || value.isEmpty || value.length < 5) {
-                      return tr('login_errorLongPassword');
-                    }
-                    return null;
-                  },
+                ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: inputWidth),
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                        labelText: tr('login_password'),
+                        labelStyle: TextStyle(fontSize: fontSize)),
+                    obscureText: true,
+                    onSaved: (value) => _password = value ?? '',
+                    validator: (value) {
+                      if (value == null || value.isEmpty || value.length < 5) {
+                        return tr('login_errorLongPassword');
+                      }
+                      return null;
+                    },
+                    style: TextStyle(fontSize: fontSize),
+                  ),
                 ),
                 const SizedBox(height: 20),
                 // Login Button
-                ElevatedButton(
-                  onPressed: _submit,
-                  child: Text(tr('login_buttonLogin')),
+                Container(
+                  width: buttonWidth,
+                  child: ElevatedButton(
+                    onPressed: _submit,
+                    child: Text(tr('login_buttonLogin')),
+                  ),
                 ),
                 // Forgot Password Button
                 TextButton(
@@ -516,14 +549,14 @@ class SocialButton extends StatelessWidget {
     return InkWell(
       onTap: onPressed,
       child: CircleAvatar(
-        backgroundColor: Colors.white, // Fondo blanco del círculo
-        radius: size / 2, // El radio se basa en el tamaño proporcionado
+        backgroundColor: Colors.white, // White background color
+        radius: size / 2, // Radius of the circle
         child: ClipOval(
           child: Image.asset(
             iconPath,
-            width: size, // Ajusta la anchura basada en el tamaño proporcionado
-            height: size, // Ajusta la altura basada en el tamaño proporcionado
-            fit: BoxFit.cover, // Cubre el área del widget sin deformarse
+            width: size,
+            height: size,
+            fit: BoxFit.cover,
           ),
         ),
       ),

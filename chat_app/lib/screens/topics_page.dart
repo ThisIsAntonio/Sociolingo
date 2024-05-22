@@ -50,10 +50,32 @@ class _TopicsPageState extends State<TopicsPage> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    // Calculate sizes based on screen width
+    double titleSize = screenWidth > 600 ? 28 : 24;
+    int crossAxisCount =
+        screenWidth > 1600 // <==== Next step is try to do it without a if
+            ? 8
+            : screenWidth > 1400
+                ? 7
+                : screenWidth > 1200
+                    ? 6
+                    : screenWidth > 1000
+                        ? 5
+                        : screenWidth > 800
+                            ? 4
+                            : screenWidth > 600
+                                ? 3
+                                : 2;
+    double fontSize = screenWidth > 600 ? 18 : 16;
+
     return Scaffold(
       appBar: AppBar(
         leading: Container(),
-        title: Text(tr('topicsPage_title')),
+        title: Text(
+          tr('topicsPage_title'),
+          style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.bold),
+        ),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream:
@@ -68,7 +90,7 @@ class _TopicsPageState extends State<TopicsPage> {
           return GridView.builder(
             padding: EdgeInsets.all(8),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2, // Columns number
+              crossAxisCount: crossAxisCount, // Columns number
               crossAxisSpacing: 10, // Horizont space
               mainAxisSpacing: 10, // Vertical space
               childAspectRatio: 3 / 2, // Proportion of the card
@@ -99,6 +121,7 @@ class _TopicsPageState extends State<TopicsPage> {
                           topicName,
                           style: TextStyle(
                             color: Colors.black,
+                            fontSize: fontSize,
                             fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,

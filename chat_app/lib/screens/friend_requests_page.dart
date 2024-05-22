@@ -6,6 +6,10 @@ import 'package:easy_localization/easy_localization.dart';
 class FriendRequestsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    // Calculate sizes based on screen width
+    double titleSize = screenWidth > 600 ? 28 : 24;
+
     return Scaffold(
       appBar: AppBar(
         leading: Container(),
@@ -15,6 +19,10 @@ class FriendRequestsPage extends StatelessWidget {
           Text(
             tr('friendRequests_requestsTitle'),
             textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: titleSize,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 20),
           Expanded(
@@ -25,6 +33,10 @@ class FriendRequestsPage extends StatelessWidget {
           Text(
             tr('friendRequests_suggestionsTitle'),
             textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: titleSize,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 20),
           Expanded(

@@ -9,8 +9,13 @@ import 'package:chat_app/model/language_list.dart';
 class ChatWindow extends StatefulWidget {
   final String friendId;
   final String? chatId;
+  final bool isLargeScreen;
 
-  const ChatWindow({Key? key, required this.friendId, this.chatId})
+  const ChatWindow(
+      {Key? key,
+      required this.friendId,
+      required this.isLargeScreen,
+      this.chatId})
       : super(key: key);
 
   @override
@@ -227,7 +232,7 @@ class _ChatWindowState extends State<ChatWindow> {
       return result.data[
           'translatedText']; // Extract the translated text from the response.
     } on FirebaseFunctionsException catch (e) {
-      print('Error al llamar a la función de traducción: ${e.message}');
+      print('Error to call the translate function: ${e.message}');
       return text; // Return the original text if there's an error.
     }
   }
@@ -253,7 +258,7 @@ class _ChatWindowState extends State<ChatWindow> {
       Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
       setState(() {
         userPreferredLanguage = userData['language_preference'] ??
-            'en'; // Asume 'en' como predeterminado
+            'en'; // 'en' how default language
       });
     }
   }
@@ -269,19 +274,21 @@ class _ChatWindowState extends State<ChatWindow> {
     });
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            // Comeback to MainScreen
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      MainScreen(userEmail: currentUserEmail)),
-              (Route<dynamic> route) => false,
-            );
-          },
-        ),
+        leading: widget.isLargeScreen
+            ? null
+            : IconButton(
+                icon: Icon(Icons.arrow_back),
+                onPressed: () {
+                  // Comeback to MainScreen
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            MainScreen(userEmail: currentUserEmail)),
+                    (Route<dynamic> route) => false,
+                  );
+                },
+              ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -292,7 +299,7 @@ class _ChatWindowState extends State<ChatWindow> {
                 "Online",
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.white70,
+                  //color: Colors.white70,
                 ),
               ),
           ],
@@ -389,6 +396,9 @@ class _ChatWindowState extends State<ChatWindow> {
                     controller: _messageController,
                     decoration: InputDecoration(
                         labelText: tr('chatWindow_typeAmessage')),
+                    onSubmitted: (value) {
+                      _sendMessage();
+                    },
                   ),
                 ),
                 IconButton(

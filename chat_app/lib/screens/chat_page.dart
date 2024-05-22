@@ -12,7 +12,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  String friendID = '';
+  String? selectedFriendId;
 
   // Function to get the list of friends from Firestore database
   Future<bool> _isFriendWith(String friendId) async {
@@ -21,25 +21,8 @@ class _ChatPageState extends State<ChatPage> {
         .collection('friendships')
         .where('users', arrayContainsAny: [currentUserId, friendId]).get();
 
-    friendID = friendId;
     // A friendship document exists if the query returns any documents
     return friendships.docs.isNotEmpty;
-  }
-
-  // Function to get the list of unread messages for a specific user
-  Future<int> countUnreadMessages(String chatId, String friendId) async {
-    var snapshot = await _firestore
-        .collection('chats')
-        .doc(chatId)
-        .collection('messages')
-        .where('read', isEqualTo: false)
-        .where('senderId', isEqualTo: friendID)
-        .get();
-
-    // Print the number of messages with read=false and senderId=friendId
-    //print("Unread messages for chat $chatId: ${snapshot.docs.length}");
-
-    return snapshot.docs.length;
   }
 
   // Function to show the list of friends from Firestore database
@@ -82,13 +65,9 @@ class _ChatPageState extends State<ChatPage> {
                             '${friend['first_name']} ${friend['last_name']}'),
                         onTap: () {
                           Navigator.pop(context); // Close the dialog
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ChatWindow(friendId: friend['id']),
-                            ),
-                          );
+                          setState(() {
+                            selectedFriendId = friend['id'];
+                          });
                         },
                       ))
                   .toList(),
@@ -101,97 +80,104 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    bool isLargeScreen = screenWidth > 600;
+    double titleSize = isLargeScreen ? 28 : 24;
+    double subtitleSize = isLargeScreen ? 18 : 14;
+    double fontSize = isLargeScreen ? 14 : 12;
+
     return Scaffold(
-      appBar: AppBar(
-        leading: Container(),
-        title: Text(tr('chatPage_title')),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: _showFriendsList,
-          ),
-        ],
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: _firestore
-            .collection('chats')
-            .where('participants', arrayContains: _auth.currentUser!.uid)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData)
-            return Center(child: CircularProgressIndicator());
+      appBar: !isLargeScreen && selectedFriendId != null
+          ? null
+          : AppBar(
+              leading: Container(),
+              title: Text(
+                tr('chatPage_title'),
+                style:
+                    TextStyle(fontSize: titleSize, fontWeight: FontWeight.bold),
+              ),
+              actions: [
+                IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: _showFriendsList,
+                ),
+              ],
+            ),
+      body: Row(
+        children: [
+          if (isLargeScreen || selectedFriendId == null)
+            Container(
+              width: isLargeScreen ? screenWidth * 0.25 : screenWidth,
+              child: StreamBuilder<QuerySnapshot>(
+                stream: _firestore
+                    .collection('chats')
+                    .where('participants',
+                        arrayContains: _auth.currentUser!.uid)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData)
+                    return Center(child: CircularProgressIndicator());
 
-          var chats = snapshot.data!.docs;
-          return ListView(
-            children: chats.map<Widget>((chat) {
-              var friendId = (chat['participants'] as List)
-                  .firstWhere((id) => id != _auth.currentUser!.uid);
-              return FutureBuilder<bool>(
-                future: _isFriendWith(friendId),
-                builder: (context, isFriendSnapshot) {
-                  if (!isFriendSnapshot.hasData || !isFriendSnapshot.data!)
-                    return Container(); // Don't show if not friends or data not fetched yet
+                  var chats = snapshot.data!.docs;
+                  return ListView(
+                    children: chats.map<Widget>((chat) {
+                      var friendId = (chat['participants'] as List)
+                          .firstWhere((id) => id != _auth.currentUser!.uid);
+                      return FutureBuilder<bool>(
+                        future: _isFriendWith(friendId),
+                        builder: (context, isFriendSnapshot) {
+                          if (!isFriendSnapshot.hasData ||
+                              !isFriendSnapshot.data!)
+                            return Container(); // Don't show if not friends or data not fetched yet
 
-                  // Assuming you have a method to fetch friend details...
-                  return FutureBuilder<DocumentSnapshot>(
-                    future: _firestore.collection('users').doc(friendId).get(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData)
-                        return ListTile(title: Text("Loading..."));
-                      var friend =
-                          snapshot.data!.data() as Map<String, dynamic>;
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: NetworkImage(
-                              friend['imageUrl'] ?? 'default_image_path'),
-                        ),
-                        title: Text(
-                            "${friend['first_name']} ${friend['last_name']}"),
-                        subtitle: FutureBuilder<int>(
-                          future: countUnreadMessages(chat.id, friendId),
-                          builder: (context, snapshot) {
-                            // Reeplace the text with the number of unread messages
-                            if (snapshot.hasData && snapshot.data! > 0) {
-                              return Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(chat['lastMessage'] ?? "No messages"),
-                                  Container(
-                                    padding: EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: Colors.red,
-                                      borderRadius: BorderRadius.circular(15),
-                                    ),
-                                    child: Text(
-                                      '${snapshot.data}',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                ],
+                          return FutureBuilder<DocumentSnapshot>(
+                            future: _firestore
+                                .collection('users')
+                                .doc(friendId)
+                                .get(),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData)
+                                return ListTile(title: Text("Loading..."));
+                              var friend =
+                                  snapshot.data!.data() as Map<String, dynamic>;
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  backgroundImage: NetworkImage(
+                                      friend['imageUrl'] ??
+                                          'default_image_path'),
+                                ),
+                                title: Text(
+                                  "${friend['first_name']} ${friend['last_name']}",
+                                  style: TextStyle(fontSize: subtitleSize),
+                                ),
+                                subtitle: Text(
+                                  chat['lastMessage'] ?? "No messages",
+                                  style: TextStyle(fontSize: fontSize),
+                                ),
+                                onTap: () {
+                                  setState(() {
+                                    selectedFriendId = friendId;
+                                  });
+                                },
                               );
-                            } else {
-                              // If there are no unread messages, show the last message
-                              return Text(chat['lastMessage'] ?? "No messages");
-                            }
-                          },
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    ChatWindow(friendId: friendId)),
+                            },
                           );
                         },
                       );
-                    },
+                    }).toList(),
                   );
                 },
-              );
-            }).toList(),
-          );
-        },
+              ),
+            ),
+          if (selectedFriendId != null)
+            Expanded(
+              child: ChatWindow(
+                key: ValueKey(selectedFriendId),
+                friendId: selectedFriendId!,
+                isLargeScreen: isLargeScreen,
+              ),
+            ),
+        ],
       ),
     );
   }

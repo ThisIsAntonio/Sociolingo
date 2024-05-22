@@ -74,6 +74,8 @@ Ensure you have set up a Firebase project and linked it with your Flutter app. F
 - Introduction of real-time status updates and message notifications to enhance user experience.
 - Enhanced security and ease of development using Firebase's suite of tools.
 - Added chat between users in real time and Online/Offline status.
+- The app works now in IOS.
+- Some updates in the SizeScreens.
 
 ## License
 
