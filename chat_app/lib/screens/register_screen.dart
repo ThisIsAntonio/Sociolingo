@@ -41,8 +41,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _mathChallenge = MathChallenge();
   final _mathAnswerController = TextEditingController();
   List<Language> _selectedLanguages = [];
-  List<Language> _allLanguages =
-      []; // Deberías llenar esta lista con los idiomas disponibles
+  List<Language> _allLanguages = []; // Fill out with all languages
 
   bool _acceptTerms = false; // var to keep the current checkbox in false
 
@@ -258,6 +257,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    // Calculate sizes based on screen width
+    double padding = screenWidth > 800 ? 30.0 : 16.0;
+    double titleSize = screenWidth > 800 ? 28 : 24;
+    double subtitleSize = screenWidth > 800 ? 18 : 14;
+    double inputWidth =
+        screenWidth > 800 ? screenWidth * 0.4 : screenWidth * 0.8;
     return Scaffold(
       appBar: AppBar(
         title: const Row(
@@ -265,332 +271,406 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                const SizedBox(height: 20),
-                // Title and subtitle
-                Text(
-                  tr('register_title'),
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  tr('register_subtitle'),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 35),
-                // First name
-                TextFormField(
-                  decoration:
-                      InputDecoration(labelText: tr('register_labelFirstName')),
-                  onSaved: (value) => _firstName = value ?? '',
-                  validator: (value) =>
-                      value!.isEmpty ? tr('register_firstName') : null,
-                ),
-                const SizedBox(height: 20), // Separator (20 pixels height)
-                // Last Name
-                TextFormField(
-                  decoration:
-                      InputDecoration(labelText: tr('register_labeLastName')),
-                  onSaved: (value) => _lastName = value ?? '',
-                  validator: (value) =>
-                      value!.isEmpty ? tr('register_lastName') : null,
-                ),
-                const SizedBox(height: 20), // Separator (20 pixels height)
-                // Birthday
-                TextFormField(
-                  controller: _birthdayController,
-                  decoration: InputDecoration(
-                    labelText: tr('register_labelBirthday'),
-                    hintText: 'YYYY-MM-DD',
-                  ),
-                  keyboardType: TextInputType.datetime,
-                  onTap: () async {
-                    // Hide keyboard when tapping on the field
-                    FocusScope.of(context).requestFocus(FocusNode());
-
-                    // Show DatePicker
-                    final DateTime? picked = await showDatePicker(
-                      context: context,
-                      initialDate: _birthday ?? DateTime.now(),
-                      firstDate: DateTime(1900),
-                      lastDate: DateTime.now(),
-                    );
-                    if (picked != null && picked != _birthday) {
-                      setState(() {
-                        _birthday = picked;
-                        _birthdayController.text =
-                            DateFormat('yyyy-MM-dd').format(picked);
-                      });
-                    }
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return tr('register_pleaseEnterYourBirthday');
-                    }
-                    try {
-                      final date = DateFormat('yyyy-MM-dd').parseStrict(value);
-                      final today = DateTime.now();
-                      int age = today.year -
-                          date.year; // Make 'age' a non-final variable
-                      final birthdayThisYear =
-                          DateTime(today.year, date.month, date.day);
-
-                      if (birthdayThisYear.isAfter(today)) {
-                        age--; // Now 'age' can be modified
-                      }
-
-                      if (age < 18) {
-                        return tr('register_errorBirthday');
-                      }
-
-                      return null; // If the date is valid
-                    } catch (e) {
-                      return tr('register_invalidFormatBirthday');
-                    }
-                  },
-                  onSaved: (value) {
-                    // Update _birthday with the manually entered value if necessary
-                    if (value != null && value.isNotEmpty) {
-                      _birthday = DateFormat('yyyy-MM-dd').parseStrict(value);
-                    }
-                  },
-                ),
-                const SizedBox(height: 20), // Separator (20 pixels height)
-                // Email
-                TextFormField(
-                  decoration:
-                      InputDecoration(labelText: tr('register_labelEmail')),
-                  keyboardType: TextInputType.emailAddress,
-                  onSaved: (value) => _email = value ?? '',
-                  validator: (value) => value!.isEmpty || !value.contains('@')
-                      ? tr('register_errorEmail')
-                      : null,
-                ),
-                Row(
-                  children: [
-                    // Button to select the country code for the phone number
-                    // OutlinedButton(
-                    //   onPressed: () {
-                    //     showCountryPicker(
-                    //       context: context,
-                    //       onSelect: (Country country) {
-                    //         setState(() {
-                    //           _countryCode = '+${country.phoneCode}';
-                    //         });
-                    //       },
-                    //     );
-                    //   },
-                    //   child: Text(_countryCode),
-                    // ),
-                    //const SizedBox(width: 10),
-                    // Phone number
-                    Expanded(
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                          labelText: tr('register_labelPhoneNumber'),
-                          hintText: tr('register_phoneNumber'),
-                          hintStyle: TextStyle(
-                              color: Colors.grey), // Placeholder Style
-                          prefixIcon: Icon(Icons.phone),
-                        ),
-                        keyboardType: TextInputType.phone,
-                        controller: _phoneNumberController,
-                        onSaved: (value) => _phoneNumber = value ?? '',
-                        validator: (value) {
-                          String pattern = r'^\+\d+\s\d+$';
-                          RegExp regExp = RegExp(pattern);
-                          if (value == null || value.isEmpty) {
-                            return tr('register_pleaseEnterYourPhoneNumber');
-                          } else if (!regExp.hasMatch(value)) {
-                            return tr('register_invalidFormat');
-                          }
-                          // You can add additional validations here if you need it
-                          return null;
-                        },
-                        // Allows only digits, spaces and the plus sign
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                              RegExp(r'^\+?[0-9 ]*$')),
-                        ],
-                      ),
+        padding: EdgeInsets.all(padding),
+        child: Center(
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  const SizedBox(height: 20),
+                  // Title and subtitle
+                  Text(
+                    tr('register_title'),
+                    style: TextStyle(
+                      fontSize: titleSize,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 20), // Separator (20 pixels height)
-                // Password
-                TextFormField(
-                  controller: _passwordController,
-                  decoration:
-                      InputDecoration(labelText: tr('register_labelPassword')),
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty || value.length < 6) {
-                      return tr('register_errorPasswordLong');
-                    }
-                    return null;
-                  },
-                ),
-                // Confirm password
-                TextFormField(
-                  controller: _confirmPasswordController,
-                  decoration: InputDecoration(
-                      labelText: tr('register_confirmPassword')),
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return tr('register_confirmPasswordRequired');
-                    }
-                    if (value != _passwordController.text) {
-                      return tr('register_confirmPasswordNoMatch');
-                    }
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 20), // Separator (20 pixels height)
-                // Country
-                ListTile(
-                  title: Text(
-                      _selectedCountry?.name ?? tr('register_countryError')),
-                  trailing: const Icon(Icons.arrow_drop_down),
-                  onTap: () {
-                    showCountryPicker(
-                      context: context,
-                      onSelect: (Country country) {
-                        setState(() {
-                          _selectedCountry = country;
-                        });
-                      },
-                    );
-                  },
-                ),
-                if (_imageFile != null) Image.file(File(_imageFile!.path)),
-                // Image
-                OutlinedButton(
-                  onPressed: _pickImage,
-                  child: Text(tr('register_pickProfileImage')),
-                ),
-                const SizedBox(height: 20), // Separator (20 pixels height)
-                // Bio
-                TextFormField(
-                  controller: _bioController,
-                  decoration: InputDecoration(
-                    labelText: tr('register_labelBio'),
                   ),
-                  maxLength:
-                      255, // Sets the maximum number of characters allowed.
-                  // The 'buildCounter' property allows you to customize the character counter.
-                  buildCounter: (
-                    BuildContext context, {
-                    int? currentLength,
-                    int? maxLength,
-                    bool? isFocused,
-                  }) {
-                    return Text(
-                      '${currentLength ?? 0}/${maxLength}', // Shows the updated character counter.
-                      style: TextStyle(
-                        color: currentLength! > maxLength!
-                            ? Colors.red
-                            : Colors
-                                .grey, // Change the color if the limit is exceeded.
+                  const SizedBox(height: 20),
+                  Text(
+                    tr('register_subtitle'),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: subtitleSize),
+                  ),
+                  const SizedBox(height: 35),
+                  // Divider
+                  const Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Divider(
+                          color: Colors.white70,
+                          thickness: 1,
+                        ),
                       ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 20), // Separator (20 pixels height)
-                MultiSelectDialogField<Language>(
-                  items: _allLanguages
-                      .map((language) => MultiSelectItem<Language>(
-                          language, language.nameInEnglish))
-                      .toList(),
-                  title: Text(tr('register_labelLanguagesTitle')),
-                  buttonText: Text(
-                    tr('register_selectButton'),
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Text(
+                          '  ',
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      ),
+                      Expanded(
+                        child: Divider(
+                          color: Colors.white70,
+                          thickness: 1,
+                        ),
+                      ),
+                    ],
                   ),
-                  onConfirm: (values) {
-                    setState(() {
-                      _selectedLanguages = values;
-                    });
-                  },
-                  chipDisplay: MultiSelectChipDisplay(
-                    onTap: (value) {
-                      setState(() {
-                        _selectedLanguages.remove(value);
-                      });
-                    },
+                  const SizedBox(height: 35),
+                  // First name
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: inputWidth),
+                    child: TextFormField(
+                      decoration: InputDecoration(
+                          labelText: tr('register_labelFirstName')),
+                      onSaved: (value) => _firstName = value ?? '',
+                      validator: (value) =>
+                          value!.isEmpty ? tr('register_firstName') : null,
+                    ),
                   ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .primaryColor, // Use the main color of the app
-                    borderRadius: BorderRadius.circular(4),
+                  const SizedBox(height: 20), // Separator (20 pixels height)
+                  // Last Name
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: inputWidth),
+                    child: TextFormField(
+                      decoration: InputDecoration(
+                          labelText: tr('register_labeLastName')),
+                      onSaved: (value) => _lastName = value ?? '',
+                      validator: (value) =>
+                          value!.isEmpty ? tr('register_lastName') : null,
+                    ),
                   ),
-                  buttonIcon: Icon(
-                    Icons.language, // Icon to display in the button
-                    color: Colors.white, // Icon color
+                  const SizedBox(height: 20), // Separator (20 pixels height)
+                  // Birthday
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: inputWidth),
+                    child: TextFormField(
+                      controller: _birthdayController,
+                      decoration: InputDecoration(
+                        labelText: tr('register_labelBirthday'),
+                        hintText: 'YYYY-MM-DD',
+                      ),
+                      keyboardType: TextInputType.datetime,
+                      onTap: () async {
+                        // Hide keyboard when tapping on the field
+                        FocusScope.of(context).requestFocus(FocusNode());
+
+                        // Show DatePicker
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: _birthday ?? DateTime.now(),
+                          firstDate: DateTime(1900),
+                          lastDate: DateTime.now(),
+                        );
+                        if (picked != null && picked != _birthday) {
+                          setState(() {
+                            _birthday = picked;
+                            _birthdayController.text =
+                                DateFormat('yyyy-MM-dd').format(picked);
+                          });
+                        }
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return tr('register_pleaseEnterYourBirthday');
+                        }
+                        try {
+                          final date =
+                              DateFormat('yyyy-MM-dd').parseStrict(value);
+                          final today = DateTime.now();
+                          int age = today.year -
+                              date.year; // Make 'age' a non-final variable
+                          final birthdayThisYear =
+                              DateTime(today.year, date.month, date.day);
+
+                          if (birthdayThisYear.isAfter(today)) {
+                            age--; // Now 'age' can be modified
+                          }
+
+                          if (age < 18) {
+                            return tr('register_errorBirthday');
+                          }
+
+                          return null; // If the date is valid
+                        } catch (e) {
+                          return tr('register_invalidFormatBirthday');
+                        }
+                      },
+                      onSaved: (value) {
+                        // Update _birthday with the manually entered value if necessary
+                        if (value != null && value.isNotEmpty) {
+                          _birthday =
+                              DateFormat('yyyy-MM-dd').parseStrict(value);
+                        }
+                      },
+                    ),
                   ),
-                  itemsTextStyle: TextStyle(color: Colors.white),
-                  selectedItemsTextStyle: TextStyle(color: Colors.lightBlue),
-                  cancelText: Text(tr('register_cancelButton'),
-                      style: TextStyle(color: Colors.white)),
-                  confirmText: Text(tr('register_confirmButton'),
-                      style: TextStyle(color: Colors.white)),
-                ),
-                const SizedBox(height: 20), // Separator (20 pixels height)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
+                  const SizedBox(height: 20), // Separator (20 pixels height)
+                  // Email
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: inputWidth),
+                    child: TextFormField(
+                      decoration:
+                          InputDecoration(labelText: tr('register_labelEmail')),
+                      keyboardType: TextInputType.emailAddress,
+                      onSaved: (value) => _email = value ?? '',
+                      validator: (value) =>
+                          value!.isEmpty || !value.contains('@')
+                              ? tr('register_errorEmail')
+                              : null,
+                    ),
+                  ),
+                  const SizedBox(height: 20), // Separator (20 pixels height)
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: inputWidth),
+                    child: Row(
                       children: [
-                        Checkbox(
-                          value: _acceptTerms,
-                          onChanged: (value) {
-                            setState(() {
-                              _acceptTerms = value!;
-                            });
-                          },
-                        ),
-                        Text(
-                          tr('register_AcceptTerm'),
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            // Show pop up with terms and conditions
-                            _showTermsAndConditionsDialog();
-                          },
-                          child: Text(
-                            tr('register_TermsAndConditions'),
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors
-                                  .blue, // Change the color to look like a message
-                              decoration: TextDecoration
-                                  .underline, // underline the text
+                        // Button to select the country code for the phone number
+                        // OutlinedButton(
+                        //   onPressed: () {
+                        //     showCountryPicker(
+                        //       context: context,
+                        //       onSelect: (Country country) {
+                        //         setState(() {
+                        //           _countryCode = '+${country.phoneCode}';
+                        //         });
+                        //       },
+                        //     );
+                        //   },
+                        //   child: Text(_countryCode),
+                        // ),
+                        //const SizedBox(width: 10),
+                        // Phone number
+                        Expanded(
+                          child: TextFormField(
+                            decoration: InputDecoration(
+                              labelText: tr('register_labelPhoneNumber'),
+                              hintText: tr('register_phoneNumber'),
+                              hintStyle: TextStyle(
+                                  color: Colors.grey), // Placeholder Style
+                              prefixIcon: Icon(Icons.phone),
                             ),
+                            keyboardType: TextInputType.phone,
+                            controller: _phoneNumberController,
+                            onSaved: (value) => _phoneNumber = value ?? '',
+                            validator: (value) {
+                              String pattern = r'^\+\d+\s\d+$';
+                              RegExp regExp = RegExp(pattern);
+                              if (value == null || value.isEmpty) {
+                                return tr(
+                                    'register_pleaseEnterYourPhoneNumber');
+                              } else if (!regExp.hasMatch(value)) {
+                                return tr('register_invalidFormat');
+                              }
+                              // You can add additional validations here if you need it
+                              return null;
+                            },
+                            // Allows only digits, spaces and the plus sign
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\+?[0-9 ]*$')),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 20), // Separator (20 pixels height)
+                  // Password
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: inputWidth),
+                    child: TextFormField(
+                      controller: _passwordController,
+                      decoration: InputDecoration(
+                          labelText: tr('register_labelPassword')),
+                      obscureText: true,
+                      validator: (value) {
+                        if (value == null ||
+                            value.isEmpty ||
+                            value.length < 6) {
+                          return tr('register_errorPasswordLong');
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  // Confirm password
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: inputWidth),
+                    child: TextFormField(
+                      controller: _confirmPasswordController,
+                      decoration: InputDecoration(
+                          labelText: tr('register_confirmPassword')),
+                      obscureText: true,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return tr('register_confirmPasswordRequired');
+                        }
+                        if (value != _passwordController.text) {
+                          return tr('register_confirmPasswordNoMatch');
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20), // Separator (20 pixels height)
+                  // Country
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: inputWidth),
+                    child: ListTile(
+                      title: Text(_selectedCountry?.name ??
+                          tr('register_countryError')),
+                      trailing: const Icon(Icons.arrow_drop_down),
+                      onTap: () {
+                        showCountryPicker(
+                          context: context,
+                          onSelect: (Country country) {
+                            setState(() {
+                              _selectedCountry = country;
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  ),
 
-                const SizedBox(height: 20), // Separator (20 pixels height)
-                // Register Button
-                ElevatedButton(
-                  onPressed: _submit,
-                  child: Text(tr('register_buttonRegister')),
-                ),
-              ],
+                  if (_imageFile != null) Image.file(File(_imageFile!.path)),
+                  // Image
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: inputWidth),
+                    child: OutlinedButton(
+                      onPressed: _pickImage,
+                      child: Text(tr('register_pickProfileImage')),
+                    ),
+                  ),
+                  const SizedBox(height: 20), // Separator (20 pixels height)
+                  // Bio
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: inputWidth),
+                    child: TextFormField(
+                      controller: _bioController,
+                      decoration: InputDecoration(
+                        labelText: tr('register_labelBio'),
+                      ),
+                      maxLength:
+                          255, // Sets the maximum number of characters allowed.
+                      // The 'buildCounter' property allows you to customize the character counter.
+                      buildCounter: (
+                        BuildContext context, {
+                        int? currentLength,
+                        int? maxLength,
+                        bool? isFocused,
+                      }) {
+                        return Text(
+                          '${currentLength ?? 0}/${maxLength}', // Shows the updated character counter.
+                          style: TextStyle(
+                            color: currentLength! > maxLength!
+                                ? Colors.red
+                                : Colors
+                                    .grey, // Change the color if the limit is exceeded.
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20), // Separator (20 pixels height)
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: inputWidth),
+                    child: MultiSelectDialogField<Language>(
+                      items: _allLanguages
+                          .map((language) => MultiSelectItem<Language>(
+                              language, language.nameInEnglish))
+                          .toList(),
+                      title: Text(tr('register_labelLanguagesTitle')),
+                      buttonText: Text(
+                        tr('register_selectButton'),
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                      onConfirm: (values) {
+                        setState(() {
+                          _selectedLanguages = values;
+                        });
+                      },
+                      chipDisplay: MultiSelectChipDisplay(
+                        onTap: (value) {
+                          setState(() {
+                            _selectedLanguages.remove(value);
+                          });
+                        },
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .primaryColor, // Use the main color of the app
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      buttonIcon: Icon(
+                        Icons.language, // Icon to display in the button
+                        color: Colors.white, // Icon color
+                      ),
+                      itemsTextStyle: TextStyle(color: Colors.white),
+                      selectedItemsTextStyle:
+                          TextStyle(color: Colors.lightBlue),
+                      cancelText: Text(tr('register_cancelButton'),
+                          style: TextStyle(color: Colors.white)),
+                      confirmText: Text(tr('register_confirmButton'),
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ),
+                  const SizedBox(height: 20), // Separator (20 pixels height)
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: inputWidth),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Row(
+                          children: [
+                            Checkbox(
+                              value: _acceptTerms,
+                              onChanged: (value) {
+                                setState(() {
+                                  _acceptTerms = value!;
+                                });
+                              },
+                            ),
+                            Text(
+                              tr('register_AcceptTerm'),
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                // Show pop up with terms and conditions
+                                _showTermsAndConditionsDialog();
+                              },
+                              child: Text(
+                                tr('register_TermsAndConditions'),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors
+                                      .blue, // Change the color to look like a message
+                                  decoration: TextDecoration
+                                      .underline, // underline the text
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20), // Separator (20 pixels height)
+                  // Register Button
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: inputWidth),
+                    child: ElevatedButton(
+                      onPressed: _submit,
+                      child: Text(tr('register_buttonRegister')),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -44,8 +44,8 @@ void main() async {
     );
   } else {
     await Firebase.initializeApp()
-        .catchError((e) => print('Error inicializando Firebase: $e'));
-    ;
+        //.catchError((e) => print('Error inicializando Firebase: $e'));
+        ;
   }
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -110,8 +110,26 @@ class _MyAppState extends State<MyApp> {
             title: 'SocioLingo Chat',
             themeMode:
                 themeProvider.themeMode, // Set theme mode based on provider.
-            theme: ThemeData.light(), // Light theme data.
-            darkTheme: ThemeData.dark(), // Dark theme data.
+            theme: ThemeData(
+              // Configuración para el tema claro
+              brightness: Brightness.light,
+              appBarTheme: AppBarTheme(
+                backgroundColor: const Color.fromARGB(
+                    0, 33, 149, 243), // Color para el tema claro
+                foregroundColor:
+                    Colors.black, // Color de texto para el tema claro
+              ),
+            ),
+            darkTheme: ThemeData(
+              // Configuración para el tema oscuro
+              brightness: Brightness.dark,
+              appBarTheme: AppBarTheme(
+                backgroundColor: const Color.fromARGB(
+                    0, 0, 0, 0), // Color para el tema oscuro
+                foregroundColor:
+                    Colors.white, // Color de texto para el tema oscuro
+              ),
+            ),
             localizationsDelegates: context.localizationDelegates,
             supportedLocales: context.supportedLocales,
             locale: context.locale,

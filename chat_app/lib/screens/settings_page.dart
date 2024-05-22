@@ -12,6 +12,15 @@ class SettingsPage extends StatelessWidget {
   const SettingsPage({Key? key, required this.userEmail}) : super(key: key);
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+
+    // Calculate sizes based on screen width
+    double titleSize = screenWidth > 800 ? 28 : 24;
+    double buttonWidth =
+        screenWidth > 600 ? screenWidth * 0.4 : screenWidth * 0.95;
+    double padding = screenWidth > 800 ? 30.0 : 16.0;
+    double fontSize = screenWidth > 800 ? 18 : 16;
+
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
@@ -20,54 +29,72 @@ class SettingsPage extends StatelessWidget {
         title: Text(
           tr('settings_title'),
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: titleSize,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
       ),
-      body: ListView(
-        children: [
-          const SizedBox(height: 40),
-          _buildButton(
-            context,
-            text: tr('settings_selectLanguage'),
-            onPressed: () => _showLanguageDialog(context),
+      body: Padding(
+        padding: EdgeInsets.all(padding),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: buttonWidth),
+            child: ListView(
+              children: <Widget>[
+                const SizedBox(height: 40),
+                _buildButton(
+                  context,
+                  text: tr('settings_selectLanguage'),
+                  onPressed: () => _showLanguageDialog(context),
+                  fontSize: fontSize,
+                ),
+                const Divider(),
+                SwitchListTile(
+                  title: Text(tr('settings_darkModeSwitch'),
+                      style: TextStyle(fontSize: fontSize)),
+                  value: themeProvider.themeMode == ThemeMode.dark,
+                  onChanged: (bool value) {
+                    themeProvider.themeMode =
+                        value ? ThemeMode.dark : ThemeMode.light;
+                  },
+                ),
+                const Divider(),
+                _buildButton(
+                  context,
+                  text: tr('settings_deleteProfileButton'),
+                  onPressed: () => _showDeleteConfirmation(context),
+                  fontSize: fontSize,
+                ),
+                const Divider(),
+                _buildButton(
+                  context,
+                  text: tr('settings_aboutUsButton'),
+                  onPressed: () => _showAboutUsDialog(context),
+                  fontSize: fontSize,
+                ),
+                const Divider(),
+                _buildButton(
+                  context,
+                  text: tr('settings_logOutButton'),
+                  onPressed: () => _logout(context),
+                  fontSize: fontSize,
+                ),
+              ],
+            ),
           ),
-          const Divider(),
-          SwitchListTile(
-            title: Text(tr('settings_darkModeSwitch')),
-            value: themeProvider.themeMode == ThemeMode.dark,
-            onChanged: (bool value) {
-              themeProvider.themeMode =
-                  value ? ThemeMode.dark : ThemeMode.light;
-            },
-          ),
-          const Divider(),
-          _buildButton(
-            context,
-            text: tr('settings_deleteProfileButton'),
-            onPressed: () => _showDeleteConfirmation(context),
-          ),
-          const Divider(),
-          _buildButton(
-            context,
-            text: tr('settings_aboutUsButton'),
-            onPressed: () => _showAboutUsDialog(context),
-          ),
-          const Divider(),
-          _buildButton(
-            context,
-            text: tr('settings_logOutButton'),
-            onPressed: () => _logout(context),
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildButton(BuildContext context,
-      {required String text, VoidCallback? onPressed}) {
+      {required String text,
+      VoidCallback? onPressed,
+      required double fontSize}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: ElevatedButton(
         onPressed: onPressed,
         child: Text(text),

@@ -232,9 +232,30 @@ class _UsersWithHobbyPageState extends State<UsersWithHobbyPage> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    // Calculate sizes based on screen width
+    double titleSize = screenWidth > 800 ? 28 : 24;
+    int crossAxisCount =
+        screenWidth > 1600 // <==== Next step is try to do it without a if
+            ? 8
+            : screenWidth > 1400
+                ? 7
+                : screenWidth > 1200
+                    ? 6
+                    : screenWidth > 1000
+                        ? 5
+                        : screenWidth > 800
+                            ? 4
+                            : screenWidth > 600
+                                ? 3
+                                : 2;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.hobbyName}'),
+        title: Text(
+          '${widget.hobbyName}',
+          style: TextStyle(fontSize: titleSize, fontWeight: FontWeight.bold),
+        ),
       ),
       body: FutureBuilder<Set<String>>(
         future: getFriendsAndCurrentUserIds(),
@@ -275,7 +296,7 @@ class _UsersWithHobbyPageState extends State<UsersWithHobbyPage> {
                 // Show a grid of users
                 return GridView.builder(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
+                    crossAxisCount: crossAxisCount,
                   ),
                   itemCount: usersWithHobby.length,
                   itemBuilder: (context, index) {

@@ -207,82 +207,117 @@ class _FriendSuggestionsGridState extends State<FriendSuggestionsGrid> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<String>>(
-      future: loadPendingRequests(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData)
-          return Center(child: CircularProgressIndicator());
+    double screenWidth = MediaQuery.of(context).size.width;
+    // Calculate sizes based on screen width
+    int crossAxisCount = screenWidth > 1300
+        ? 10
+        : screenWidth > 1200
+            ? 9
+            : screenWidth > 1100
+                ? 8
+                : screenWidth > 1000
+                    ? 7
+                    : screenWidth > 900
+                        ? 6
+                        : screenWidth > 800
+                            ? 5
+                            : screenWidth > 700
+                                ? 4
+                                : screenWidth > 600
+                                    ? 3
+                                    : 2;
+    double columnWidth =
+        screenWidth > 800 ? screenWidth * 0.80 : screenWidth * 0.95;
 
-        List<String> excludedIds = snapshot.data!;
-        return StreamBuilder<QuerySnapshot>(
-          stream: firestore.collection('users').snapshots(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData)
-              return Center(child: CircularProgressIndicator());
+    return Scaffold(
+      body: FutureBuilder<List<String>>(
+        future: loadPendingRequests(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData)
+            return Center(child: CircularProgressIndicator());
 
-            List<DocumentSnapshot> users = snapshot.data!.docs;
-            // Filter the user that are not friends and that are not the current user.
-            users.removeWhere((doc) =>
-                excludedIds.contains(doc.id) || doc.id == currentUserId);
+          List<String> excludedIds = snapshot.data!;
+          return StreamBuilder<QuerySnapshot>(
+            stream: firestore.collection('users').snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData)
+                return Center(child: CircularProgressIndicator());
 
-            // Shufler user and show only 10 random users.
-            users.shuffle();
-            users = users.take(10).toList();
+              List<DocumentSnapshot> users = snapshot.data!.docs;
+              // Filter the user that are not friends and that are not the current user.
+              users.removeWhere((doc) =>
+                  excludedIds.contains(doc.id) || doc.id == currentUserId);
 
-            return GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-              ),
-              itemCount: users.length,
-              itemBuilder: (context, index) {
-                var user = users[index].data() as Map<String, dynamic>;
-                var userId = users[index].id;
-                bool isRequestSent = requestSent[userId] ?? false;
+              // Shufler user and show only 10 random users.
+              users.shuffle();
+              users = users.take(10).toList();
 
-                return GestureDetector(
-                  onTap: () => showUserProfile(context, user, userId),
-                  child: Card(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircleAvatar(
-                          backgroundImage: user['imageUrl'] != null
-                              ? NetworkImage(user['imageUrl'])
-                              : null,
-                          radius: 40,
-                          child: user['imageUrl'] == null
-                              ? Icon(Icons.person, size: 40)
-                              : null,
-                        ),
-                        SizedBox(height: 8),
-                        Text("${user['first_name']} ${user['last_name']}"),
-                        Text(user['country'] ?? 'Unknown'),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              icon: isRequestSent
-                                  ? Icon(Icons.check)
-                                  : Icon(Icons.add),
-                              onPressed: () => isRequestSent
-                                  ? null
-                                  : sendFriendRequest(userId),
+              return Center(
+                child: Container(
+                  width: columnWidth,
+                  child: GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        childAspectRatio: crossAxisCount == 2 ? 1.2 : .55),
+                    itemCount: users.length,
+                    itemBuilder: (context, index) {
+                      var user = users[index].data() as Map<String, dynamic>;
+                      var userId = users[index].id;
+                      bool isRequestSent = requestSent[userId] ?? false;
+
+                      return GestureDetector(
+                        onTap: () => showUserProfile(context, user, userId),
+                        child: Card(
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircleAvatar(
+                                  backgroundImage: user['imageUrl'] != null
+                                      ? NetworkImage(user['imageUrl'])
+                                      : null,
+                                  radius: 30,
+                                  child: user['imageUrl'] == null
+                                      ? Icon(Icons.person, size: 40)
+                                      : null,
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  "${user['first_name']}\n${user['last_name']}",
+                                  textAlign: TextAlign.center,
+                                ),
+                                Text(user['country'] ?? 'Unknown'),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      icon: isRequestSent
+                                          ? Icon(Icons.check)
+                                          : Icon(Icons.add),
+                                      onPressed: () => isRequestSent
+                                          ? null
+                                          : sendFriendRequest(userId),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.cancel),
+                                      onPressed: () =>
+                                          cancelFriendRequest(userId),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                            IconButton(
-                              icon: Icon(Icons.cancel),
-                              onPressed: () => cancelFriendRequest(userId),
-                            ),
-                          ],
+                          ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            );
-          },
-        );
-      },
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
