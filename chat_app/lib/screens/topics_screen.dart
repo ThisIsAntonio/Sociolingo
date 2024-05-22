@@ -119,11 +119,11 @@ class _TopicsScreenState extends State<TopicsScreen> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     // Calculate sizes based on screen width
-    double padding = screenWidth > 600 ? 30.0 : 16.0;
+    double padding = screenWidth > 800 ? 30.0 : 16.0;
     double maxWidth =
-        screenWidth > 600 ? screenWidth * 0.6 : screenWidth * 0.95;
-    double titleSize = screenWidth > 600 ? 28 : 24;
-    double fontSize = screenWidth > 600 ? 18 : 16;
+        screenWidth > 800 ? screenWidth * 0.6 : screenWidth * 0.95;
+    double titleSize = screenWidth > 800 ? 28 : 24;
+    double fontSize = screenWidth > 800 ? 18 : 16;
 
     return Scaffold(
       appBar: AppBar(

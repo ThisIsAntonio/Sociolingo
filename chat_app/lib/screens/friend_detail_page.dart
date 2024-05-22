@@ -275,12 +275,12 @@ class _FriendDetailsPageState extends State<FriendDetailsPage> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     // Calculate sizes based on screen width
-    double titleSize = screenWidth > 600 ? 28 : 24;
+    double titleSize = screenWidth > 800 ? 28 : 24;
     double columnWidth =
-        screenWidth > 600 ? screenWidth * 0.5 : screenWidth * 0.90;
-    double padding = screenWidth > 600 ? 30.0 : 16.0;
-    double fontSize = screenWidth > 600 ? 18 : 16;
-    double imageSize = screenWidth > 600 ? 100 : 50;
+        screenWidth > 800 ? screenWidth * 0.5 : screenWidth * 0.90;
+    double padding = screenWidth > 800 ? 30.0 : 16.0;
+    double fontSize = screenWidth > 800 ? 18 : 16;
+    double imageSize = screenWidth > 800 ? 100 : 50;
     return Scaffold(
       appBar: AppBar(
         title: Text(

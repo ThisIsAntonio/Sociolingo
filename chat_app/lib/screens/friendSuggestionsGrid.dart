@@ -227,7 +227,7 @@ class _FriendSuggestionsGridState extends State<FriendSuggestionsGrid> {
                                     ? 3
                                     : 2;
     double columnWidth =
-        screenWidth > 600 ? screenWidth * 0.80 : screenWidth * 0.95;
+        screenWidth > 800 ? screenWidth * 0.80 : screenWidth * 0.95;
 
     return Scaffold(
       body: FutureBuilder<List<String>>(

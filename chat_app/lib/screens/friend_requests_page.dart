@@ -8,7 +8,7 @@ class FriendRequestsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     // Calculate sizes based on screen width
-    double titleSize = screenWidth > 600 ? 28 : 24;
+    double titleSize = screenWidth > 800 ? 28 : 24;
 
     return Scaffold(
       appBar: AppBar(

@@ -326,8 +326,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double titleSize = screenWidth > 600 ? 28 : 24;
-    bool isLargeScreen = screenWidth > 600;
+    double titleSize = screenWidth > 800 ? 28 : 24;
+    bool isLargeScreen = screenWidth > 800;
 
     return Scaffold(
       appBar: AppBar(

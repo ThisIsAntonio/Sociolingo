@@ -51,14 +51,14 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
     double screenWidth = MediaQuery.of(context).size.width;
 
     // Calculate sizes based on screen width
-    double titleSize = screenWidth > 600 ? 28 : 24;
-    double subtitleSize = screenWidth > 600 ? 18 : 14;
+    double titleSize = screenWidth > 800 ? 28 : 24;
+    double subtitleSize = screenWidth > 800 ? 18 : 14;
     double buttonWidth =
-        screenWidth > 600 ? screenWidth * 0.4 : screenWidth * 0.85;
-    double padding = screenWidth > 600 ? 30.0 : 16.0;
+        screenWidth > 800 ? screenWidth * 0.4 : screenWidth * 0.85;
+    double padding = screenWidth > 800 ? 30.0 : 16.0;
     double inputWidth =
-        screenWidth > 600 ? screenWidth * 0.5 : screenWidth * 0.8;
-    double fontSize = screenWidth > 600 ? 18 : 16;
+        screenWidth > 800 ? screenWidth * 0.5 : screenWidth * 0.8;
+    double fontSize = screenWidth > 800 ? 18 : 16;
     return Scaffold(
       appBar: AppBar(
         leading: Container(), // To remove the back button

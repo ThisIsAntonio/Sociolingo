@@ -54,9 +54,9 @@ class FriendRequestsList extends StatelessWidget {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     // Calculate sizes based on screen width
-    double fontSize = screenWidth > 600 ? 18 : 16;
+    double fontSize = screenWidth > 800 ? 18 : 16;
     double columnWidth =
-        screenWidth > 600 ? screenWidth * 0.5 : screenWidth * 0.90;
+        screenWidth > 800 ? screenWidth * 0.5 : screenWidth * 0.90;
 
     return StreamBuilder<QuerySnapshot>(
       stream: getPendingFriendRequests(),

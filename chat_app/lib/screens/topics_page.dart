@@ -52,7 +52,7 @@ class _TopicsPageState extends State<TopicsPage> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     // Calculate sizes based on screen width
-    double titleSize = screenWidth > 600 ? 28 : 24;
+    double titleSize = screenWidth > 800 ? 28 : 24;
     int crossAxisCount =
         screenWidth > 1600 // <==== Next step is try to do it without a if
             ? 8
@@ -67,7 +67,7 @@ class _TopicsPageState extends State<TopicsPage> {
                             : screenWidth > 600
                                 ? 3
                                 : 2;
-    double fontSize = screenWidth > 600 ? 18 : 16;
+    double fontSize = screenWidth > 800 ? 18 : 16;
 
     return Scaffold(
       appBar: AppBar(

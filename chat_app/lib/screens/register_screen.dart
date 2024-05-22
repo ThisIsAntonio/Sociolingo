@@ -259,11 +259,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     // Calculate sizes based on screen width
-    double padding = screenWidth > 600 ? 30.0 : 16.0;
-    double titleSize = screenWidth > 600 ? 28 : 24;
-    double subtitleSize = screenWidth > 600 ? 18 : 14;
+    double padding = screenWidth > 800 ? 30.0 : 16.0;
+    double titleSize = screenWidth > 800 ? 28 : 24;
+    double subtitleSize = screenWidth > 800 ? 18 : 14;
     double inputWidth =
-        screenWidth > 600 ? screenWidth * 0.4 : screenWidth * 0.8;
+        screenWidth > 800 ? screenWidth * 0.4 : screenWidth * 0.8;
     return Scaffold(
       appBar: AppBar(
         title: const Row(

@@ -81,7 +81,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    bool isLargeScreen = screenWidth > 600;
+    bool isLargeScreen = screenWidth > 800;
     double titleSize = isLargeScreen ? 28 : 24;
     double subtitleSize = isLargeScreen ? 18 : 14;
     double fontSize = isLargeScreen ? 14 : 12;
