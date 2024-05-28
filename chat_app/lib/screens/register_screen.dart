@@ -262,8 +262,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     double padding = screenWidth > 800 ? 30.0 : 16.0;
     double titleSize = screenWidth > 800 ? 28 : 24;
     double subtitleSize = screenWidth > 800 ? 18 : 14;
-    double inputWidth =
-        screenWidth > 800 ? screenWidth * 0.4 : screenWidth * 0.8;
+    double inputWidth = screenWidth > 800 ? screenWidth * 0.4 : screenWidth * 0.8;
+    double logoSize = screenWidth > 800 ? 200 : 100;
     return Scaffold(
       appBar: AppBar(
         title: const Row(
@@ -278,6 +278,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Image.asset(
+                        'assets/img/sociolingo-namelogo-black.png',
+                        width: logoSize,
+                        //height: 200, 
+                        fit: BoxFit.cover, 
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   // Title and subtitle
                   Text(

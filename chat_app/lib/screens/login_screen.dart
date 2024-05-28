@@ -343,6 +343,7 @@ class _LoginScreenState extends State<LoginScreen> {
     double inputWidth =
         screenWidth > 800 ? screenWidth * 0.5 : screenWidth * 0.8;
     double fontSize = screenWidth > 800 ? 18 : 16;
+    double logoSize = screenWidth > 800 ? 200 : 100;
 
     return Scaffold(
       appBar: AppBar(
@@ -358,6 +359,19 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
+                Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Image.asset(
+                    'assets/img/sociolingo-namelogo-black.png',
+                    width: logoSize,
+                    //height: 200, 
+                    fit: BoxFit.cover, 
+                  ),
+                ),
+              ),                
                 const SizedBox(height: 20),
                 // Title
                 Text(
@@ -446,7 +460,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: <Widget>[
                     Expanded(
                       child: Divider(
-                        color: Colors.white70,
+                        color: Color.fromARGB(255, 18, 235, 214),
                         thickness: 1,
                       ),
                     ),
@@ -454,12 +468,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       padding: EdgeInsets.symmetric(horizontal: 8.0),
                       child: Text(
                         'OR',
-                        style: TextStyle(color: Colors.white70),
+                        style: TextStyle(color: Color.fromARGB(255, 36, 5, 104)),
                       ),
                     ),
                     Expanded(
                       child: Divider(
-                        color: Colors.white70,
+                        color: Color.fromARGB(255, 18, 235, 214),
                         thickness: 1,
                       ),
                     ),

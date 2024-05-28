@@ -99,8 +99,10 @@ class SettingsPage extends StatelessWidget {
         onPressed: onPressed,
         child: Text(text),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).primaryColor, // Background color
-          foregroundColor: Colors.white, // Text color
+          //backgroundColor: Theme.of(context).primaryColor, // Background color
+          //brightness: Brightness.light;
+          backgroundColor: Color.fromRGBO(162, 245, 238, 1),
+          foregroundColor: Colors.black, // Text color
           minimumSize: Size(double.infinity, 50), // Size of the bottom
         ),
       ),
