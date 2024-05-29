@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:chat_app/screens/friendSuggestionsGrid.dart';
 import 'package:chat_app/screens/friendRequestsList.dart';
 import 'package:chat_app/screens/friend_search.dart';
-import 'package:chat_app/screens/language_filter.dart';
+
 
 
 import 'package:easy_localization/easy_localization.dart';

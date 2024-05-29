@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class FriendSearch extends StatelessWidget {
 final FirebaseFirestore firestore = FirebaseFirestore.instance;
-final FirebaseAuth _auth = FirebaseAuth.instance;
+//final FirebaseAuth _auth = FirebaseAuth.instance;
 
 final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
@@ -29,15 +29,13 @@ Future<List<DocumentSnapshot>> searchUsers(String searchTerm) async {
   // Assuming you have a Firestore collection named 'items'
   var searchQuery = await firestore 
       .collection('users')
-      .where('name', isGreaterThanOrEqualTo: 'El')
-      .where('name', isLessThan: 'Em')      
+      .where('name', isGreaterThanOrEqualTo: searchTerm)
+           
       .limit(15)
       .get();
 
-  searchQuery.docs.forEach((doc) { });
-
-
-  return searchQuery.docs;
+  
+return searchQuery.docs;
 }
 
 
@@ -84,12 +82,35 @@ return Scaffold(
               return ListView.builder(
                 itemCount: testUser.length,
                 itemBuilder: (context, index) {
-                  //var data = docs[index].data() as Map<String, dynamic>;
-                  var data = testUser;
+                  var data = docs[index].data() as Map<String, dynamic>;
+                  
                   return ListTile(
-                   //title: Text(data[widget.fieldName]),
-                   title: Text(testUser.keys.first),
-                  );
+                      leading: data['imageUrl'] != null
+                          ? CircleAvatar(
+                              backgroundImage:
+                                  NetworkImage(data['imageUrl']),
+                            )
+                         : CircleAvatar(child: Icon(Icons.person)), 
+                      title: Text(
+                          '${data['first_name']} ${data['last_name']}'),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.check),
+                            onPressed: () =>
+                                //respondToFriendRequest(request.id, true),
+                                Text("true")
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.close),
+                            onPressed: () =>
+                                //respondToFriendRequest(request.id, false),
+                                Text("false")
+                          ),
+                        ],
+                      ),
+                    );
                 },
               );
             },
