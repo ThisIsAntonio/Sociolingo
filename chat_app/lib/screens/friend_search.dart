@@ -9,32 +9,20 @@ final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
 final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
 
-Map<String,bool> testUser = {
-    'Noah': true,
-    'isaiah' : false,
-    'calvin': false,
-    'david' : true,
-};
-
-
-
-
  Future<List<DocumentSnapshot>>? searchResults;
+   late Key _futureBuilderKey = UniqueKey();
+
 
 Future<List<DocumentSnapshot>> searchUsers(String searchTerm) async {
-  List<String> searchIds = [
-    
-  ];
-
-  // Assuming you have a Firestore collection named 'items'
+  //List<String> searchIds = [ ];
   var searchQuery = await firestore 
       .collection('users')
-      .where('name', isGreaterThanOrEqualTo: searchTerm)
-           
+      .where('first_name', isGreaterThanOrEqualTo: searchTerm)
+      //.where('name', isLessThan: searchTerm)     
       .limit(15)
       .get();
 
-  
+      print(searchQuery);
 return searchQuery.docs;
 }
 
@@ -50,6 +38,7 @@ return Scaffold(
             child: TextField(
               onChanged: (name) {
                 searchUsers(name);
+                _futureBuilderKey = UniqueKey();
               },
               decoration: InputDecoration(
                 labelText: 'Search',
@@ -66,6 +55,7 @@ return Scaffold(
           Expanded(
             child:  
             FutureBuilder<List<DocumentSnapshot>>(
+              key: _futureBuilderKey,
               future: searchResults,
               builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -80,7 +70,7 @@ return Scaffold(
 
               List<DocumentSnapshot> docs = snapshot.data!;
               return ListView.builder(
-                itemCount: testUser.length,
+                itemCount: 15, //testUser.length,
                 itemBuilder: (context, index) {
                   var data = docs[index].data() as Map<String, dynamic>;
                   
