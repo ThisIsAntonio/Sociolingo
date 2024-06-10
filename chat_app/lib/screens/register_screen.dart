@@ -12,6 +12,8 @@ import 'package:chat_app/model/MathChallenge.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:chat_app/model/language_list.dart';
+import 'package:provider/provider.dart';
+import 'package:chat_app/model/theme_provider.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class RegisterScreen extends StatefulWidget {
@@ -54,7 +56,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   // Sends data to the backend for registration
   void _register() async {
-    // Initielize firebase if it is not already initialized
+    // Initialize firebase if it is not already initialized
     if (!Firebase.apps.isNotEmpty) {
       await Firebase.initializeApp();
     }
@@ -273,8 +275,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     double padding = screenWidth > 800 ? 30.0 : 16.0;
     double titleSize = screenWidth > 800 ? 28 : 24;
     double subtitleSize = screenWidth > 800 ? 18 : 14;
-    double inputWidth =
-        screenWidth > 800 ? screenWidth * 0.4 : screenWidth * 0.8;
+    double inputWidth = screenWidth > 800 ? screenWidth * 0.4 : screenWidth * 0.8;
+    double logoSize = screenWidth > 800 ? 200 : 100;
+    final themeProvider = Provider.of<ThemeProvider>(context); // Add different versions of logo for light/dark theme
+    String namelogo = themeProvider.themeMode==ThemeMode.dark? "assets/img/namelogo_white.png" : "assets/img/namelogo_black.png";
+    const fontColor = Color.fromARGB(255, 4, 33, 52);
     return Scaffold(
       appBar: AppBar(
         title: const Row(
@@ -289,6 +294,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Image.asset(
+                        namelogo, // Update theme logos
+                        width: logoSize,
+                        //height: 200, 
+                        fit: BoxFit.cover, 
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   // Title and subtitle
                   Text(
@@ -546,7 +564,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       },
                     ),
                   ),
-
+                  const SizedBox(height: 20), // Separator (20 pixels height)
                   if (_imageFile != null) Image.file(File(_imageFile!.path)),
                   // Image
                   ConstrainedBox(
@@ -598,7 +616,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       buttonText: Text(
                         tr('register_selectButton'),
                         style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
+                      ),                  
                       onConfirm: (values) {
                         setState(() {
                           _selectedLanguages = values;
@@ -614,19 +632,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       decoration: BoxDecoration(
                         color: Theme.of(context)
                             .primaryColor, // Use the main color of the app
+                        // color: Color.fromRGBO(108, 167, 163, 1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       buttonIcon: Icon(
                         Icons.language, // Icon to display in the button
-                        color: Colors.white, // Icon color
+                        color:Colors.white, // Icon color
                       ),
-                      itemsTextStyle: TextStyle(color: Colors.white),
+                      itemsTextStyle: TextStyle(color: fontColor),
                       selectedItemsTextStyle:
-                          TextStyle(color: Colors.lightBlue),
+                          TextStyle(color: Theme.of(context).primaryColor,
+                          ),
                       cancelText: Text(tr('register_cancelButton'),
-                          style: TextStyle(color: Colors.white)),
+                          style: TextStyle(color: Theme.of(context).primaryColor)),
                       confirmText: Text(tr('register_confirmButton'),
-                          style: TextStyle(color: Colors.white)),
+                          style: TextStyle(color: Theme.of(context).primaryColor)),
                     ),
                   ),
                   const SizedBox(height: 20), // Separator (20 pixels height)
@@ -677,6 +697,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     constraints: BoxConstraints(maxWidth: inputWidth),
                     child: ElevatedButton(
                       onPressed: _submit,
+                      style: ElevatedButton.styleFrom(
+                      //backgroundColor: Theme.of(context).primaryColor, // Background color
+                      //brightness: Brightness.light;
+                      backgroundColor: Color.fromRGBO(162, 245, 238, 1),
+                      foregroundColor: Colors.black, // Text color
+                      minimumSize: Size(double.infinity, 50), // Size of the bottom
+                      ),                    
                       child: Text(tr('register_buttonRegister')),
                     ),
                   ),

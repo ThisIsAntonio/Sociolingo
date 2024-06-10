@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       home: WelcomeScreen(),
     );
   }
-}
+}                                                
 
 class WelcomeScreen extends StatefulWidget {
   @override
@@ -72,23 +72,48 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     double titleSize = screenWidth > 800 ? 28 : 24;
     double subtitleSize = screenWidth > 800 ? 18 : 14;
     double padding = screenWidth > 800 ? 30.0 : 16.0;
-    double buttonWidth =
-        screenWidth > 800 ? screenWidth * 0.4 : screenWidth * 0.85;
+    double buttonWidth = screenWidth > 800 ? screenWidth * 0.4 : screenWidth * 0.85;
+    double logoSize = screenWidth > 800 ? 350 : 250;
+    // If needed customize namelogo for dark/light theme versions
+    // final themeProvider = Provider.of<ThemeProvider>(context); // Add different versions of logo for light/dark theme
+    // String namelogo = themeProvider.themeMode==ThemeMode.dark? "assets/img/namelogo_white.png" : "assets/img/namelogo_black.png";
+    String namelogo = "assets/img/namelogo_white.png";
+    const appButtonColor = const Color.fromARGB(255, 18, 235, 214);
 
     return Scaffold(
       body: Container(
         padding: EdgeInsets.all(padding),
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF4A148C), Color(0xFF6A1B9A)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+        // decoration: const BoxDecoration(
+        //   gradient: LinearGradient(
+        //     colors: [Color(0xFF4A148C), Color(0xFF6A1B9A)],
+        //     begin: Alignment.topLeft,
+        //     end: Alignment.bottomRight,
+        //   ),
+        // ),
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            colors: [Color.fromARGB(255, 27, 154, 208), Color.fromARGB(255, 45, 21, 94), Color.fromARGB(244, 21, 2, 38)],
+            center: Alignment.topRight,
+            radius: 1.25,
           ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Spacer(),
+                Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Image.asset(
+                    namelogo,
+                    width: logoSize,
+                    //height: 200, 
+                    fit: BoxFit.cover, 
+                  ),
+                ),
+              ),
             // Title and subtitle
             Text(
               tr('w_mainTitle'),
@@ -172,7 +197,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             Container(
               width: buttonWidth,
               child: MaterialButton(
-                color: Colors.white,
+                color: appButtonColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),
@@ -207,7 +232,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     style: TextStyle(
                         color: Colors.white70,
                         fontWeight: FontWeight.bold,
-                        decoration: TextDecoration.underline),
+                        // decoration: TextDecoration.underline
+                        ),
                   ),
                 ),
               ],

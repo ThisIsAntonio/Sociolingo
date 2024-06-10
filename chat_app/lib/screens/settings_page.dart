@@ -20,7 +20,6 @@ class SettingsPage extends StatelessWidget {
         screenWidth > 600 ? screenWidth * 0.4 : screenWidth * 0.95;
     double padding = screenWidth > 800 ? 30.0 : 16.0;
     double fontSize = screenWidth > 800 ? 18 : 16;
-
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
@@ -59,6 +58,7 @@ class SettingsPage extends StatelessWidget {
                     themeProvider.themeMode =
                         value ? ThemeMode.dark : ThemeMode.light;
                   },
+                  activeColor: Color.fromARGB(206, 12, 169, 153),
                 ),
                 const Divider(),
                 _buildButton(
@@ -99,8 +99,10 @@ class SettingsPage extends StatelessWidget {
         onPressed: onPressed,
         child: Text(text),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).primaryColor, // Background color
-          foregroundColor: Colors.white, // Text color
+          //backgroundColor: Theme.of(context).primaryColor, // Background color
+          //brightness: Brightness.light;
+          backgroundColor: Color.fromRGBO(162, 245, 238, 1),
+          foregroundColor: Colors.black, // Text color
           minimumSize: Size(double.infinity, 50), // Size of the bottom
         ),
       ),

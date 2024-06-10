@@ -227,6 +227,7 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
     double inputWidth =
         screenWidth > 800 ? screenWidth * 0.4 : screenWidth * 0.8;
     double fontSize = screenWidth > 800 ? 18 : 16;
+    const fontColor = Color.fromARGB(255, 4, 33, 52);
 
     return Scaffold(
       appBar: AppBar(
@@ -488,15 +489,15 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                         Icons.language, // Icon to display in the button
                         color: Colors.white, // Icon color
                       ),
-                      itemsTextStyle: TextStyle(color: Colors.white),
+                      itemsTextStyle: TextStyle(color: fontColor),
                       selectedItemsTextStyle:
-                          TextStyle(color: Colors.lightBlue),
+                          TextStyle(color: Theme.of(context).primaryColor),
                       cancelText: Text(tr('editUserInfo_buttonCancel'),
                           style: TextStyle(
-                              color: Colors.white, fontSize: fontSize)),
+                              color: Theme.of(context).primaryColor, fontSize: fontSize)),
                       confirmText: Text(tr('editUserInfo_confirmButton'),
                           style: TextStyle(
-                              color: Colors.white, fontSize: fontSize)),
+                              color: Theme.of(context).primaryColor, fontSize: fontSize)),
                     ),
                   ),
                   const SizedBox(height: 20), // Separator (20 pixels height)
@@ -513,6 +514,10 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                                         userEmail: widget.userEmail,
                                         returnScreen: 3)));
                           },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color.fromRGBO(162, 245, 238, 1),
+                            foregroundColor: Colors.black, // Text color
+                          ),                          
                           child: Text(
                             tr('editUserInfo_buttonCancel'),
                             style: TextStyle(fontSize: fontSize),
@@ -520,6 +525,10 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                         ),
                         ElevatedButton(
                           onPressed: _attemptUpdateUserInfo,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color.fromRGBO(162, 245, 238, 1),
+                            foregroundColor: Colors.black, // Text color
+                          ),                                              
                           child: Text(
                             tr('editUserInfo_buttonUpdate'),
                             style: TextStyle(fontSize: fontSize),

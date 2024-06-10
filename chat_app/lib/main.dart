@@ -114,21 +114,25 @@ class _MyAppState extends State<MyApp> {
               // Configuración para el tema claro
               brightness: Brightness.light,
               appBarTheme: AppBarTheme(
-                backgroundColor: const Color.fromARGB(
-                    0, 33, 149, 243), // Color para el tema claro
+                backgroundColor: Color.fromARGB(100, 18, 235, 214), // Color para el tema claro
                 foregroundColor:
                     Colors.black, // Color de texto para el tema claro
+              ),
+              buttonTheme: ButtonThemeData(
+                buttonColor: Color.fromARGB(100, 18, 235, 214)
               ),
             ),
             darkTheme: ThemeData(
               // Configuración para el tema oscuro
               brightness: Brightness.dark,
               appBarTheme: AppBarTheme(
-                backgroundColor: const Color.fromARGB(
-                    0, 0, 0, 0), // Color para el tema oscuro
+                backgroundColor: Color.fromARGB(100, 18, 235, 214), // Color para el tema oscuro
                 foregroundColor:
                     Colors.white, // Color de texto para el tema oscuro
               ),
+              buttonTheme: ButtonThemeData(
+                buttonColor: Color.fromARGB(100, 18, 235, 214)
+              ),              
             ),
             localizationsDelegates: context.localizationDelegates,
             supportedLocales: context.supportedLocales,
@@ -148,7 +152,6 @@ class _MyAppState extends State<MyApp> {
                     return WelcomeScreen();
                   }
                 }
-                //
                 return Scaffold(
                   body: Center(child: CircularProgressIndicator()),
                 );

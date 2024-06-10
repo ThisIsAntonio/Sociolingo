@@ -348,13 +348,13 @@ class _ChatWindowState extends State<ChatWindow> {
                                       vertical: 5, horizontal: 8),
                                   decoration: BoxDecoration(
                                     color: isMine
-                                        ? Color.fromARGB(255, 126, 190, 137)
-                                        : Colors.blue,
+                                        ? Color.fromRGBO(162, 245, 238, 1): Color.fromARGB(255, 10, 121, 110),
                                     borderRadius: BorderRadius.circular(15),
                                   ),
                                   child: Text(
                                     messageData['text'],
-                                    style: TextStyle(color: Colors.white),
+                                    style: TextStyle(color: isMine
+                                        ? Colors.black: Colors.white,),
                                   ),
                                 ),
                                 Container(
@@ -372,8 +372,7 @@ class _ChatWindowState extends State<ChatWindow> {
                                       style: TextStyle(
                                         fontSize:
                                             12, // Smaller text size for "Translate with AI"
-                                        color: Colors
-                                            .grey, // Grey text to differentiate
+                                        color: Colors.grey, // Grey text to differentiate
                                         decoration: TextDecoration.underline,
                                       ),
                                     ),
