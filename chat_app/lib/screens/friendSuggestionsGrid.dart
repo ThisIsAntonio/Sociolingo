@@ -175,15 +175,27 @@ class _FriendSuggestionsGridState extends State<FriendSuggestionsGrid> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text("${userData['first_name']} ${userData['last_name']}"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              userData['imageUrl'] != null
-                  ? Image.network(userData['imageUrl'], width: 100, height: 100)
-                  : SizedBox(height: 100),
-              Text('Bio: ${userData['bio']}'),
-              Text('Country: ${userData['country']}'),
-            ],
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                if (userData['imageUrl'] != null &&
+                    userData['imageUrl'].isNotEmpty)
+                  Image.network(
+                    userData['imageUrl'],
+                    width: 100,
+                    height: 100,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(Icons
+                          .error); // Mostrar un icono de error si la imagen no se puede cargar
+                    },
+                  )
+                else
+                  SizedBox(height: 100, child: Icon(Icons.person, size: 40)),
+                Text('Bio: ${userData['bio']}'),
+                Text('Country: ${userData['country']}'),
+              ],
+            ),
           ),
           actions: <Widget>[
             TextButton(
@@ -258,7 +270,11 @@ class _FriendSuggestionsGridState extends State<FriendSuggestionsGrid> {
                   child: GridView.builder(
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: crossAxisCount,
-                        childAspectRatio: crossAxisCount == 2 ? 1.2 : .55),
+                        childAspectRatio: crossAxisCount > 6
+                            ? .5
+                            : crossAxisCount > 2
+                                ? .65
+                                : 1),
                     itemCount: users.length,
                     itemBuilder: (context, index) {
                       var user = users[index].data() as Map<String, dynamic>;
@@ -268,27 +284,36 @@ class _FriendSuggestionsGridState extends State<FriendSuggestionsGrid> {
                       return GestureDetector(
                         onTap: () => showUserProfile(context, user, userId),
                         child: Card(
-                          child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                CircleAvatar(
-                                  backgroundImage: user['imageUrl'] != null
-                                      ? NetworkImage(user['imageUrl'])
-                                      : null,
-                                  radius: 30,
-                                  child: user['imageUrl'] == null
-                                      ? Icon(Icons.person, size: 40)
-                                      : null,
-                                ),
+                                if (user['imageUrl'] != null &&
+                                    user['imageUrl'].isNotEmpty)
+                                  CircleAvatar(
+                                    backgroundImage:
+                                        NetworkImage(user['imageUrl']),
+                                    radius: 30,
+                                  )
+                                else
+                                  CircleAvatar(
+                                    child: Icon(Icons.person, size: 40),
+                                    radius: 30,
+                                  ),
                                 SizedBox(height: 8),
-                                Text(
-                                  "${user['first_name']}\n${user['last_name']}",
-                                  textAlign: TextAlign.center,
+                                Flexible(
+                                  child: Text(
+                                    "${user['first_name']}\n${user['last_name']}",
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                                 Text(user['country'] ?? 'Unknown'),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                Wrap(
+                                  alignment: WrapAlignment.center,
+                                  spacing: 8.0,
                                   children: [
                                     IconButton(
                                       icon: isRequestSent

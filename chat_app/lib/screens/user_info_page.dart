@@ -292,18 +292,34 @@ class _UserInfoPageState extends State<UserInfoPage> {
         screenWidth > 800 ? screenWidth * 0.5 : screenWidth * 0.90;
     buttonWidth = buttonWidth > maxButtonWidth ? maxButtonWidth : buttonWidth;
     double padding = screenWidth > 800 ? 30.0 : 16.0;
-    double fontSize = screenWidth > 800 ? 18 : 16;
+    double fontSize = screenWidth > 800
+        ? 18
+        : screenWidth > 600
+            ? 16
+            : 13;
     double imageSize = screenWidth > 800 ? 150 : 100;
     final themeProvider = Provider.of<ThemeProvider>(context);
-    Color tileColor = themeProvider.themeMode==ThemeMode.dark? Color.fromARGB(255, 228, 228, 228) : Color.fromARGB(255, 77, 77, 77);
-    Color titleFontColor = themeProvider.themeMode==ThemeMode.dark? const Color.fromARGB(255, 77, 77, 77) : const Color.fromARGB(255, 255, 255, 255);
-    Color infoFontColor = themeProvider.themeMode==ThemeMode.dark? const Color.fromARGB(255, 255, 255, 255) :  const Color.fromARGB(255, 77, 77, 77);
-    Color infoTileColor = themeProvider.themeMode==ThemeMode.dark? const Color.fromARGB(255, 77, 77, 77): const Color.fromARGB(255, 228, 228, 228);
-    Color buttonColor = themeProvider.themeMode==ThemeMode.dark?  Color.fromRGBO(162, 245, 238, 1): const Color.fromARGB(100, 18, 235, 214);
+    Color tileColor = themeProvider.themeMode == ThemeMode.dark
+        ? Color.fromARGB(255, 228, 228, 228)
+        : Color.fromARGB(255, 77, 77, 77);
+    Color titleFontColor = themeProvider.themeMode == ThemeMode.dark
+        ? const Color.fromARGB(255, 77, 77, 77)
+        : const Color.fromARGB(255, 255, 255, 255);
+    Color infoFontColor = themeProvider.themeMode == ThemeMode.dark
+        ? const Color.fromARGB(255, 255, 255, 255)
+        : const Color.fromARGB(255, 77, 77, 77);
+    Color infoTileColor = themeProvider.themeMode == ThemeMode.dark
+        ? const Color.fromARGB(255, 77, 77, 77)
+        : const Color.fromARGB(255, 228, 228, 228);
+    Color buttonColor = themeProvider.themeMode == ThemeMode.dark
+        ? Color.fromRGBO(162, 245, 238, 1)
+        : const Color.fromARGB(100, 18, 235, 214);
     // Color buttonTextColor = themeProvider.themeMode==ThemeMode.dark? Colors.black: Colors.black;
 
     return Scaffold(
-      backgroundColor: themeProvider.themeMode==ThemeMode.dark? const Color.fromRGBO(162, 245, 238, 255): const Color.fromRGBO(162, 245, 238, 255),
+      backgroundColor: themeProvider.themeMode == ThemeMode.dark
+          ? const Color.fromRGBO(162, 245, 238, 255)
+          : const Color.fromRGBO(162, 245, 238, 255),
       appBar: AppBar(
         leading: Container(), // To hide the back button.
         title: Text(
@@ -319,228 +335,269 @@ class _UserInfoPageState extends State<UserInfoPage> {
       body: SingleChildScrollView(
         child: Container(
           decoration: BoxDecoration(
-              color:Color.fromARGB(100, 18, 235, 214),
-              // borderRadius: BorderRadius.circular(0),
-            ),
+            color: Color.fromARGB(100, 18, 235, 214),
+            // borderRadius: BorderRadius.circular(0),
+          ),
           padding: EdgeInsets.all(padding),
           child: Container(
-      decoration: BoxDecoration(
-        color: tileColor, // Foreground color
-        borderRadius: BorderRadius.circular(30),
-      ),
-      padding: EdgeInsets.all(padding),
-          child: _user == null
-              ? const Center(child: CircularProgressIndicator())
-              : Padding(
-                  padding: EdgeInsets.all(padding),
-                  child: Center(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: <Widget>[
-                          const SizedBox(
-                              height: 20), // Separator (20 pixel height)
-                          Container(
-                            decoration: BoxDecoration(
-                              // color: Color.fromARGB(255, 147, 158, 167),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            padding: EdgeInsets.all(padding), 
-                            child: Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        Color.fromARGB(255, 16, 184, 199), // Start color
-                                        Color.fromARGB(255, 222, 12, 190), // End color
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  padding: EdgeInsets.all(padding), 
-                                  constraints: BoxConstraints(
-                                    maxWidth:
-                                        200, // Max of the size that the image can take
-                                  ),
-                                  child: Column(children: [
-                                    _userImageWidget(imageSize),
-                                  ]),
-                                ),
-                                const SizedBox(width: 50),
-                                Column(
+            decoration: BoxDecoration(
+              color: tileColor, // Foreground color
+              borderRadius: BorderRadius.circular(30),
+            ),
+            padding: EdgeInsets.all(padding),
+            child: _user == null
+                ? const Center(child: CircularProgressIndicator())
+                : Padding(
+                    padding: EdgeInsets.all(padding),
+                    child: Center(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: <Widget>[
+                            const SizedBox(
+                                height: 20), // Separator (20 pixel height)
+                            Container(
+                              decoration: BoxDecoration(
+                                // color: Color.fromARGB(255, 147, 158, 167),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              padding: EdgeInsets.all(padding),
+                              child: Center(
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text(
-                                        '${_user!.firstName} ${_user!.lastName}',
-                                        style: TextStyle(
-                                          color: titleFontColor,
-                                            fontSize: fontSize,
-                                            fontWeight: FontWeight.bold)),
-                                    const SizedBox(height: 8),
-                                    GestureDetector(
-                                      onTap: () => _showFriendsList(context),
-                                      child: Text(
-                                          tr('userInfo_friends') +
-                                              ': $_friendCount',
-                                          style: TextStyle( color: titleFontColor, fontSize: fontSize)),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            Color.fromARGB(255, 16, 184,
+                                                199), // Start color
+                                            Color.fromARGB(
+                                                255, 222, 12, 190), // End color
+                                          ],
+                                        ),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      padding: EdgeInsets.all(padding),
+                                      constraints: BoxConstraints(
+                                        maxWidth:
+                                            200, // Max of the size that the image can take
+                                      ),
+                                      child: Column(children: [
+                                        _userImageWidget(imageSize),
+                                      ]),
+                                    ),
+                                    const SizedBox(width: 50),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            '${_user!.firstName} ${_user!.lastName}',
+                                            style: TextStyle(
+                                                color: titleFontColor,
+                                                fontSize: fontSize,
+                                                fontWeight: FontWeight.bold),
+                                            textAlign: TextAlign
+                                                .center, // Centrar el texto
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 8),
+                                          GestureDetector(
+                                            onTap: () =>
+                                                _showFriendsList(context),
+                                            child: Text(
+                                                tr('userInfo_friends') +
+                                                    ': $_friendCount',
+                                                style: TextStyle(
+                                                    color: titleFontColor,
+                                                    fontSize: fontSize)),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
-                          ),
-                      ),
-                          const SizedBox(
-                              height: 40), // Separator (40 pixels height)
-                          Center(
-                            child: Container(
-                              width: columnWidth,
-                              decoration: BoxDecoration(
-                                color: infoTileColor,
-                                borderRadius: BorderRadius.circular(10), 
                               ),
-                              padding: EdgeInsets.all(padding), 
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                      tr('userInfo_emailLabel') + '\n' +
-                                          '${_user!.email}',
-                                      style: TextStyle(color: infoFontColor, fontSize: fontSize)),
-                                  const SizedBox(
-                                      height:
-                                          20), // Separator (20 pixels height)
-                                  Text(
-                                      tr('userInfo_phoneLabel') + '\n' +
-                                          '${_user!.phoneNumber ?? 'N/A'}',
-                                      style: TextStyle(fontSize: fontSize)),
-                                  const SizedBox(
-                                      height:
-                                          20), // Separator (20 pixels height)
-                                  Text(
-                                      tr('userInfo_countryLabel') + '\n'  +
-                                          '${_user!.country}',
-                                      style: TextStyle(color: infoFontColor, fontSize: fontSize)),
-                                  const SizedBox(
-                                      height:
-                                          20), // Separator (20 pixels height)
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        tr('userInfo_languagesLabel') + '\n' ,
-                                        style: TextStyle(color: infoFontColor, fontSize: fontSize),
-                                      ),
-                                      Wrap(
-                                        spacing:
-                                            8.0, // Espacio horizontal entre los chips
-                                        children: _selectedLanguages
-                                            .map((language) => Chip(
-                                                  label: Text(getLanguageName(
-                                                      language,
-                                                      _userPreferredLanguage)),
-                                                ))
-                                            .toList(),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(
-                                      height:
-                                          20), // Separator (20 pixels height)
-                                  Text(
-                                      tr('userInfo_bioLabel') + '\n' +
-                                          '${_user!.bio ?? 'Not provided'}',
-                                      style: TextStyle(color: infoFontColor, fontSize: fontSize)),
-                                  const SizedBox(
-                                      height:
-                                          20), // Separator (20 pixels height)
-                                  Text(
-                                      tr('userInfo_birthdayLabel') + '\n' +
-                                          '${_user!.birthday != null ? DateFormat('yyyy-MM-dd').format(_user!.birthday!) : 'N/A'}',
-                                      style: TextStyle(color: infoFontColor, fontSize: fontSize)),
-                                  const SizedBox(
-                                      height:
-                                          20), // Separator (20 pixels height)
-                                  Text(
-                                    selectedHobbies.isNotEmpty
-                                        ? tr('userInfo_hobbiesLabel') + '\n' + '${selectedHobbies.join(', ')}'
-                                        : tr('userInfo_hobbiesLabel') + '\n' + tr('userInfo_noHobbies'),
-                                    style: TextStyle(color: infoFontColor, fontSize: fontSize),
-                                  ),
-                                  const SizedBox(
-                                      height:
-                                          20), // Separator (20 pixels height)
-                                  ConstrainedBox(
-                                    constraints: BoxConstraints(maxWidth: 600),
-                                    child: Row(
+                            ),
+                            const SizedBox(
+                                height: 40), // Separator (40 pixels height)
+                            Center(
+                              child: Container(
+                                width: columnWidth,
+                                decoration: BoxDecoration(
+                                  color: infoTileColor,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: EdgeInsets.all(padding),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                        tr('userInfo_emailLabel') +
+                                            '\n' +
+                                            '${_user!.email}',
+                                        style: TextStyle(
+                                            color: infoFontColor,
+                                            fontSize: fontSize)),
+                                    const SizedBox(
+                                        height:
+                                            20), // Separator (20 pixels height)
+                                    Text(
+                                        tr('userInfo_phoneLabel') +
+                                            '\n' +
+                                            '${_user!.phoneNumber ?? 'N/A'}',
+                                        style: TextStyle(fontSize: fontSize)),
+                                    const SizedBox(
+                                        height:
+                                            20), // Separator (20 pixels height)
+                                    Text(
+                                        tr('userInfo_countryLabel') +
+                                            '\n' +
+                                            '${_user!.country}',
+                                        style: TextStyle(
+                                            color: infoFontColor,
+                                            fontSize: fontSize)),
+                                    const SizedBox(
+                                        height:
+                                            20), // Separator (20 pixels height)
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Expanded(
-                                          child: Container(
-                                            width: buttonWidth,
-                                            child: ElevatedButton(
-                                              onPressed:
-                                                  _navigateToTopicsScreen,
-                                              style: ElevatedButton.styleFrom(
-                                                  backgroundColor: buttonColor,// Size of the bottom
-                                              ),                                                     
-                                              child: Text(
-                                                  tr(
-                                                      'userInfo_buttonUpdateTopics'),
-                                                  style: TextStyle(
-                                                      color: titleFontColor, fontSize: fontSize)),
-                                            ),
-                                          ),
+                                        Text(
+                                          tr('userInfo_languagesLabel') + '\n',
+                                          style: TextStyle(
+                                              color: infoFontColor,
+                                              fontSize: fontSize),
                                         ),
-                                        const SizedBox(
-                                          width: 10,
-                                        ),
-                                        Expanded(
-                                          child: Container(
-                                            width: buttonWidth,
-                                            child: ElevatedButton(
-                                              onPressed: () =>
-                                                  Navigator.pushReplacement(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                          builder: (_) =>
-                                                              EditUserInfoPage(
-                                                                  user: _user,
-                                                                  userEmail: widget
-                                                                      .userEmail)))
-                                                    ..then((value) {
-                                                      // Optional: Reload user information when returning from editing page
-                                                      _fetchUserInfo(
-                                                          widget.userEmail);
-                                                    }),
-                                              style: ElevatedButton.styleFrom(
-                                                  backgroundColor: buttonColor,// Size of the bottom
-                                                ),                                                    
-                                              child: Text(
-                                                  tr(
-                                                      'userInfo_buttonEditProfile'),
-                                                  style: TextStyle(
-                                                      color: titleFontColor, fontSize: fontSize)),
-                                            ),
-                                          ),
+                                        Wrap(
+                                          spacing:
+                                              8.0, // Espacio horizontal entre los chips
+                                          children: _selectedLanguages
+                                              .map((language) => Chip(
+                                                    label: Text(getLanguageName(
+                                                        language,
+                                                        _userPreferredLanguage)),
+                                                  ))
+                                              .toList(),
                                         ),
                                       ],
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(
+                                        height:
+                                            20), // Separator (20 pixels height)
+                                    Text(
+                                        tr('userInfo_bioLabel') +
+                                            '\n' +
+                                            '${_user!.bio ?? 'Not provided'}',
+                                        style: TextStyle(
+                                            color: infoFontColor,
+                                            fontSize: fontSize),
+                                        textAlign: TextAlign.justify),
+                                    const SizedBox(
+                                        height:
+                                            20), // Separator (20 pixels height)
+                                    Text(
+                                        tr('userInfo_birthdayLabel') +
+                                            '\n' +
+                                            '${_user!.birthday != null ? DateFormat('yyyy-MM-dd').format(_user!.birthday!) : 'N/A'}',
+                                        style: TextStyle(
+                                            color: infoFontColor,
+                                            fontSize: fontSize)),
+                                    const SizedBox(
+                                        height:
+                                            20), // Separator (20 pixels height)
+                                    Text(
+                                        selectedHobbies.isNotEmpty
+                                            ? tr('userInfo_hobbiesLabel') +
+                                                '\n' +
+                                                '${selectedHobbies.join(', ')}'
+                                            : tr('userInfo_hobbiesLabel') +
+                                                '\n' +
+                                                tr('userInfo_noHobbies'),
+                                        style: TextStyle(
+                                            color: infoFontColor,
+                                            fontSize: fontSize),
+                                        textAlign: TextAlign.justify),
+                                    const SizedBox(
+                                        height:
+                                            20), // Separator (20 pixels height)
+                                    ConstrainedBox(
+                                      constraints:
+                                          BoxConstraints(maxWidth: 600),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Container(
+                                              width: buttonWidth,
+                                              child: ElevatedButton(
+                                                onPressed:
+                                                    _navigateToTopicsScreen,
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      buttonColor, // Size of the bottom
+                                                ),
+                                                child: Text(
+                                                    tr(
+                                                        'userInfo_buttonUpdateTopics'),
+                                                    style: TextStyle(
+                                                        color: titleFontColor,
+                                                        fontSize: fontSize)),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            width: 10,
+                                          ),
+                                          Expanded(
+                                            child: Container(
+                                              width: buttonWidth,
+                                              child: ElevatedButton(
+                                                onPressed: () =>
+                                                    Navigator.pushReplacement(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                            builder: (_) =>
+                                                                EditUserInfoPage(
+                                                                    user: _user,
+                                                                    userEmail:
+                                                                        widget
+                                                                            .userEmail)))
+                                                      ..then((value) {
+                                                        // Optional: Reload user information when returning from editing page
+                                                        _fetchUserInfo(
+                                                            widget.userEmail);
+                                                      }),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:
+                                                      buttonColor, // Size of the bottom
+                                                ),
+                                                child: Text(
+                                                    tr(
+                                                        'userInfo_buttonEditProfile'),
+                                                    style: TextStyle(
+                                                        color: titleFontColor,
+                                                        fontSize: fontSize)),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-        ),
+          ),
         ),
       ),
     );

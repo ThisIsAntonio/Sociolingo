@@ -100,7 +100,6 @@ class _ChatPageState extends State<ChatPage> {
     bool isLargeScreen = screenWidth > 800;
     double titleSize = isLargeScreen ? 28 : 24;
     double subtitleSize = isLargeScreen ? 18 : 14;
-    double fontSize = isLargeScreen ? 14 : 12;
 
     return Scaffold(
       appBar: !isLargeScreen && selectedFriendId != null
