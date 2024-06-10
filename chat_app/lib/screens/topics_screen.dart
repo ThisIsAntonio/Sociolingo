@@ -200,7 +200,7 @@ class _TopicsScreenState extends State<TopicsScreen> {
                                 isSelected
                                     ? Icons.check_circle
                                     : Icons.check_circle_outline,
-                                color: isSelected ? Colors.green : null,
+                                color: isSelected ? Color.fromARGB(206, 12, 169, 153): null,
                               ),
                             );
                           }).toList(),
@@ -216,7 +216,8 @@ class _TopicsScreenState extends State<TopicsScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _saveHobbies,
-        child: Icon(Icons.save),
+        backgroundColor: Color.fromARGB(206, 12, 169, 153),
+        child: Icon(Icons.save, color:Colors.white),
         tooltip: tr('topicScreen_saveHobbies'),
       ),
     );

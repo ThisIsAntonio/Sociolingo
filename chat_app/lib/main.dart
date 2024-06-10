@@ -152,7 +152,6 @@ class _MyAppState extends State<MyApp> {
                     return WelcomeScreen();
                   }
                 }
-                //
                 return Scaffold(
                   body: Center(child: CircularProgressIndicator()),
                 );

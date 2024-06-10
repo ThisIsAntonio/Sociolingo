@@ -10,6 +10,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:chat_app/screens/topics_screen.dart';
 import 'package:chat_app/model/language_list.dart';
+import 'package:provider/provider.dart';
+import 'package:chat_app/model/theme_provider.dart';
 //import 'package:flutter/rendering.dart';
 //import 'package:flutter/widgets.dart';
 
@@ -292,8 +294,16 @@ class _UserInfoPageState extends State<UserInfoPage> {
     double padding = screenWidth > 800 ? 30.0 : 16.0;
     double fontSize = screenWidth > 800 ? 18 : 16;
     double imageSize = screenWidth > 800 ? 150 : 100;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    Color tileColor = themeProvider.themeMode==ThemeMode.dark? Color.fromARGB(255, 228, 228, 228) : Color.fromARGB(255, 77, 77, 77);
+    Color titleFontColor = themeProvider.themeMode==ThemeMode.dark? const Color.fromARGB(255, 77, 77, 77) : const Color.fromARGB(255, 255, 255, 255);
+    Color infoFontColor = themeProvider.themeMode==ThemeMode.dark? const Color.fromARGB(255, 255, 255, 255) :  const Color.fromARGB(255, 77, 77, 77);
+    Color infoTileColor = themeProvider.themeMode==ThemeMode.dark? const Color.fromARGB(255, 77, 77, 77): const Color.fromARGB(255, 228, 228, 228);
+    Color buttonColor = themeProvider.themeMode==ThemeMode.dark?  Color.fromRGBO(162, 245, 238, 1): const Color.fromARGB(100, 18, 235, 214);
+    // Color buttonTextColor = themeProvider.themeMode==ThemeMode.dark? Colors.black: Colors.black;
 
     return Scaffold(
+      backgroundColor: themeProvider.themeMode==ThemeMode.dark? const Color.fromRGBO(162, 245, 238, 255): const Color.fromRGBO(162, 245, 238, 255),
       appBar: AppBar(
         leading: Container(), // To hide the back button.
         title: Text(
@@ -307,8 +317,18 @@ class _UserInfoPageState extends State<UserInfoPage> {
         centerTitle: true, // Ensures the title is centered in the AppBar.
       ),
       body: SingleChildScrollView(
-        child: Padding(
+        child: Container(
+          decoration: BoxDecoration(
+              color:Color.fromARGB(100, 18, 235, 214),
+              // borderRadius: BorderRadius.circular(0),
+            ),
           padding: EdgeInsets.all(padding),
+          child: Container(
+      decoration: BoxDecoration(
+        color: tileColor, // Foreground color
+        borderRadius: BorderRadius.circular(30),
+      ),
+      padding: EdgeInsets.all(padding),
           child: _user == null
               ? const Center(child: CircularProgressIndicator())
               : Padding(
@@ -317,17 +337,31 @@ class _UserInfoPageState extends State<UserInfoPage> {
                     child: SingleChildScrollView(
                       child: Column(
                         children: <Widget>[
-                          Divider(
-                            color: Colors.white70, // Line color.
-                            thickness: 2, // Line thickness.
-                          ),
                           const SizedBox(
                               height: 20), // Separator (20 pixel height)
-                          Center(
+                          Container(
+                            decoration: BoxDecoration(
+                              // color: Color.fromARGB(255, 147, 158, 167),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: EdgeInsets.all(padding), 
+                            child: Center(
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Container(
+                                   decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Color.fromARGB(255, 16, 184, 199), // Start color
+                                        Color.fromARGB(255, 222, 12, 190), // End color
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: EdgeInsets.all(padding), 
                                   constraints: BoxConstraints(
                                     maxWidth:
                                         200, // Max of the size that the image can take
@@ -342,6 +376,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                                     Text(
                                         '${_user!.firstName} ${_user!.lastName}',
                                         style: TextStyle(
+                                          color: titleFontColor,
                                             fontSize: fontSize,
                                             fontWeight: FontWeight.bold)),
                                     const SizedBox(height: 8),
@@ -350,40 +385,46 @@ class _UserInfoPageState extends State<UserInfoPage> {
                                       child: Text(
                                           tr('userInfo_friends') +
                                               ': $_friendCount',
-                                          style: TextStyle(fontSize: fontSize)),
+                                          style: TextStyle( color: titleFontColor, fontSize: fontSize)),
                                     ),
                                   ],
                                 ),
                               ],
                             ),
                           ),
+                      ),
                           const SizedBox(
                               height: 40), // Separator (40 pixels height)
                           Center(
                             child: Container(
                               width: columnWidth,
+                              decoration: BoxDecoration(
+                                color: infoTileColor,
+                                borderRadius: BorderRadius.circular(10), 
+                              ),
+                              padding: EdgeInsets.all(padding), 
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                      tr('userInfo_emailLabel') +
+                                      tr('userInfo_emailLabel') + '\n' +
                                           '${_user!.email}',
-                                      style: TextStyle(fontSize: fontSize)),
+                                      style: TextStyle(color: infoFontColor, fontSize: fontSize)),
                                   const SizedBox(
                                       height:
                                           20), // Separator (20 pixels height)
                                   Text(
-                                      tr('userInfo_phoneLabel') +
+                                      tr('userInfo_phoneLabel') + '\n' +
                                           '${_user!.phoneNumber ?? 'N/A'}',
                                       style: TextStyle(fontSize: fontSize)),
                                   const SizedBox(
                                       height:
                                           20), // Separator (20 pixels height)
                                   Text(
-                                      tr('userInfo_countryLabel') +
+                                      tr('userInfo_countryLabel') + '\n'  +
                                           '${_user!.country}',
-                                      style: TextStyle(fontSize: fontSize)),
+                                      style: TextStyle(color: infoFontColor, fontSize: fontSize)),
                                   const SizedBox(
                                       height:
                                           20), // Separator (20 pixels height)
@@ -392,8 +433,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        tr('userInfo_languagesLabel'),
-                                        style: TextStyle(fontSize: fontSize),
+                                        tr('userInfo_languagesLabel') + '\n' ,
+                                        style: TextStyle(color: infoFontColor, fontSize: fontSize),
                                       ),
                                       Wrap(
                                         spacing:
@@ -412,24 +453,24 @@ class _UserInfoPageState extends State<UserInfoPage> {
                                       height:
                                           20), // Separator (20 pixels height)
                                   Text(
-                                      tr('userInfo_bioLabel') +
+                                      tr('userInfo_bioLabel') + '\n' +
                                           '${_user!.bio ?? 'Not provided'}',
-                                      style: TextStyle(fontSize: fontSize)),
+                                      style: TextStyle(color: infoFontColor, fontSize: fontSize)),
                                   const SizedBox(
                                       height:
                                           20), // Separator (20 pixels height)
                                   Text(
-                                      tr('userInfo_birthdayLabel') +
+                                      tr('userInfo_birthdayLabel') + '\n' +
                                           '${_user!.birthday != null ? DateFormat('yyyy-MM-dd').format(_user!.birthday!) : 'N/A'}',
-                                      style: TextStyle(fontSize: fontSize)),
+                                      style: TextStyle(color: infoFontColor, fontSize: fontSize)),
                                   const SizedBox(
                                       height:
                                           20), // Separator (20 pixels height)
                                   Text(
                                     selectedHobbies.isNotEmpty
-                                        ? 'Hobbies: ${selectedHobbies.join(', ')}'
-                                        : tr('userInfo_noHobbies'),
-                                    style: TextStyle(fontSize: fontSize),
+                                        ? tr('userInfo_hobbiesLabel') + '\n' + '${selectedHobbies.join(', ')}'
+                                        : tr('userInfo_hobbiesLabel') + '\n' + tr('userInfo_noHobbies'),
+                                    style: TextStyle(color: infoFontColor, fontSize: fontSize),
                                   ),
                                   const SizedBox(
                                       height:
@@ -444,11 +485,14 @@ class _UserInfoPageState extends State<UserInfoPage> {
                                             child: ElevatedButton(
                                               onPressed:
                                                   _navigateToTopicsScreen,
+                                              style: ElevatedButton.styleFrom(
+                                                  backgroundColor: buttonColor,// Size of the bottom
+                                              ),                                                     
                                               child: Text(
                                                   tr(
                                                       'userInfo_buttonUpdateTopics'),
                                                   style: TextStyle(
-                                                      fontSize: fontSize)),
+                                                      color: titleFontColor, fontSize: fontSize)),
                                             ),
                                           ),
                                         ),
@@ -473,11 +517,14 @@ class _UserInfoPageState extends State<UserInfoPage> {
                                                       _fetchUserInfo(
                                                           widget.userEmail);
                                                     }),
+                                              style: ElevatedButton.styleFrom(
+                                                  backgroundColor: buttonColor,// Size of the bottom
+                                                ),                                                    
                                               child: Text(
                                                   tr(
                                                       'userInfo_buttonEditProfile'),
                                                   style: TextStyle(
-                                                      fontSize: fontSize)),
+                                                      color: titleFontColor, fontSize: fontSize)),
                                             ),
                                           ),
                                         ),
@@ -493,6 +540,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                     ),
                   ),
                 ),
+        ),
         ),
       ),
     );

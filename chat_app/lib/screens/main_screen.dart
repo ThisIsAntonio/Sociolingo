@@ -9,6 +9,8 @@ import 'package:chat_app/screens/settings_page.dart';
 import 'package:chat_app/model/user.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+import 'package:chat_app/model/theme_provider.dart';
 
 class MainScreen extends StatefulWidget {
   final String userEmail;
@@ -196,6 +198,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildDrawer() {
+    final themeProvider = Provider.of<ThemeProvider>(context); // Add different versions of logo for light/dark theme
+    Color tileColor = themeProvider.themeMode==ThemeMode.dark? const Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 77, 77, 77);
+    Color selectedItemColor = themeProvider.themeMode==ThemeMode.dark? const Color.fromARGB(206, 12, 169, 153) : const Color.fromRGBO(162, 245, 238, 1);
     return Align(
       alignment: Alignment.topCenter,
       child: SingleChildScrollView(
@@ -248,40 +253,40 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   ),
             ListTile(
               selected: _selectedIndex == 0,
-              selectedTileColor: Colors.grey,
-              selectedColor: Colors.red,
+              selectedTileColor: tileColor,
+              selectedColor: selectedItemColor,
               title: _isCollapsed ? null : Text(tr('mainScreen_chatLabel')),
               leading: Icon(Icons.chat),
               onTap: () => _onItemTapped(0),
             ),
             ListTile(
               selected: _selectedIndex == 1,
-              selectedTileColor: Colors.grey,
-              selectedColor: Colors.red,
+              selectedTileColor: tileColor,
+              selectedColor: selectedItemColor,
               title: _isCollapsed ? null : Text(tr('mainScreen_topicsLabel')),
               leading: Icon(Icons.people),
               onTap: () => _onItemTapped(1),
             ),
             ListTile(
               selected: _selectedIndex == 2,
-              selectedTileColor: Colors.grey,
-              selectedColor: Colors.red,
+              selectedTileColor: tileColor,
+              selectedColor: selectedItemColor,
               title: _isCollapsed ? null : Text(tr('mainScreen_RequestsLabel')),
               leading: Icon(Icons.mail),
               onTap: () => _onItemTapped(2),
             ),
             ListTile(
               selected: _selectedIndex == 3,
-              selectedTileColor: Colors.grey,
-              selectedColor: Colors.red,
+              selectedTileColor: tileColor,
+              selectedColor: selectedItemColor,
               title: _isCollapsed ? null : Text(tr('mainScreen_profileLabel')),
               leading: Icon(Icons.account_circle),
               onTap: () => _onItemTapped(3),
             ),
             ListTile(
               selected: _selectedIndex == 4,
-              selectedTileColor: Colors.grey,
-              selectedColor: Colors.red,
+              selectedTileColor: tileColor,
+              selectedColor: selectedItemColor,
               title: _isCollapsed ? null : Text(tr('mainScreen_settingsLabel')),
               leading: Icon(Icons.settings),
               onTap: () => _onItemTapped(4),
@@ -293,6 +298,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildMobileNavBar() {
+    final themeProvider = Provider.of<ThemeProvider>(context); // Add different versions of logo for light/dark theme
+    Color unselectedItemColor = themeProvider.themeMode==ThemeMode.dark? Color.fromARGB(255, 201, 201, 201) : Color.fromARGB(255, 77, 77, 77);
+    Color selectedItemColor = themeProvider.themeMode==ThemeMode.dark? const Color.fromRGBO(162, 245, 238, 1) : const Color.fromARGB(206, 12, 169, 153);
     return BottomNavigationBar(
       items: <BottomNavigationBarItem>[
         BottomNavigationBarItem(
@@ -317,8 +325,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         ),
       ],
       currentIndex: _selectedIndex,
-      selectedItemColor: Colors.red,
-      unselectedItemColor: Colors.grey,
+      selectedItemColor:selectedItemColor,
+      unselectedItemColor: unselectedItemColor,
       onTap: _onItemTapped,
     );
   }

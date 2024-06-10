@@ -9,6 +9,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:chat_app/screens/topics_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:chat_app/model/theme_provider.dart';
 //import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 // Define the LoginScreen widget
@@ -71,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (isActive) {
           _updateMessagingToken();
-          if (firstTime) {
+          if (firstTime ==  false) {
             // The user is new so we navigate them to set their profile information and send the screen to do the process
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (context) =>
@@ -343,7 +345,10 @@ class _LoginScreenState extends State<LoginScreen> {
     double inputWidth =
         screenWidth > 800 ? screenWidth * 0.5 : screenWidth * 0.8;
     double fontSize = screenWidth > 800 ? 18 : 16;
+    const fontColor = Color.fromARGB(255, 4, 33, 52);
     double logoSize = screenWidth > 800 ? 200 : 100;
+    final themeProvider = Provider.of<ThemeProvider>(context); // Add different versions of logo for light/dark theme
+    String namelogo = themeProvider.themeMode==ThemeMode.dark? "assets/img/namelogo_white.png" : "assets/img/namelogo_black.png";
 
     return Scaffold(
       appBar: AppBar(
@@ -365,13 +370,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 right: 0,
                 child: Center(
                   child: Image.asset(
-                    'assets/img/sociolingo-namelogo-black.png',
+                    namelogo,
                     width: logoSize,
                     //height: 200, 
                     fit: BoxFit.cover, 
                   ),
                 ),
-              ),                
+              ),
                 const SizedBox(height: 20),
                 // Title
                 Text(
@@ -468,7 +473,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       padding: EdgeInsets.symmetric(horizontal: 8.0),
                       child: Text(
                         'OR',
-                        style: TextStyle(color: Color.fromARGB(255, 36, 5, 104)),
+                        style: TextStyle(color: fontColor),
                       ),
                     ),
                     Expanded(
@@ -486,7 +491,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: TextFormField(
                     decoration: InputDecoration(
                       labelText: tr('login_email'),
-                      labelStyle: TextStyle(fontSize: fontSize),
+                      labelStyle: TextStyle(fontSize: fontSize, color: fontColor),
                     ),
                     keyboardType: TextInputType.emailAddress,
                     onSaved: (value) => _email = value ?? '',
@@ -498,7 +503,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       }
                       return null;
                     },
-                    style: TextStyle(fontSize: fontSize),
+                    style: TextStyle(fontSize: fontSize, color: fontColor),
                   ),
                 ),
                 // Password
@@ -507,7 +512,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: TextFormField(
                     decoration: InputDecoration(
                         labelText: tr('login_password'),
-                        labelStyle: TextStyle(fontSize: fontSize)),
+                        labelStyle: TextStyle(fontSize: fontSize, color: fontColor)),
                     obscureText: true,
                     onSaved: (value) => _password = value ?? '',
                     validator: (value) {
@@ -516,7 +521,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       }
                       return null;
                     },
-                    style: TextStyle(fontSize: fontSize),
+                    style: TextStyle(fontSize: fontSize, color: fontColor),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -526,6 +531,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: ElevatedButton(
                     onPressed: _submit,
                     child: Text(tr('login_buttonLogin')),
+                    style: ElevatedButton.styleFrom(
+                      //backgroundColor: Theme.of(context).primaryColor, // Background color
+                      //brightness: Brightness.light;
+                      backgroundColor: Color.fromRGBO(162, 245, 238, 1),
+                      foregroundColor: Colors.black, // Text color
+                      minimumSize: Size(double.infinity, 50), // Size of the bottom
+                    ),
                   ),
                 ),
                 // Forgot Password Button
@@ -535,6 +547,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => ForgotPasswordScreen()));
                   },
+                  style: ButtonStyle(
+                    foregroundColor: MaterialStateProperty.all<Color>(fontColor),
+                  ),
                   child: Text(tr("login_buttonForgotPassword")),
                 ),
               ],

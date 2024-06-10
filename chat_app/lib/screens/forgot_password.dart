@@ -59,6 +59,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
     double inputWidth =
         screenWidth > 800 ? screenWidth * 0.5 : screenWidth * 0.8;
     double fontSize = screenWidth > 800 ? 18 : 16;
+    const fontColor = Color.fromARGB(255, 4, 33, 52);
     return Scaffold(
       appBar: AppBar(
         leading: Container(), // To remove the back button
@@ -85,7 +86,7 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
                 const SizedBox(height: 20),
                 Text(
                   "forgotPassword_info",
-                  style: TextStyle(fontSize: subtitleSize),
+                  style: TextStyle(fontSize: subtitleSize, color: fontColor),
                   textAlign: TextAlign.center,
                 ).tr(),
                 const SizedBox(height: 20),
@@ -141,6 +142,13 @@ class _ForgotPasswordFormState extends State<ForgotPasswordForm> {
                   child: ElevatedButton(
                     child: Text("forgotPassword_sendInstructions").tr(),
                     onPressed: _sendInstructions,
+                    style: ElevatedButton.styleFrom(
+                      //backgroundColor: Theme.of(context).primaryColor, // Background color
+                      //brightness: Brightness.light;
+                      backgroundColor: Color.fromRGBO(162, 245, 238, 1),
+                      foregroundColor: Colors.black, // Text color
+                      minimumSize: Size(double.infinity, 50), // Size of the bottom
+                    ),                    
                   ),
                 ),
               ],

@@ -74,6 +74,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     double padding = screenWidth > 800 ? 30.0 : 16.0;
     double buttonWidth = screenWidth > 800 ? screenWidth * 0.4 : screenWidth * 0.85;
     double logoSize = screenWidth > 800 ? 350 : 250;
+    // If needed customize namelogo for dark/light theme versions
+    // final themeProvider = Provider.of<ThemeProvider>(context); // Add different versions of logo for light/dark theme
+    // String namelogo = themeProvider.themeMode==ThemeMode.dark? "assets/img/namelogo_white.png" : "assets/img/namelogo_black.png";
+    String namelogo = "assets/img/namelogo_white.png";
+    const appButtonColor = const Color.fromARGB(255, 18, 235, 214);
 
     return Scaffold(
       body: Container(
@@ -102,7 +107,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 right: 0,
                 child: Center(
                   child: Image.asset(
-                    'assets/img/sociolingo-namelogo.png',
+                    namelogo,
                     width: logoSize,
                     //height: 200, 
                     fit: BoxFit.cover, 
@@ -192,7 +197,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             Container(
               width: buttonWidth,
               child: MaterialButton(
-                color: const Color.fromARGB(255, 18, 235, 214),
+                color: appButtonColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),
@@ -227,7 +232,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     style: TextStyle(
                         color: Colors.white70,
                         fontWeight: FontWeight.bold,
-                        decoration: TextDecoration.underline),
+                        // decoration: TextDecoration.underline
+                        ),
                   ),
                 ),
               ],
