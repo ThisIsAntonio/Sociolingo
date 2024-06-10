@@ -25,6 +25,22 @@ class _ChatPageState extends State<ChatPage> {
     return friendships.docs.isNotEmpty;
   }
 
+  // Function to get the list of unread messages for a specific user
+  Future<int> countUnreadMessages(String chatId, String friendId) async {
+    var snapshot = await _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .where('read', isEqualTo: false)
+        .where('senderId', isEqualTo: selectedFriendId)
+        .get();
+
+    // Print the number of messages with read=false and senderId=friendId
+    //print("Unread messages for chat $chatId: ${snapshot.docs.length}");
+
+    return snapshot.docs.length;
+  }
+
   // Function to show the list of friends from Firestore database
   void _showFriendsList() async {
     var currentUser = _auth.currentUser;
@@ -150,9 +166,40 @@ class _ChatPageState extends State<ChatPage> {
                                   "${friend['first_name']} ${friend['last_name']}",
                                   style: TextStyle(fontSize: subtitleSize),
                                 ),
-                                subtitle: Text(
-                                  chat['lastMessage'] ?? "No messages",
-                                  style: TextStyle(fontSize: fontSize),
+                                subtitle: FutureBuilder<int>(
+                                  future:
+                                      countUnreadMessages(chat.id, friendId),
+                                  builder: (context, snapshot) {
+                                    // Reeplace the text with the number of unread messages
+                                    if (snapshot.hasData &&
+                                        snapshot.data! > 0) {
+                                      return Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(chat['lastMessage'] ??
+                                              "No messages"),
+                                          Container(
+                                            padding: EdgeInsets.all(6),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red,
+                                              borderRadius:
+                                                  BorderRadius.circular(15),
+                                            ),
+                                            child: Text(
+                                              '${snapshot.data}',
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    } else {
+                                      // If there are no unread messages, show the last message
+                                      return Text(
+                                          chat['lastMessage'] ?? "No messages");
+                                    }
+                                  },
                                 ),
                                 onTap: () {
                                   setState(() {
