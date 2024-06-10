@@ -73,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (isActive) {
           _updateMessagingToken();
-          if (firstTime ==  false) {
+          if (firstTime ==  true) {
             // The user is new so we navigate them to set their profile information and send the screen to do the process
             Navigator.of(context).pushReplacement(MaterialPageRoute(
                 builder: (context) =>
@@ -345,11 +345,10 @@ class _LoginScreenState extends State<LoginScreen> {
     double inputWidth =
         screenWidth > 800 ? screenWidth * 0.5 : screenWidth * 0.8;
     double fontSize = screenWidth > 800 ? 18 : 16;
-    const fontColor = Color.fromARGB(255, 4, 33, 52);
-    double logoSize = screenWidth > 800 ? 200 : 100;
     final themeProvider = Provider.of<ThemeProvider>(context); // Add different versions of logo for light/dark theme
+    double logoSize = screenWidth > 800 ? 200 : 100;
     String namelogo = themeProvider.themeMode==ThemeMode.dark? "assets/img/namelogo_white.png" : "assets/img/namelogo_black.png";
-
+    Color fontColor = themeProvider.themeMode==ThemeMode.dark? const Color.fromARGB(255, 255, 255, 255) : const Color.fromARGB(255, 77, 77, 77);
     return Scaffold(
       appBar: AppBar(
         title: const Row(
@@ -473,7 +472,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       padding: EdgeInsets.symmetric(horizontal: 8.0),
                       child: Text(
                         'OR',
-                        style: TextStyle(color: fontColor),
+                        style: TextStyle(color:Colors.grey),
                       ),
                     ),
                     Expanded(

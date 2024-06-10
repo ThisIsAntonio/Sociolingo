@@ -100,20 +100,38 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            const SizedBox(height: 20),              
             const Spacer(),
-                Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: Center(
+              // Program Logo
+              CircleAvatar(
+                radius: screenWidth > 600
+                    ? 60
+                    : 40, // Adjust the size to your liking
+                backgroundColor: Colors.transparent, // Transparent background
+                child: ClipOval(
                   child: Image.asset(
-                    namelogo,
-                    width: logoSize,
-                    //height: 200, 
-                    fit: BoxFit.cover, 
-                  ),
+                      'assets/img/logo.png', // rute of your image
+                      fit: BoxFit.cover, // Cover the space of the circle
+                      width: screenWidth > 600 ? 120 : 80, // Adjust the width
+                      height:
+                      screenWidth > 600 ? 120 : 80), //Adjust the height
                 ),
               ),
+              const SizedBox(height: 20), 
+              Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Image.asset(
+                  namelogo,
+                  width: logoSize,
+                  //height: 200, 
+                  fit: BoxFit.cover, 
+                ),
+              ),
+            ),
+            const SizedBox(height: 20), 
             // Title and subtitle
             Text(
               tr('w_mainTitle'),

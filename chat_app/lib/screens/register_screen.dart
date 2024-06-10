@@ -279,7 +279,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     double logoSize = screenWidth > 800 ? 200 : 100;
     final themeProvider = Provider.of<ThemeProvider>(context); // Add different versions of logo for light/dark theme
     String namelogo = themeProvider.themeMode==ThemeMode.dark? "assets/img/namelogo_white.png" : "assets/img/namelogo_black.png";
-    const fontColor = Color.fromARGB(255, 4, 33, 52);
+    const fontColor = Colors.grey;
+    Color selectedColor = themeProvider.themeMode==ThemeMode.dark? const Color.fromARGB(255, 255, 255, 255) :  const Color.fromARGB(255, 77, 77, 77);
+    Color buttonColor = themeProvider.themeMode==ThemeMode.dark?  Color.fromRGBO(162, 245, 238, 1): const Color.fromARGB(100, 18, 235, 214);
+    // Color buttonTextColor = themeProvider.themeMode==ThemeMode.dark? Color.fromARGB(255, 228, 228, 228) : Color.fromARGB(255, 77, 77, 77);
     return Scaffold(
       appBar: AppBar(
         title: const Row(
@@ -308,6 +311,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
+                // Program Logo
+                CircleAvatar(
+                  radius: screenWidth > 600
+                      ? 60
+                      : 40, // Adjust the size to your liking
+                  backgroundColor: Colors.transparent, // Transparent background
+                  child: ClipOval(
+                    child: Image.asset(
+                        'assets/img/logo.png', // rute of your image
+                        fit: BoxFit.cover, // Cover the space of the circle
+                        width: screenWidth > 600 ? 120 : 80, // Adjust the width
+                        height:
+                            screenWidth > 600 ? 120 : 80), //Adjust the height
+                  ),
+                ),
+                const SizedBox(height: 20),                  
                   // Title and subtitle
                   Text(
                     tr('register_title'),
@@ -615,7 +634,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       title: Text(tr('register_labelLanguagesTitle')),
                       buttonText: Text(
                         tr('register_selectButton'),
-                        style: TextStyle(color: Colors.white, fontSize: 16),
+                        style: TextStyle(color: Colors.black, fontSize: 16),
                       ),                  
                       onConfirm: (values) {
                         setState(() {
@@ -630,8 +649,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         },
                       ),
                       decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .primaryColor, // Use the main color of the app
+                        color: buttonColor, // Use the main color of the app
                         // color: Color.fromRGBO(108, 167, 163, 1),
                         borderRadius: BorderRadius.circular(4),
                       ),
@@ -641,12 +659,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       itemsTextStyle: TextStyle(color: fontColor),
                       selectedItemsTextStyle:
-                          TextStyle(color: Theme.of(context).primaryColor,
+                          TextStyle(color:selectedColor,
                           ),
                       cancelText: Text(tr('register_cancelButton'),
-                          style: TextStyle(color: Theme.of(context).primaryColor)),
+                          style: TextStyle(color: selectedColor)),
                       confirmText: Text(tr('register_confirmButton'),
-                          style: TextStyle(color: Theme.of(context).primaryColor)),
+                          style: TextStyle(color: selectedColor)),
                     ),
                   ),
                   const SizedBox(height: 20), // Separator (20 pixels height)
