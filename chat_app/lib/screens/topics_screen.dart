@@ -18,6 +18,8 @@ class TopicsScreen extends StatefulWidget {
 // Class for the state of the TopicsScreen
 class _TopicsScreenState extends State<TopicsScreen> {
   List<String> selectedHobbies = []; // List to keep track of selected hobbies
+  List<String> tempSelectedHobbies =
+      []; // List to keep track of temporary selected hobbies
   String? userEmail;
   String topicsTable = 'topics_en'; // Default topics table
 
@@ -27,6 +29,23 @@ class _TopicsScreenState extends State<TopicsScreen> {
     final user = FirebaseAuth.instance.currentUser;
     userEmail = user?.email;
     _getLanguageInfo();
+    _loadSelectedHobbies();
+  }
+
+  void _loadSelectedHobbies() async {
+    String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUserId)
+        .get();
+    if (userDoc.exists) {
+      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+      setState(() {
+        selectedHobbies = List<String>.from(userData['selectedHobbies'] ?? []);
+        tempSelectedHobbies =
+            List.from(selectedHobbies); // Initialize temporary list
+      });
+    }
   }
 
   // Function to save the selected hobbies
@@ -200,7 +219,9 @@ class _TopicsScreenState extends State<TopicsScreen> {
                                 isSelected
                                     ? Icons.check_circle
                                     : Icons.check_circle_outline,
-                                color: isSelected ? Color.fromARGB(206, 12, 169, 153): null,
+                                color: isSelected
+                                    ? Color.fromARGB(206, 12, 169, 153)
+                                    : null,
                               ),
                             );
                           }).toList(),
@@ -217,7 +238,7 @@ class _TopicsScreenState extends State<TopicsScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: _saveHobbies,
         backgroundColor: Color.fromARGB(206, 12, 169, 153),
-        child: Icon(Icons.save, color:Colors.white),
+        child: Icon(Icons.save, color: Colors.white),
         tooltip: tr('topicScreen_saveHobbies'),
       ),
     );

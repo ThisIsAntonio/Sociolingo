@@ -55,6 +55,7 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
 
   List<Language> _selectedLanguages = [];
   List<Language> _allLanguages = [];
+  List<Language> _tempSelectedLanguages = [];
 
   @override
   void initState() {
@@ -79,6 +80,11 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
           ? DateFormat('yyyy-MM-dd').format(widget.user!.birthday!)
           : '',
     );
+
+    // Initialize selected languages if all languages is loaded
+    if (_allLanguages.isNotEmpty) {
+      _initializeSelectedLanguages();
+    }
   }
 
   @override
@@ -116,12 +122,27 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
     }
   }
 
+  void _initializeSelectedLanguages() {
+    _selectedLanguages = widget.user?.selectedLanguages
+            ?.map((id) => _allLanguages.firstWhere((lang) => lang.id == id,
+                orElse: () => Language(
+                      id: id,
+                      nameInEnglish: 'Unknown',
+                      nameInFrench: 'Inconnu',
+                      nameInSpanish: 'Desconocido',
+                    )))
+            .toList() ??
+        [];
+    _tempSelectedLanguages = List.from(_selectedLanguages);
+  }
+
   Future<void> _loadLanguages() async {
     final querySnapshot =
         await FirebaseFirestore.instance.collection('languages').get();
     _allLanguages = querySnapshot.docs
         .map((doc) => Language.fromMap(doc.data(), doc.id))
         .toList();
+    _initializeSelectedLanguages();
     setState(() {});
   }
 
@@ -227,7 +248,9 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
     double inputWidth =
         screenWidth > 800 ? screenWidth * 0.4 : screenWidth * 0.8;
     double fontSize = screenWidth > 800 ? 18 : 16;
-    const fontColor = Color.fromARGB(255, 4, 33, 52);
+    Color fontColor = Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : Colors.black;
 
     return Scaffold(
       appBar: AppBar(
@@ -468,9 +491,17 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                         style:
                             TextStyle(color: Colors.white, fontSize: fontSize),
                       ),
+                      initialValue: _selectedLanguages,
                       onConfirm: (values) {
+                        print(values);
+                        print(values.isEmpty);
                         setState(() {
-                          _selectedLanguages = values;
+                          if (values.isEmpty) {
+                            _selectedLanguages =
+                                List.from(_tempSelectedLanguages);
+                          } else {
+                            _selectedLanguages = values;
+                          }
                         });
                       },
                       chipDisplay: MultiSelectChipDisplay(
@@ -490,14 +521,13 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                         color: Colors.white, // Icon color
                       ),
                       itemsTextStyle: TextStyle(color: fontColor),
-                      selectedItemsTextStyle:
-                          TextStyle(color: Theme.of(context).primaryColor),
+                      selectedItemsTextStyle: TextStyle(color: Colors.red),
                       cancelText: Text(tr('editUserInfo_buttonCancel'),
                           style: TextStyle(
-                              color: Theme.of(context).primaryColor, fontSize: fontSize)),
+                              color: Colors.blue, fontSize: fontSize)),
                       confirmText: Text(tr('editUserInfo_confirmButton'),
                           style: TextStyle(
-                              color: Theme.of(context).primaryColor, fontSize: fontSize)),
+                              color: Colors.green, fontSize: fontSize)),
                     ),
                   ),
                   const SizedBox(height: 20), // Separator (20 pixels height)
@@ -517,7 +547,7 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color.fromRGBO(162, 245, 238, 1),
                             foregroundColor: Colors.black, // Text color
-                          ),                          
+                          ),
                           child: Text(
                             tr('editUserInfo_buttonCancel'),
                             style: TextStyle(fontSize: fontSize),
@@ -528,7 +558,7 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color.fromRGBO(162, 245, 238, 1),
                             foregroundColor: Colors.black, // Text color
-                          ),                                              
+                          ),
                           child: Text(
                             tr('editUserInfo_buttonUpdate'),
                             style: TextStyle(fontSize: fontSize),
