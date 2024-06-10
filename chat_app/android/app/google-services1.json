@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1065841467151",
+    "project_id": "sociolingo-project",
+    "storage_bucket": "sociolingo-project.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1065841467151:android:db80b843dd1ddb920b687a",
+        "android_client_info": {
+          "package_name": "com.example.chat_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1065841467151-9vv7so808mrbd6k3f9im1eq0dmmp1rag.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.chat_app",
+            "certificate_hash": "ea973f80110aa23d78fe4ec83d90ca1e9dce6be8"
+          }
+        },
+        {
+          "client_id": "1065841467151-2522obcb4ul7hqaojko4sh7375hkvqkk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCXcxAoCam7kbEwcwNTYc-zfkjQluFkBGg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1065841467151-2522obcb4ul7hqaojko4sh7375hkvqkk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

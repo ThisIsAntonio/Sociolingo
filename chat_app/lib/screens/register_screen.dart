@@ -14,6 +14,7 @@ import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:chat_app/model/language_list.dart';
 import 'package:provider/provider.dart';
 import 'package:chat_app/model/theme_provider.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -75,7 +76,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final String bio = _bioController.text;
 
       // upload the image to Firebase
-      String imageUrl = await _uploadImageToFirebase(_imageFile);
+      String imageUrl = await uploadImageToFirebase(_imageFile, _email);
 
       // Get the datetime now
       String joinDate = DateTime.now().toUtc().toIso8601String();
@@ -165,26 +166,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _imageFile = image;
       });
 
-      _uploadImageToFirebase(image);
+      uploadImageToFirebase(image, _email);
     }
   }
 
   // Method to upload the image to Firebase
-  Future<String> _uploadImageToFirebase(XFile? imageFile) async {
+  Future<String> uploadImageToFirebase(
+      XFile? imageFile, String userEmail) async {
     if (imageFile == null) return '';
-    String filePath = 'profile_pictures/${DateTime.now()}.png';
+    String filePath = 'profile_pictures/$userEmail/${DateTime.now()}.png';
     try {
-      // upload the image to firebase
-      await firebase_storage.FirebaseStorage.instance
-          .ref(filePath)
-          .putFile(File(imageFile.path));
-      // Get the image url
+      // Verifica la plataforma
+      if (kIsWeb) {
+        // Para la web
+        Uint8List imageBytes = await imageFile.readAsBytes();
+        await firebase_storage.FirebaseStorage.instance
+            .ref(filePath)
+            .putData(imageBytes);
+      } else {
+        // Para móviles
+        await firebase_storage.FirebaseStorage.instance
+            .ref(filePath)
+            .putFile(File(imageFile.path));
+      }
+
       String downloadURL = await firebase_storage.FirebaseStorage.instance
           .ref(filePath)
           .getDownloadURL();
       return downloadURL;
     } catch (e) {
-      print("Error to upload the image: $e");
+      print("Error uploading the image: $e");
       return '';
     }
   }

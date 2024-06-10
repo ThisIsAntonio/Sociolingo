@@ -11,6 +11,7 @@ import 'package:chat_app/model/user.dart';
 import 'package:chat_app/screens/main_screen.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:chat_app/model/language_list.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class EditUserInfoPage extends StatefulWidget {
   // Properties for receiving user data and email
@@ -98,10 +99,10 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
 
   Future<void> _attemptUpdateUserInfo() async {
     if (_formKey.currentState!.validate()) {
-      String? imageUrl;
       if (_imageFile != null) {
         // If there is an image selected, first upload the image and then update the user information.
-        imageUrl = await _uploadImageToFirebase(_imageFile!);
+        String imageUrl =
+            await uploadImageToFirebase(_imageFile, widget.userEmail);
         _updateUserInfo(imageUrl);
       } else {
         // If there is no new image selected, it simply updates the user information.
@@ -179,21 +180,42 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       setState(() {
-        _imageFile = image; // Asegúrate de que se establece _imageFile
+        _imageFile = image; // Make sureto stablish _imageFile
       });
-      print("Image Path: ${_imageFile?.path}");
+      // String imageUrl =
+      //     await uploadImageToFirebase(_imageFile, widget.userEmail);
+      // _updateUserInfo(imageUrl);
+      //print("Image Path: ${_imageFile?.path}");
     }
   }
 
-  Future<String> _uploadImageToFirebase(XFile image) async {
-    String filePath =
-        'profile_pictures/${widget.userEmail}/${DateTime.now()}.png';
-    await firebase_storage.FirebaseStorage.instance
-        .ref(filePath)
-        .putFile(File(image.path));
-    return await firebase_storage.FirebaseStorage.instance
-        .ref(filePath)
-        .getDownloadURL();
+  Future<String> uploadImageToFirebase(
+      XFile? imageFile, String userEmail) async {
+    if (imageFile == null) return '';
+    String filePath = 'profile_pictures/$userEmail/${DateTime.now()}.png';
+    try {
+      // Verifica la plataforma
+      if (kIsWeb) {
+        // Para la web
+        Uint8List imageBytes = await imageFile.readAsBytes();
+        await firebase_storage.FirebaseStorage.instance
+            .ref(filePath)
+            .putData(imageBytes);
+      } else {
+        // Para móviles
+        await firebase_storage.FirebaseStorage.instance
+            .ref(filePath)
+            .putFile(File(imageFile.path));
+      }
+
+      String downloadURL = await firebase_storage.FirebaseStorage.instance
+          .ref(filePath)
+          .getDownloadURL();
+      return downloadURL;
+    } catch (e) {
+      print("Error uploading the image: $e");
+      return '';
+    }
   }
 
   @override
