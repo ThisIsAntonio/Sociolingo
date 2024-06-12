@@ -138,6 +138,81 @@ Future<void> uploadLanguages() async {
         nameInEnglish: 'Hebrew',
         nameInFrench: 'Hébreu',
         nameInSpanish: 'Hebreo'),
+    Language(
+        id: 'th',
+        nameInEnglish: 'Thai',
+        nameInFrench: 'Thaïlandais',
+        nameInSpanish: 'Tailandés'),
+    Language(
+        id: 'ma',
+        nameInEnglish: 'Malay',
+        nameInFrench: 'Malais',
+        nameInSpanish: 'Malayo'),
+    Language(
+        id: 'ca',
+        nameInEnglish: 'Cantonese',
+        nameInFrench: 'Cantonais',
+        nameInSpanish: 'Cantonés'),
+    Language(
+        id: 'fi',
+        nameInEnglish: 'Filipino',
+        nameInFrench: 'Philippin',
+        nameInSpanish: 'Filipino'),
+    Language(
+        id: 'in',
+        nameInEnglish: 'Indonesian',
+        nameInFrench: 'Indonésien',
+        nameInSpanish: 'Indonesio'),
+    Language(
+        id: 'bu',
+        nameInEnglish: 'Burmese',
+        nameInFrench: 'Birman',
+        nameInSpanish: 'Birmano'),
+    Language(
+        id: 'la',
+        nameInEnglish: 'Lao',
+        nameInFrench: 'Laotein',
+        nameInSpanish: 'Laosiano'),
+    Language(
+        id: 'bg',
+        nameInEnglish: 'Bengali',
+        nameInFrench: 'Bengalí',
+        nameInSpanish: 'Bengali'),
+    Language(
+        id: 'ur',
+        nameInEnglish: 'Urdu',
+        nameInFrench: 'Ourdou',
+        nameInSpanish: 'Urdu'),
+    Language(
+        id: 'sk',
+        nameInEnglish: 'Sanskrit',
+        nameInFrench: 'Sanskrit',
+        nameInSpanish: 'Sanskrit'),
+    Language(
+        id: 'pu',
+        nameInEnglish: 'Punjabi',
+        nameInFrench: 'Pendjabi',
+        nameInSpanish: 'Punjabi'),
+    Language(
+        id: 'hi',
+        nameInEnglish: 'Hindi',
+        nameInFrench: 'Hindi',
+        nameInSpanish: 'Hindi'),
+    Language(
+        id: 'kh',
+        nameInEnglish: 'Kashmiri',
+        nameInFrench: 'Cachemire',
+        nameInSpanish: 'Cachemira'),
+    Language(
+        id: 'si',
+        nameInEnglish: 'Sinhala',
+        nameInFrench: 'Cinghalais',
+        nameInSpanish: 'Cingalés'),
+    Language(
+        id: 'ta',
+        nameInEnglish: 'Tamil',
+        nameInFrench: 'Tamil',
+        nameInSpanish: 'Tamil'),
   ];
   final firestore = FirebaseFirestore.instance;
   final batch = firestore.batch();
@@ -147,6 +222,6 @@ Future<void> uploadLanguages() async {
     var documentRef = firestore.collection('languages').doc(language.id);
     batch.set(documentRef, language.toMap());
   }
-
+  print("printed languages");
   await batch.commit();
 }

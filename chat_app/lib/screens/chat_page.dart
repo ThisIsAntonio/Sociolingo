@@ -122,7 +122,7 @@ class _ChatPageState extends State<ChatPage> {
         children: [
           if (isLargeScreen || selectedFriendId == null)
             Container(
-              width: isLargeScreen ? screenWidth * 0.25 : screenWidth,
+              width: isLargeScreen ? screenWidth * 0.35 : screenWidth,
               child: StreamBuilder<QuerySnapshot>(
                 stream: _firestore
                     .collection('chats')
@@ -183,7 +183,7 @@ class _ChatPageState extends State<ChatPage> {
                                             decoration: BoxDecoration(
                                               color: Colors.red,
                                               borderRadius:
-                                                  BorderRadius.circular(15),
+                                                  BorderRadius.circular(10),
                                             ),
                                             child: Text(
                                               '${snapshot.data}',
@@ -217,10 +217,17 @@ class _ChatPageState extends State<ChatPage> {
             ),
           if (selectedFriendId != null)
             Expanded(
-              child: ChatWindow(
-                key: ValueKey(selectedFriendId),
-                friendId: selectedFriendId!,
-                isLargeScreen: isLargeScreen,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: 300,
+                ),
+                child: Container(
+                  child: ChatWindow(
+                    key: ValueKey(selectedFriendId),
+                    friendId: selectedFriendId!,
+                    isLargeScreen: isLargeScreen,
+                  ),
+                ),
               ),
             ),
         ],

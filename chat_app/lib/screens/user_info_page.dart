@@ -239,11 +239,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
               }
             }
           }
-
-          // Update the selected hobbies
-          setState(() {
-            selectedHobbies = hobbiesNames;
-          });
+          if (mounted) {
+            // Update the selected hobbies
+            setState(() {
+              selectedHobbies = hobbiesNames;
+            });
+          }
         }
       }
     } catch (e) {
@@ -252,7 +253,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
   }
 
   Widget _userImageWidget(double imageSize) {
-    if (imageUrl != null) {
+    if (imageUrl != null && imageUrl!.isNotEmpty) {
       return Image.network(
         imageUrl!,
         width: imageSize,

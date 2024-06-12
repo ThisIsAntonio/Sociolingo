@@ -78,7 +78,8 @@ class FriendRequestsList extends StatelessWidget {
                           userSnapshot.data != null) {
                         var userData = userSnapshot.data!;
                         return ListTile(
-                          leading: userData['imageUrl'] != null
+                          leading: userData['imageUrl'] != null &&
+                                  userData['imageUrl'].isNotEmpty
                               ? CircleAvatar(
                                   backgroundImage:
                                       NetworkImage(userData['imageUrl']),

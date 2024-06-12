@@ -67,7 +67,9 @@ exports.sendPushNotification = functions.https.onCall((data, context) => {
     },
     token: token,
   };
+  console.log("=============> " + payload);
 
+  // send message
   return admin.messaging().send(payload)
     .then((response) => {
       console.log("Successfully sent message:", response);
@@ -115,11 +117,15 @@ exports.translateTextFunction = functions.https.onCall(
 * @return {Promise<Object>} The translated message
 */
 async function charlie(baseLang, transLang, msg) {
-  // Thought you'd love the name ;)
+  // Thought you'd love the name 😉
   const completion = await openai.chat.completions.create({
-    messages: [{role: "system", content: "You are an expert language " +
-    "translator. You are skilled in translating " + baseLang + " to " +
-    transLang +" and correcting any grammatical errors."},
+    messages: [{role: "system", content: "You are an expert" +
+    "language translator." +
+    "You are skilled in translating " + baseLang + " to " + transLang +
+    " and correcting any grammatical errors." +
+    " When translating an Eastern language you are to " +
+    "translate using the most formal form. " +
+    "Also when responding you will ONLY respond with the translation."},
     {"role": "user", "content": "Translate: " + msg + " From " +
     baseLang + " to " + transLang + "."}],
     model: "gpt-3.5-turbo",
