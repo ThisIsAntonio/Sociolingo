@@ -275,13 +275,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
     double padding = screenWidth > 800 ? 30.0 : 16.0;
     double titleSize = screenWidth > 800 ? 28 : 24;
     double subtitleSize = screenWidth > 800 ? 18 : 14;
-    double inputWidth = screenWidth > 800 ? screenWidth * 0.4 : screenWidth * 0.8;
+    double inputWidth =
+        screenWidth > 800 ? screenWidth * 0.4 : screenWidth * 0.8;
     double logoSize = screenWidth > 800 ? 200 : 100;
-    final themeProvider = Provider.of<ThemeProvider>(context); // Add different versions of logo for light/dark theme
-    String namelogo = themeProvider.themeMode==ThemeMode.dark? "assets/img/namelogo_white.png" : "assets/img/namelogo_black.png";
+    final themeProvider = Provider.of<ThemeProvider>(
+        context); // Add different versions of logo for light/dark theme
+    String namelogo = themeProvider.themeMode == ThemeMode.dark
+        ? "assets/img/namelogo_white.png"
+        : "assets/img/namelogo_black.png";
     const fontColor = Colors.grey;
-    Color selectedColor = themeProvider.themeMode==ThemeMode.dark? const Color.fromARGB(255, 255, 255, 255) :  const Color.fromARGB(255, 77, 77, 77);
-    Color buttonColor = themeProvider.themeMode==ThemeMode.dark?  Color.fromRGBO(162, 245, 238, 1): const Color.fromARGB(100, 18, 235, 214);
+    Color selectedColor = themeProvider.themeMode == ThemeMode.dark
+        ? const Color.fromARGB(255, 255, 255, 255)
+        : const Color.fromARGB(255, 77, 77, 77);
+    Color buttonColor = themeProvider.themeMode == ThemeMode.dark
+        ? Color.fromRGBO(162, 245, 238, 1)
+        : const Color.fromARGB(100, 18, 235, 214);
     // Color buttonTextColor = themeProvider.themeMode==ThemeMode.dark? Color.fromARGB(255, 228, 228, 228) : Color.fromARGB(255, 77, 77, 77);
     return Scaffold(
       appBar: AppBar(
@@ -297,36 +305,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: Image.asset(
-                        namelogo, // Update theme logos
-                        width: logoSize,
-                        //height: 200, 
-                        fit: BoxFit.cover, 
+                  Stack(
+                    children: <Widget>[
+                      Center(
+                        child: Image.asset(
+                          namelogo, // Update theme logos
+                          width: logoSize,
+                          //height: 200,
+                          fit: BoxFit.cover,
+                        ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  // Program Logo
+                  CircleAvatar(
+                    radius: screenWidth > 600
+                        ? 60
+                        : 40, // Adjust the size to your liking
+                    backgroundColor:
+                        Colors.transparent, // Transparent background
+                    child: ClipOval(
+                      child: Image.asset(
+                          'assets/img/logo.png', // rute of your image
+                          fit: BoxFit.cover, // Cover the space of the circle
+                          width:
+                              screenWidth > 600 ? 120 : 80, // Adjust the width
+                          height:
+                              screenWidth > 600 ? 120 : 80), //Adjust the height
                     ),
                   ),
                   const SizedBox(height: 20),
-                // Program Logo
-                CircleAvatar(
-                  radius: screenWidth > 600
-                      ? 60
-                      : 40, // Adjust the size to your liking
-                  backgroundColor: Colors.transparent, // Transparent background
-                  child: ClipOval(
-                    child: Image.asset(
-                        'assets/img/logo.png', // rute of your image
-                        fit: BoxFit.cover, // Cover the space of the circle
-                        width: screenWidth > 600 ? 120 : 80, // Adjust the width
-                        height:
-                            screenWidth > 600 ? 120 : 80), //Adjust the height
-                  ),
-                ),
-                const SizedBox(height: 20),                  
                   // Title and subtitle
                   Text(
                     tr('register_title'),
@@ -635,7 +644,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       buttonText: Text(
                         tr('register_selectButton'),
                         style: TextStyle(color: Colors.black, fontSize: 16),
-                      ),                  
+                      ),
                       onConfirm: (values) {
                         setState(() {
                           _selectedLanguages = values;
@@ -655,12 +664,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       buttonIcon: Icon(
                         Icons.language, // Icon to display in the button
-                        color:Colors.white, // Icon color
+                        color: Colors.white, // Icon color
                       ),
                       itemsTextStyle: TextStyle(color: fontColor),
-                      selectedItemsTextStyle:
-                          TextStyle(color:selectedColor,
-                          ),
+                      selectedItemsTextStyle: TextStyle(
+                        color: selectedColor,
+                      ),
                       cancelText: Text(tr('register_cancelButton'),
                           style: TextStyle(color: selectedColor)),
                       confirmText: Text(tr('register_confirmButton'),
@@ -716,12 +725,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: ElevatedButton(
                       onPressed: _submit,
                       style: ElevatedButton.styleFrom(
-                      //backgroundColor: Theme.of(context).primaryColor, // Background color
-                      //brightness: Brightness.light;
-                      backgroundColor: Color.fromRGBO(162, 245, 238, 1),
-                      foregroundColor: Colors.black, // Text color
-                      minimumSize: Size(double.infinity, 50), // Size of the bottom
-                      ),                    
+                        //backgroundColor: Theme.of(context).primaryColor, // Background color
+                        //brightness: Brightness.light;
+                        backgroundColor: Color.fromRGBO(162, 245, 238, 1),
+                        foregroundColor: Colors.black, // Text color
+                        minimumSize:
+                            Size(double.infinity, 50), // Size of the bottom
+                      ),
                       child: Text(tr('register_buttonRegister')),
                     ),
                   ),

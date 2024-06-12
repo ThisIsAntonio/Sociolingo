@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       home: WelcomeScreen(),
     );
   }
-}                                                
+}
 
 class WelcomeScreen extends StatefulWidget {
   @override
@@ -72,7 +72,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     double titleSize = screenWidth > 800 ? 28 : 24;
     double subtitleSize = screenWidth > 800 ? 18 : 14;
     double padding = screenWidth > 800 ? 30.0 : 16.0;
-    double buttonWidth = screenWidth > 800 ? screenWidth * 0.4 : screenWidth * 0.85;
+    double buttonWidth =
+        screenWidth > 800 ? screenWidth * 0.4 : screenWidth * 0.85;
     double logoSize = screenWidth > 800 ? 350 : 250;
     // If needed customize namelogo for dark/light theme versions
     // final themeProvider = Provider.of<ThemeProvider>(context); // Add different versions of logo for light/dark theme
@@ -92,180 +93,187 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         // ),
         decoration: BoxDecoration(
           gradient: RadialGradient(
-            colors: [Color.fromARGB(255, 27, 154, 208), Color.fromARGB(255, 45, 21, 94), Color.fromARGB(244, 21, 2, 38)],
+            colors: [
+              Color.fromARGB(255, 27, 154, 208),
+              Color.fromARGB(255, 45, 21, 94),
+              Color.fromARGB(244, 21, 2, 38)
+            ],
             center: Alignment.topRight,
             radius: 1.25,
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: <Widget>[
-            const SizedBox(height: 20),              
-            const Spacer(),
-              // Program Logo
-              CircleAvatar(
-                radius: screenWidth > 600
-                    ? 60
-                    : 40, // Adjust the size to your liking
-                backgroundColor: Colors.transparent, // Transparent background
-                child: ClipOval(
-                  child: Image.asset(
-                      'assets/img/logo.png', // rute of your image
-                      fit: BoxFit.cover, // Cover the space of the circle
-                      width: screenWidth > 600 ? 120 : 80, // Adjust the width
-                      height:
-                      screenWidth > 600 ? 120 : 80), //Adjust the height
-                ),
-              ),
-              const SizedBox(height: 20), 
-              Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Image.asset(
-                  namelogo,
-                  width: logoSize,
-                  //height: 200, 
-                  fit: BoxFit.cover, 
-                ),
-              ),
-            ),
-            const SizedBox(height: 20), 
-            // Title and subtitle
-            Text(
-              tr('w_mainTitle'),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: titleSize,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              tr('w_mainTitle2'),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: subtitleSize,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const Spacer(),
-            // Social Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment
-                  .spaceEvenly, // Distribute the buttons evenly
-              children: [
-                SocialButton(
-                  iconPath: 'assets/img/facebook.png',
-                  onPressed: () {
-                    // Facebook action
-                    showComingSoonDialog();
-                  },
-                  size: screenWidth > 600 ? 50.0 : 40.0, // Button size
-                ),
-                SocialButton(
-                  iconPath: 'assets/img/google.png',
-                  onPressed: () {
-                    // Google action
-                    showComingSoonDialog();
-                  },
-                  size: screenWidth > 600 ? 50.0 : 40.0, // Button size
-                ),
-                SocialButton(
-                  iconPath: 'assets/img/apple.png',
-                  onPressed: () {
-                    // Apple action
-                    showComingSoonDialog();
-                  },
-                  size: screenWidth > 600 ? 50.0 : 40.0, // Button size
-                ),
-              ],
-            ),
-            //const Spacer(),
-            const SizedBox(height: 20),
-            // line divider
-            const Row(
-              children: <Widget>[
-                Expanded(
-                  child: Divider(
-                    color: Colors.white70,
-                    thickness: 1,
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Text(
-                    'OR',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                ),
-                Expanded(
-                  child: Divider(
-                    color: Colors.white70,
-                    thickness: 1,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            // Button widget
-            Container(
-              width: buttonWidth,
-              child: MaterialButton(
-                color: appButtonColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                onPressed: () {
-                  // Navigate to registration screen
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const RegisterScreen()));
-                },
-                child: Text(tr('w_buttonSignUp')),
-                textColor: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
+            Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(tr('w_existingAccount'),
-                    style: TextStyle(color: Colors.white70)),
-                const SizedBox(width: 10),
-                GestureDetector(
-                  onTap: () {
-                    // Navigate to the login screen
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const LoginScreen()));
-                  },
-                  child: Text(
-                    tr('w_logIn'),
-                    style: TextStyle(
-                        color: Colors.white70,
-                        fontWeight: FontWeight.bold,
-                        // decoration: TextDecoration.underline
-                        ),
+              children: <Widget>[
+                const SizedBox(height: 20),
+                const Spacer(),
+                // Program Logo
+                CircleAvatar(
+                  radius: screenWidth > 600
+                      ? 60
+                      : 40, // Adjust the size to your liking
+                  backgroundColor: Colors.transparent, // Transparent background
+                  child: ClipOval(
+                    child: Image.asset(
+                        'assets/img/logo.png', // rute of your image
+                        fit: BoxFit.cover, // Cover the space of the circle
+                        width: screenWidth > 600 ? 120 : 80, // Adjust the width
+                        height:
+                            screenWidth > 600 ? 120 : 80), //Adjust the height
                   ),
                 ),
+                const SizedBox(height: 20),
+                Stack(
+                  children: <Widget>[
+                    Center(
+                      child: Image.asset(
+                        namelogo,
+                        width: logoSize,
+                        //height: 200,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // Title and subtitle
+                Text(
+                  tr('w_mainTitle'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: titleSize,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  tr('w_mainTitle2'),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: subtitleSize,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                // Social Buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment
+                      .spaceEvenly, // Distribute the buttons evenly
+                  children: [
+                    SocialButton(
+                      iconPath: 'assets/img/facebook.png',
+                      onPressed: () {
+                        // Facebook action
+                        showComingSoonDialog();
+                      },
+                      size: screenWidth > 600 ? 50.0 : 40.0, // Button size
+                    ),
+                    SocialButton(
+                      iconPath: 'assets/img/google.png',
+                      onPressed: () {
+                        // Google action
+                        showComingSoonDialog();
+                      },
+                      size: screenWidth > 600 ? 50.0 : 40.0, // Button size
+                    ),
+                    SocialButton(
+                      iconPath: 'assets/img/apple.png',
+                      onPressed: () {
+                        // Apple action
+                        showComingSoonDialog();
+                      },
+                      size: screenWidth > 600 ? 50.0 : 40.0, // Button size
+                    ),
+                  ],
+                ),
+                //const Spacer(),
+                const SizedBox(height: 20),
+                // line divider
+                const Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Divider(
+                        color: Colors.white70,
+                        thickness: 1,
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text(
+                        'OR',
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                    ),
+                    Expanded(
+                      child: Divider(
+                        color: Colors.white70,
+                        thickness: 1,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // Button widget
+                Container(
+                  width: buttonWidth,
+                  child: MaterialButton(
+                    color: appButtonColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    onPressed: () {
+                      // Navigate to registration screen
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const RegisterScreen()));
+                    },
+                    child: Text(tr('w_buttonSignUp')),
+                    textColor: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(tr('w_existingAccount'),
+                        style: TextStyle(color: Colors.white70)),
+                    const SizedBox(width: 10),
+                    GestureDetector(
+                      onTap: () {
+                        // Navigate to the login screen
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const LoginScreen()));
+                      },
+                      child: Text(
+                        tr('w_logIn'),
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontWeight: FontWeight.bold,
+                          // decoration: TextDecoration.underline
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const Spacer(),
+                Text(
+                  'Version $appVersion',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 8),
               ],
             ),
-
-            const Spacer(),
-            Text(
-              'Version $appVersion',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 12,
-              ),
-            ),
-            const SizedBox(height: 8),
           ],
         ),
       ),
