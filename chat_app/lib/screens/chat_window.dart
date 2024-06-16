@@ -41,6 +41,8 @@ class _ChatWindowState extends State<ChatWindow> {
     fetchUserPreferredLanguage();
     if (_chatId == null) {
       _checkForExistingChat();
+    } else {
+      markMessagesAsRead(_chatId!);
     }
   }
 
@@ -175,19 +177,22 @@ class _ChatWindowState extends State<ChatWindow> {
   }
 
   // Function to mark messages as read
-  void markMessagesAsRead(String chatId) {
-    _firestore
-        .collection('chats')
-        .doc(chatId)
-        .collection('messages')
-        .where('read', isEqualTo: false)
-        .where('senderId', isEqualTo: widget.friendId)
-        .get()
-        .then((snapshot) {
+  void markMessagesAsRead(String chatId) async {
+    try {
+      var snapshot = await _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .where('read', isEqualTo: false)
+          .where('senderId', isEqualTo: widget.friendId)
+          .get();
+
       for (var doc in snapshot.docs) {
-        doc.reference.update({'read': true});
+        await doc.reference.update({'read': true});
       }
-    });
+    } catch (e) {
+      print('Error marking messages as read: $e');
+    }
   }
 
   // Function to send a push notification
@@ -323,6 +328,11 @@ class _ChatWindowState extends State<ChatWindow> {
                       }
 
                       final messages = snapshot.data!.docs;
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (_chatId != null) {
+                          markMessagesAsRead(_chatId!);
+                        }
+                      });
                       return ListView.builder(
                         reverse: true,
                         itemCount: messages.length,

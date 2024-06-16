@@ -35,6 +35,13 @@ target 'Runner' do
   target 'RunnerTests' do
     inherit! :search_paths
   end
+
+  #add the Firebase pod for Google Analytics
+  pod 'Firebase/Analytics'
+
+  #add the pod for Firebase Cloud Messaging
+  pod 'Firebase/Messaging'
+
 end
 
 post_install do |installer|
