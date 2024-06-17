@@ -26,9 +26,6 @@ void main() async {
   // Ensure that Easy Localization is initialized.
   await EasyLocalization.ensureInitialized();
 
-  // Initialize Firebase.
-  // await Firebase.initializeApp();
-
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
@@ -39,7 +36,7 @@ void main() async {
           messagingSenderId: "1065841467151",
           appId: "1:1065841467151:web:df66b762cde6a6ff0b687a",
           databaseURL:
-              "https://sociolingo-project-default-rtdb.firebaseio.com/", // Replace with your Firebase Realtime Database URL
+              "https://sociolingo-project-default-rtdb.firebaseio.com/",
           measurementId: "G-D6SLD741Y9"),
     );
   } else {
@@ -47,9 +44,18 @@ void main() async {
         //.catchError((e) => print('Error inicializando Firebase: $e'));
         ;
   }
+  // Initialize Firebase messaging.
   FirebaseMessaging messaging = FirebaseMessaging.instance;
+  String? token;
+
   FirebaseMessaging.instance.requestPermission();
-  String? token = await messaging.getToken();
+  if (kIsWeb) {
+    token = await messaging.getToken(
+        vapidKey:
+            "BBnEtMOtCc10zPV3w8-5w0odv6e7PcBIKOHlCKxv7_E9qtF0Jsb1HGK6n56yddlJLBeMZXBpdeQhkEjTmhYF-Ts");
+  } else {
+    token = await messaging.getToken();
+  }
   print(" ====================================================== ");
   print("Firebase Messaging Token: $token");
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);

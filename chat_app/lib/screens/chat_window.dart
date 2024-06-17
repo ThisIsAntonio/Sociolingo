@@ -184,7 +184,7 @@ class _ChatWindowState extends State<ChatWindow> {
           .doc(chatId)
           .collection('messages')
           .where('read', isEqualTo: false)
-          .where('senderId', isEqualTo: widget.friendId)
+          .where('receiverId', isEqualTo: _auth.currentUser!.uid)
           .get();
 
       for (var doc in snapshot.docs) {

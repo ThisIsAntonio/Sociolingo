@@ -32,7 +32,7 @@ class _ChatPageState extends State<ChatPage> {
         .doc(chatId)
         .collection('messages')
         .where('read', isEqualTo: false)
-        .where('senderId', isEqualTo: selectedFriendId)
+        .where('receiverId', isEqualTo: _auth.currentUser!.uid)
         .get();
 
     // Print the number of messages with read=false and senderId=friendId
