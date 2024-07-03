@@ -26,17 +26,15 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   // Function to get the list of unread messages for a specific user
-  Future<int> countUnreadMessages(String chatId, String friendId) async {
+  Future<int> countUnreadMessages(String chatId) async {
     var snapshot = await _firestore
         .collection('chats')
         .doc(chatId)
         .collection('messages')
         .where('read', isEqualTo: false)
-        .where('receiverId', isEqualTo: _auth.currentUser!.uid)
+        .where('receiverId',
+            isEqualTo: _auth.currentUser!.uid) // Asegúrate de esto
         .get();
-
-    // Print the number of messages with read=false and senderId=friendId
-    //print("Unread messages for chat $chatId: ${snapshot.docs.length}");
 
     return snapshot.docs.length;
   }
@@ -166,8 +164,7 @@ class _ChatPageState extends State<ChatPage> {
                                   style: TextStyle(fontSize: subtitleSize),
                                 ),
                                 subtitle: FutureBuilder<int>(
-                                  future:
-                                      countUnreadMessages(chat.id, friendId),
+                                  future: countUnreadMessages(chat.id),
                                   builder: (context, snapshot) {
                                     // Reeplace the text with the number of unread messages
                                     if (snapshot.hasData &&

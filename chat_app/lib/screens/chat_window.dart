@@ -143,6 +143,9 @@ class _ChatWindowState extends State<ChatWindow> {
     if (message.isNotEmpty) {
       _chatId ??= await _createNewChat();
 
+      // Get the friend ID
+      String receiverId = widget.friendId;
+
       // Add a new message to the chat document with the current user's information
       DocumentReference messageRef = _firestore
           .collection('chats')
@@ -151,6 +154,7 @@ class _ChatWindowState extends State<ChatWindow> {
           .doc();
       await messageRef.set({
         'senderId': _auth.currentUser!.uid,
+        'receiverId': receiverId,
         'text': message,
         'timestamp': FieldValue.serverTimestamp(),
         'read': false,
@@ -195,21 +199,29 @@ class _ChatWindowState extends State<ChatWindow> {
     }
   }
 
-  // Function to send a push notification
+// Function to send a push notification
   void sendPushNotification(String message, String toUserToken, String title,
       String senderName) async {
-    HttpsCallable callable =
-        FirebaseFunctions.instance.httpsCallable('sendPushNotification');
-    try {
-      final resp = await callable.call(<String, dynamic>{
-        'message': message,
-        'token': toUserToken,
-        'title': title, // Pass the title to the Cloud Function
-        'senderName': senderName, // Pass the sender's name for personalization
-      });
-      print('Notification sent successfully: ${resp.data}');
-    } on FirebaseFunctionsException catch (e) {
-      print('Error sending notification: ${e.code} - ${e.message}');
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final senderToken = await getRecipientToken(currentUser!.uid);
+    print("senderToken: " + senderToken);
+    print("toUserToken: " + toUserToken);
+    // Ensure the sender doesn't receive their own notification
+    if (toUserToken != senderToken) {
+      HttpsCallable callable =
+          FirebaseFunctions.instance.httpsCallable('sendPushNotification');
+      try {
+        final resp = await callable.call(<String, dynamic>{
+          'message': message,
+          'token': toUserToken,
+          'title': title, // Pass the title to the Cloud Function
+          'senderName':
+              senderName, // Pass the sender's name for personalization
+        });
+        print('Notification sent successfully: ${resp.data}');
+      } on FirebaseFunctionsException catch (e) {
+        print('Error sending notification: ${e.code} - ${e.message}');
+      }
     }
   }
 

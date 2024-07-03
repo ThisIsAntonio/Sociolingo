@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["https://sociolingo-project.web.app"],
+    "method": ["GET", "HEAD", "DELETE", "POST", "PUT"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": ["Content-Type", "Authorization"]
+  }
+]

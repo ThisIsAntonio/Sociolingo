@@ -12,10 +12,18 @@ firebase.initializeApp({
         "https://sociolingo-project-default-rtdb.firebaseio.com/",
     measurementId: "G-D6SLD741Y9",
 });
+
 // Necessary to receive background messages:
 const messaging = firebase.messaging();
 
-// Optional:
-messaging.onBackgroundMessage((m) => {
-    console.log("onBackgroundMessage", m);
+// Handle background messages
+messaging.onBackgroundMessage((payload) => {
+    console.log('Received background message ', payload);
+    const notificationTitle = payload.notification.title;
+    const notificationOptions = {
+        body: payload.notification.body,
+        icon: 'icons/logo.png'
+    };
+
+    self.registration.showNotification(notificationTitle, notificationOptions);
 });

@@ -69,7 +69,7 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
     _bioController = TextEditingController(text: widget.user?.bio ?? '');
     _phoneNumberController =
         TextEditingController(text: widget.user?.phoneNumber);
-    _emailController = TextEditingController(text: widget.user?.email);
+    //_emailController = TextEditingController(text: widget.user?.email);
     _passwordController = TextEditingController(); // No pre-fill for password
     _birthday = widget.user?.birthday;
     _country = widget.user?.country;
@@ -159,8 +159,8 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
             'bio': _bioController.text,
           if (_phoneNumberController.text != widget.user?.phoneNumber)
             'phone_number': _phoneNumberController.text,
-          if (_emailController.text != widget.user?.email)
-            'email': _emailController.text,
+          // if (_emailController.text != widget.user?.email)
+          //   'email': _emailController.text,
           if (_birthday != widget.user?.birthday)
             'birthday': _birthday != null
                 ? DateFormat('yyyy-MM-dd').format(_birthday!)
@@ -291,14 +291,14 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                   ),
                   const SizedBox(height: 20), // Separator (20 pixels height)
                   // Email
-                  ConstrainedBox(
-                    constraints: BoxConstraints(maxWidth: inputWidth),
-                    child: TextFormField(
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                          labelText: tr('editUserInfo_labelEmail')),
-                    ),
-                  ),
+                  // ConstrainedBox(
+                  //   constraints: BoxConstraints(maxWidth: inputWidth),
+                  //   child: TextFormField(
+                  //     controller: _emailController,
+                  //     decoration: InputDecoration(
+                  //         labelText: tr('editUserInfo_labelEmail')),
+                  //   ),
+                  // ),
                   const SizedBox(height: 20), // Separator (20 pixels height)
                   // Phone number
                   ConstrainedBox(
