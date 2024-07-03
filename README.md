@@ -6,6 +6,7 @@ This is a project in development that uses Flutter to create a chat application 
 - User registration and authentication using Firebase Auth.
 - Real-time chat functionality.
 - Chat windows to talk between users in real time.
+- AI system to help translate languages if needed
 - User status updates (Online/Offline).
 - Notifications for new messages using Firebase Cloud Messaging (FCM).
 - Data storage and real-time updates with Firestore.
@@ -77,10 +78,14 @@ Ensure you have set up a Firebase project and linked it with your Flutter app. F
 - The app works now in IOS.
 - Some updates in the SizeScreens.
 
+## Artificial Intelligence
+
+The backend server uses openAI, and does API calls for language translation.
+An openAI API key is required to use the Language translation system.
+-API Key need to be able to call upon the model: gpt-3.5-turbo-0125
+
 ## License
 
 This project does not have a specific license for now. Be aware of the licenses of the dependencies you use and make sure you comply with them.
 
 Enjoy working on your chat project in Flutter and Node.js on Project1!
-
-
