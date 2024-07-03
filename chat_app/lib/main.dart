@@ -10,6 +10,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 //import 'package:chat_app/model/topics_info.dart';
 //import 'package:chat_app/model/user_test.dart';
 //import 'package:chat_app/model/language_list.dart';
@@ -48,16 +49,26 @@ void main() async {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
   String? token;
 
-  FirebaseMessaging.instance.requestPermission();
+  //  FirebaseMessaging.instance.requestPermission();
   if (kIsWeb) {
     token = await messaging.getToken(
         vapidKey:
             "BBnEtMOtCc10zPV3w8-5w0odv6e7PcBIKOHlCKxv7_E9qtF0Jsb1HGK6n56yddlJLBeMZXBpdeQhkEjTmhYF-Ts");
   } else {
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
     token = await messaging.getToken();
+    print('User granted permission: ${settings.authorizationStatus}');
   }
-  print(" ====================================================== ");
   print("Firebase Messaging Token: $token");
+  saveTokenToDatabase(token);
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   // Activate Firebase App Check.
   if (defaultTargetPlatform == TargetPlatform.android) {
@@ -92,6 +103,17 @@ void main() async {
   );
 }
 
+// Function to save the FCM token to Firestore
+void saveTokenToDatabase(String? token) async {
+  String userId = FirebaseAuth.instance.currentUser!.uid;
+
+  await FirebaseFirestore.instance.collection('users').doc(userId).update({
+    'messaging_token': token,
+  });
+
+  print('token updated.');
+}
+
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("Handling a background message: ${message.messageId}");
 }
@@ -121,25 +143,23 @@ class _MyAppState extends State<MyApp> {
             themeMode:
                 themeProvider.themeMode, // Set theme mode based on provider.
             theme: ThemeData(
-              // Configuración para el tema claro
+              // Light theme config
               brightness: Brightness.light,
               appBarTheme: AppBarTheme(
-                backgroundColor: Color.fromARGB(
-                    100, 18, 235, 214), // Color para el tema claro
-                foregroundColor:
-                    Colors.black, // Color de texto para el tema claro
+                backgroundColor:
+                    Color.fromARGB(100, 18, 235, 214), // Light theme Color
+                foregroundColor: Colors.black, // Light Text theme color
               ),
               buttonTheme: ButtonThemeData(
                   buttonColor: Color.fromARGB(100, 18, 235, 214)),
             ),
             darkTheme: ThemeData(
-              // Configuración para el tema oscuro
+              // Dark theme config
               brightness: Brightness.dark,
               appBarTheme: AppBarTheme(
-                backgroundColor: Color.fromARGB(
-                    100, 18, 235, 214), // Color para el tema oscuro
-                foregroundColor:
-                    Colors.white, // Color de texto para el tema oscuro
+                backgroundColor:
+                    Color.fromARGB(100, 18, 235, 214), // Dark theme color
+                foregroundColor: Colors.white, // Dark Text theme color
               ),
               buttonTheme: ButtonThemeData(
                   buttonColor: Color.fromARGB(100, 18, 235, 214)),

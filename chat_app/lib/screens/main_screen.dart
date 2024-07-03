@@ -198,9 +198,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildDrawer() {
-    final themeProvider = Provider.of<ThemeProvider>(context); // Add different versions of logo for light/dark theme
-    Color tileColor = themeProvider.themeMode==ThemeMode.dark? const Color.fromARGB(255, 255, 255, 255) : Color.fromARGB(255, 77, 77, 77);
-    Color selectedItemColor = themeProvider.themeMode==ThemeMode.dark? const Color.fromARGB(206, 12, 169, 153) : const Color.fromRGBO(162, 245, 238, 1);
+    final themeProvider = Provider.of<ThemeProvider>(
+        context); // Add different versions of logo for light/dark theme
+    Color tileColor = themeProvider.themeMode == ThemeMode.dark
+        ? const Color.fromARGB(255, 255, 255, 255)
+        : Color.fromARGB(255, 77, 77, 77);
+    Color selectedItemColor = themeProvider.themeMode == ThemeMode.dark
+        ? const Color.fromARGB(206, 12, 169, 153)
+        : const Color.fromRGBO(162, 245, 238, 1);
     return Align(
       alignment: Alignment.topCenter,
       child: SingleChildScrollView(
@@ -298,9 +303,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildMobileNavBar() {
-    final themeProvider = Provider.of<ThemeProvider>(context); // Add different versions of logo for light/dark theme
-    Color unselectedItemColor = themeProvider.themeMode==ThemeMode.dark? Color.fromARGB(255, 201, 201, 201) : Color.fromARGB(255, 77, 77, 77);
-    Color selectedItemColor = themeProvider.themeMode==ThemeMode.dark? const Color.fromRGBO(162, 245, 238, 1) : const Color.fromARGB(206, 12, 169, 153);
+    final themeProvider = Provider.of<ThemeProvider>(
+        context); // Add different versions of logo for light/dark theme
+    Color unselectedItemColor = themeProvider.themeMode == ThemeMode.dark
+        ? Color.fromARGB(255, 201, 201, 201)
+        : Color.fromARGB(255, 77, 77, 77);
+    Color selectedItemColor = themeProvider.themeMode == ThemeMode.dark
+        ? const Color.fromRGBO(162, 245, 238, 1)
+        : const Color.fromARGB(206, 12, 169, 153);
     return BottomNavigationBar(
       items: <BottomNavigationBarItem>[
         BottomNavigationBarItem(
@@ -325,7 +335,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         ),
       ],
       currentIndex: _selectedIndex,
-      selectedItemColor:selectedItemColor,
+      selectedItemColor: selectedItemColor,
       unselectedItemColor: unselectedItemColor,
       onTap: _onItemTapped,
     );
@@ -369,59 +379,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       bottomNavigationBar: isLargeScreen ? null : _buildMobileNavBar(),
     );
   }
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     appBar: AppBar(
-  //       // The leading widget is empty to hide the back button
-  //       leading: Container(),
-  //       // App title that is localized
-  //       title: Text('SocioLingo'),
-  //     ),
-  //     // The body is the currently selected page
-  //     body: _buildPage(),
-  //     // Bottom navigation bar to switch between pages
-  //     bottomNavigationBar: BottomNavigationBar(
-  //       // Navigation bar items with localized labels
-  //       items: <BottomNavigationBarItem>[
-  //         // Chat Page
-  //         BottomNavigationBarItem(
-  //           icon: Icon(Icons.chat),
-  //           label: tr('mainScreen_chatLabel'),
-  //         ),
-  //         // Topics Page
-  //         BottomNavigationBarItem(
-  //           icon: Icon(Icons.people),
-  //           label: tr('mainScreen_topicsLabel'),
-  //         ),
-  //         // Friend Requests Page
-  //         BottomNavigationBarItem(
-  //           icon: Icon(Icons.mail),
-  //           label: tr('mainScreen_RequestsLabel'),
-  //         ),
-  //         // User Info Page
-  //         BottomNavigationBarItem(
-  //           icon: Icon(Icons.account_circle),
-  //           label: tr('mainScreen_profileLabel'),
-  //         ),
-  //         // Settings Page
-  //         BottomNavigationBarItem(
-  //           icon: Icon(Icons.settings),
-  //           label: tr('mainScreen_settingsLabel'),
-  //         ),
-  //       ],
-  //       // Current selected index of the navigation bar
-  //       currentIndex: _selectedIndex,
-  //       // Callback when tapping on a navigation item
-  //       onTap: _onItemTapped,
-  //       // Styling for the navigation bar
-  //       selectedItemColor: Colors.red,
-  //       unselectedItemColor: Colors.grey,
-  //       backgroundColor: Colors.lightBlue,
-  //     ),
-  //   );
-  // }
 
   @override
   void dispose() {
