@@ -1,37 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-//import 'friendSuggestionsGrid.dart';
 import 'package:easy_localization/easy_localization.dart';
-
+import 'package:chat_app/model/user.dart' as User2;
 import 'package:cloud_functions/cloud_functions.dart';
 
-
-
 class FriendSearch extends StatefulWidget {
-
-_FriendSearchPage createState() => _FriendSearchPage();
-
+  @override
+  _FriendSearchPage createState() => _FriendSearchPage();
 }
 
-class _FriendSearchPage extends State<FriendSearch>{
+class _FriendSearchPage extends State<FriendSearch> {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+  String? _currentUserName;
+  Map<String, bool> requestSent = {};
+  Map<String, String> pendingRequestIds = {};
+  Stream<QuerySnapshot>? searchResultsStream;
+  TextEditingController searchController = TextEditingController();
 
-final FirebaseFirestore firestore = FirebaseFirestore.instance;
-final String currentUserId = FirebaseAuth.instance.currentUser!.uid;
-String? _currentUserName;
- Map<String, bool> requestSent = {};
- Map<String, String> pendingRequestIds = {};
- Future<List<DocumentSnapshot>>? searchResults;
-   late Key _futureBuilderKey = UniqueKey();
-
-@override
+  @override
   void initState() {
     super.initState();
     _fetchCurrentUserName();
   }
 
-
- Future<void> _fetchCurrentUserName() async {
+  Future<void> _fetchCurrentUserName() async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId != null) {
       final docSnapshot = await FirebaseFirestore.instance
@@ -55,8 +49,8 @@ String? _currentUserName;
       final resp = await callable.call(<String, dynamic>{
         'message': message,
         'token': toUserToken,
-        'title': title, // Pass the title to the Cloud Function
-        'senderName': senderName, // Pass the sender's name for personalization
+        'title': title,
+        'senderName': senderName,
       });
       print('Notification sent successfully: ${resp.data}');
     } on FirebaseFunctionsException catch (e) {
@@ -64,7 +58,6 @@ String? _currentUserName;
     }
   }
 
- // Function to cancel a friend request
   Future<void> cancelFriendRequest(String friendId) async {
     if (pendingRequestIds.containsKey(friendId)) {
       await firestore
@@ -77,17 +70,14 @@ String? _currentUserName;
       });
     }
 
-    // Get the current user from the database
     DocumentSnapshot senderDoc =
         await firestore.collection('users').doc(currentUserId).get();
 
-    // Try to cast the data
     Map<String, dynamic> userData =
         senderDoc.data() as Map<String, dynamic>? ?? {};
 
     String senderName = userData['first_name'] ?? "Someone";
 
-    // Call the Cloud Function to send the notification
     HttpsCallable callable =
         FirebaseFunctions.instance.httpsCallable('sendFriendNotification');
     try {
@@ -102,7 +92,7 @@ String? _currentUserName;
     }
   }
 
- void showUserProfile(
+  void showUserProfile(
       BuildContext context, Map<String, dynamic> userData, String userId) {
     bool isRequestAlreadySent = requestSent[userId] ?? false;
 
@@ -141,7 +131,6 @@ String? _currentUserName;
     );
   }
 
-  // Function to send a friend request
   Future<void> sendFriendRequest(String friendId) async {
     var docRef = await firestore.collection('friend_requests').add({
       'from': currentUserId,
@@ -153,19 +142,16 @@ String? _currentUserName;
       pendingRequestIds[friendId] = docRef.id;
     });
 
-    // Obtain the recipient's FCM token
-    
     String recipientToken = await getRecipientToken(friendId);
 
-    // Now call the function to send the push notification
     if (recipientToken.isNotEmpty) {
       String senderName = _currentUserName ?? "Someone";
       sendPushNotification(tr('friendRequests_requestsFrom') + senderName,
           recipientToken, "Request", tr('friendRequests_requestsTitle'));
-    } 
+    }
   }
 
-    Future<String> getRecipientToken(String userId) async {
+  Future<String> getRecipientToken(String userId) async {
     DocumentSnapshot userSnapshot =
         await firestore.collection('users').doc(userId).get();
     Map<String, dynamic>? userData =
@@ -173,58 +159,49 @@ String? _currentUserName;
     return userData?['messaging_token'] ?? '';
   }
 
-Future<List<DocumentSnapshot>> searchUsers(String searchTerm) async {
+  Stream<QuerySnapshot> searchUsers(String searchTerm) {
     var name = searchTerm.split(" ");
-    QuerySnapshot<Map<String, dynamic>> searchQuery;
-    if (name.length == 10 && name[1] != ""){
-        searchQuery = await firestore 
-      .collection('users')
-      .where('first_name', isGreaterThanOrEqualTo: name[0])
-      //.where('first_name', isLessThan: searchTerm)     
-      .where('last_name', isGreaterThanOrEqualTo: name[1])
-
-
-      //.where('first_name', isLessThan: searchTerm)     
-      .limit(15)
-      .get();
-
-    }else{
-     searchQuery = await firestore 
-      .collection('users')
-      .where('first_name', isGreaterThanOrEqualTo: name[0])
-      //.where('first_name', isLessThan: searchTerm)     
-      .limit(15)
-      .get();
+    if (name.length > 1 ) {
+      return firestore
+          .collection('users')
+          .where('first_name', isGreaterThanOrEqualTo: name[0])
+          .where('first_name', isLessThanOrEqualTo: name[0] + '\uf8ff')
+          .where('last_name', isGreaterThanOrEqualTo: name[1])
+          .where('last_name', isLessThanOrEqualTo: name[1] + '\uf8ff')
+          .snapshots();
+    } else {
+      return firestore
+          .collection('users')
+          .where('first_name', isGreaterThanOrEqualTo: searchTerm)
+          .where('first_name', isLessThanOrEqualTo: searchTerm + '\uf8ff')
+          .snapshots();
     }
+  }
 
-      setState(() {
-      _futureBuilderKey = UniqueKey();
-    });
-    return searchQuery.docs;
-    
-}
-
-void _refreshData(String name) {
+  void _onSearchChanged() {
     setState(() {
-      searchResults = searchUsers(name);
+      searchResultsStream = searchUsers(searchController.text);
     });
   }
 
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
 
-
-
-Widget build(BuildContext context) {
-return Scaffold(
-      
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
       body: Column(
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
+              controller: searchController,
               onChanged: (name) {
-                searchUsers(name);   
+                _onSearchChanged();
               },
-              onSubmitted: _refreshData,
               decoration: InputDecoration(
                 labelText: 'Search',
                 hintText: 'Search',
@@ -238,71 +215,59 @@ return Scaffold(
             ),
           ),
           Expanded(
-            child:  
-            FutureBuilder<List<DocumentSnapshot>>(
-              key: _futureBuilderKey,
-              future: searchResults,
+            child: StreamBuilder<QuerySnapshot>(
+              stream: searchResultsStream,
               builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              }
-              if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              }
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Center(child: Text('No results found.'));
-              }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(child: Text('No results found.'));
+                }
 
+                List<DocumentSnapshot> docs = snapshot.data!.docs;
 
-              List<DocumentSnapshot> docs = snapshot.data!;
+                docs.removeWhere((doc) => doc.id == currentUserId);
 
-              docs.removeWhere((doc) =>  doc.id == currentUserId);
+                return ListView.builder(
+                  itemCount: docs.length,
+                  itemBuilder: (context, index) {
+                    var data = docs[index].data() as Map<String, dynamic>;
+                    var userId = docs[index].id;
 
-              return ListView.builder(
-                itemCount: docs.length, 
-                itemBuilder: (context, index) {
-                  //bool userRemoved = false;
-                  
-
-                  var data = docs[index].data() as Map<String, dynamic>;
-                  var userId = docs[index].id;
-                  //bool isRequestSent = requestSent[userId] ?? false;
-                  
-                  return ListTile(
+                    return ListTile(
                       leading: data['imageUrl'] != null
                           ? CircleAvatar(
                               backgroundImage:
                                   NetworkImage(data['imageUrl']),
                             )
-                         : CircleAvatar(child: Icon(Icons.person)), 
-                      title: Text(
-                          '${data['first_name']} ${data['last_name']}'),
+                          : CircleAvatar(child: Icon(Icons.person)),
+                      title: Text('${data['first_name']} ${data['last_name']}'),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
                             icon: Icon(Icons.add),
-                            onPressed: () =>
-                               sendFriendRequest(userId),
-                               
+                            onPressed: () => sendFriendRequest(userId),
                           ),
                           IconButton(
                             icon: Icon(Icons.account_box),
                             onPressed: () =>
-                            showUserProfile(context, data, userId),
-                                //Text("false")
+                                showUserProfile(context, data, userId),
                           ),
                         ],
                       ),
                     );
-                },
-              );
-            },
-            ), 
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),
     );
   }
-
 }
