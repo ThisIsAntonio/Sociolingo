@@ -11,7 +11,7 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:js' as js;
+import 'model/platform_detection.dart';
 //import 'package:chat_app/model/topics_info.dart';
 //import 'package:chat_app/model/user_test.dart';
 //import 'package:chat_app/model/language_list.dart';
@@ -19,12 +19,6 @@ import 'dart:js' as js;
 // A stream controller for handling language changes.
 final StreamController<void> languageChangeStreamController =
     StreamController<void>.broadcast();
-
-// Check if the device is IOS
-bool isIOSDevice() {
-  return js.context.hasProperty('isIOSDevice') &&
-      js.context['isIOSDevice'] as bool;
-}
 
 // The main entry point of the Flutter application.
 void main() async {

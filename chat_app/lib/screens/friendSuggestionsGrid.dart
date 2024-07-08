@@ -16,6 +16,8 @@ class _FriendSuggestionsGridState extends State<FriendSuggestionsGrid> {
   Map<String, bool> requestSent = {};
   Map<String, String> pendingRequestIds = {};
   String? _currentUserName;
+  List<DocumentSnapshot> userSuggestions = [];
+  bool suggestionsLoaded = false;
 
   @override
   void initState() {
@@ -77,6 +79,22 @@ class _FriendSuggestionsGridState extends State<FriendSuggestionsGrid> {
     }
 
     return friendsIds;
+  }
+
+  // Function to load user suggestions
+  Future<void> loadSuggestions() async {
+    if (!suggestionsLoaded) {
+      List<String> excludedIds = await loadPendingRequests();
+      var usersQuery = await firestore.collection('users').get();
+      userSuggestions = usersQuery.docs;
+      userSuggestions.removeWhere(
+          (doc) => excludedIds.contains(doc.id) || doc.id == currentUserId);
+      userSuggestions.shuffle();
+      userSuggestions = userSuggestions.take(10).toList();
+      setState(() {
+        suggestionsLoaded = true;
+      });
+    }
   }
 
   // Function to send a friend request
@@ -157,6 +175,7 @@ class _FriendSuggestionsGridState extends State<FriendSuggestionsGrid> {
     }
   }
 
+  // Function to get the recipient's FCM token
   Future<String> getRecipientToken(String userId) async {
     DocumentSnapshot userSnapshot =
         await firestore.collection('users').doc(userId).get();
@@ -220,7 +239,6 @@ class _FriendSuggestionsGridState extends State<FriendSuggestionsGrid> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    // Calculate sizes based on screen width
     int crossAxisCount = screenWidth > 1300
         ? 10
         : screenWidth > 1200
@@ -239,107 +257,100 @@ class _FriendSuggestionsGridState extends State<FriendSuggestionsGrid> {
                                     ? 3
                                     : 2;
     double columnWidth =
-        screenWidth > 800 ? screenWidth * 0.80 : screenWidth * 0.95;
+        screenWidth > 800 ? screenWidth * 0.8 : screenWidth * 1;
 
     return Scaffold(
-      body: FutureBuilder<List<String>>(
-        future: loadPendingRequests(),
+      body: FutureBuilder<void>(
+        future: loadSuggestions(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData)
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
+          }
 
-          List<String> excludedIds = snapshot.data!;
-          return StreamBuilder<QuerySnapshot>(
-            stream: firestore.collection('users').snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData)
-                return Center(child: CircularProgressIndicator());
+          return Center(
+            child: Container(
+              width: columnWidth,
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    childAspectRatio: crossAxisCount > 6
+                        ? .5
+                        : crossAxisCount > 2
+                            ? .65
+                            : 1),
+                itemCount: userSuggestions.length,
+                itemBuilder: (context, index) {
+                  var user =
+                      userSuggestions[index].data() as Map<String, dynamic>;
+                  var userId = userSuggestions[index].id;
+                  bool isRequestSent = requestSent[userId] ?? false;
 
-              List<DocumentSnapshot> users = snapshot.data!.docs;
-              // Filter the user that are not friends and that are not the current user.
-              users.removeWhere((doc) =>
-                  excludedIds.contains(doc.id) || doc.id == currentUserId);
-
-              // Shufler user and show only 10 random users.
-              users.shuffle();
-              users = users.take(10).toList();
-
-              return Center(
-                child: Container(
-                  width: columnWidth,
-                  child: GridView.builder(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        childAspectRatio: crossAxisCount > 6
-                            ? .5
-                            : crossAxisCount > 2
-                                ? .65
-                                : 1),
-                    itemCount: users.length,
-                    itemBuilder: (context, index) {
-                      var user = users[index].data() as Map<String, dynamic>;
-                      var userId = users[index].id;
-                      bool isRequestSent = requestSent[userId] ?? false;
-
-                      return GestureDetector(
-                        onTap: () => showUserProfile(context, user, userId),
-                        child: Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                if (user['imageUrl'] != null &&
-                                    user['imageUrl'].isNotEmpty)
-                                  CircleAvatar(
-                                    backgroundImage:
-                                        NetworkImage(user['imageUrl']),
-                                    radius: 30,
-                                  )
-                                else
-                                  CircleAvatar(
-                                    child: Icon(Icons.person, size: 40),
-                                    radius: 30,
-                                  ),
-                                SizedBox(height: 8),
-                                Flexible(
-                                  child: Text(
-                                    "${user['first_name']}\n${user['last_name']}",
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                Text(user['country'] ?? 'Unknown'),
-                                Wrap(
-                                  alignment: WrapAlignment.center,
-                                  spacing: 8.0,
-                                  children: [
-                                    IconButton(
-                                      icon: isRequestSent
-                                          ? Icon(Icons.check)
-                                          : Icon(Icons.add),
-                                      onPressed: () => isRequestSent
-                                          ? null
-                                          : sendFriendRequest(userId),
-                                    ),
-                                    IconButton(
-                                      icon: Icon(Icons.cancel),
-                                      onPressed: () =>
-                                          cancelFriendRequest(userId),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                  return GestureDetector(
+                    onTap: () => showUserProfile(context, user, userId),
+                    child: Card(
+                        child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (user['imageUrl'] != null &&
+                              user['imageUrl'].isNotEmpty)
+                            CircleAvatar(
+                              backgroundImage: NetworkImage(user['imageUrl']),
+                              radius: 30,
+                            )
+                          else
+                            CircleAvatar(
+                              child: Icon(Icons.person, size: 40),
+                              radius: 30,
+                            ),
+                          SizedBox(height: 8),
+                          Flexible(
+                            child: Text(
+                              user['first_name'] ?? 'Unknown',
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              );
-            },
+                          Flexible(
+                            child: Text(
+                              user['last_name'] ?? 'Unknown',
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Flexible(
+                            child: Text(
+                              user['country'] ?? 'Unknown',
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 8.0,
+                            children: [
+                              IconButton(
+                                icon: isRequestSent
+                                    ? Icon(Icons.check)
+                                    : Icon(Icons.add),
+                                onPressed: () => isRequestSent
+                                    ? null
+                                    : sendFriendRequest(userId),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.cancel),
+                                onPressed: () => cancelFriendRequest(userId),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    )),
+                  );
+                },
+              ),
+            ),
           );
         },
       ),
