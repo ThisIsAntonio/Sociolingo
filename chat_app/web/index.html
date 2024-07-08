@@ -34,6 +34,8 @@
     // The value below is injected by flutter build, do not touch.
     const serviceWorkerVersion = null;
   </script>
+
+  
   <!-- This script adds the flutter initialization JS code -->
   <script src="flutter.js" defer=""></script>
 
@@ -41,74 +43,89 @@
   <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.10.0/firebase-messaging-compat.js"></script>
 
-  <script>
+<script>
+  // Function to detect iOS devices
+  function isIOS() {
+    let isIOSDevice = (/iPad|iPhone|iPod/.test(navigator.platform) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) &&
+      !window.MSStream;
+    console.log('isIOS: ', isIOSDevice);
+    return isIOSDevice;
+  }
+
+  // Set a global variable to indicate if the device is iOS
+  window.isIOSDevice = isIOS();
       // Firebase Config
-      var firebaseConfig = {
-        apiKey: "AIzaSyDb6GMwxxnc4O8Rh7Lw3TCG8jYCm1lui60",
-        authDomain: "sociolingo-project.firebaseapp.com",
-        projectId: "sociolingo-project",
-        storageBucket: "sociolingo-project.appspot.com",
-        messagingSenderId: "1065841467151",
-        appId: "1:1065841467151:web:df66b762cde6a6ff0b687a",
-        measurementId: "G-D6SLD741Y9"
+  var firebaseConfig = {
+    apiKey: "AIzaSyDb6GMwxxnc4O8Rh7Lw3TCG8jYCm1lui60",
+    authDomain: "sociolingo-project.firebaseapp.com",
+    projectId: "sociolingo-project",
+    storageBucket: "sociolingo-project.appspot.com",
+    messagingSenderId: "1065841467151",
+    appId: "1:1065841467151:web:df66b762cde6a6ff0b687a",
+    measurementId: "G-D6SLD741Y9"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+
+  // Check if the device is iOS
+  if (!window.isIOSDevice) {
+    console.log("============== entro =============== ");
+
+    const messaging = firebase.messaging();
+
+    // Request permission to send notifications
+    Notification.requestPermission().then((permission) => {
+      if (permission === 'granted') {
+        console.log('Notification permission granted.');
+        // Get token
+        messaging.getToken({ vapidKey: 'BBnEtMOtCc10zPV3w8-5w0odv6e7PcBIKOHlCKxv7_E9qtF0Jsb1HGK6n56yddlJLBeMZXBpdeQhkEjTmhYF-Ts' })
+          .then((currentToken) => {
+            if (currentToken) {
+              console.log('Token FCM:', currentToken);
+            } else {
+              console.log('No registration token available. Request permission to generate one.');
+            }
+          }).catch((err) => {
+            console.error('An error occurred while retrieving token. ', err);
+          });
+      } else {
+        console.log('Unable to get permission to notify.');
+      }
+    });
+
+    messaging.onMessage((payload) => {
+      console.log('Message received. ', payload);
+      const notificationTitle = payload.notification.title;
+      const notificationOptions = {
+        body: payload.notification.body,
+        icon: 'icons/logo.png'
       };
+      if (Notification.permission === 'granted') {
+        const notification = new Notification(notificationTitle, notificationOptions);
+        notification.onclick = (event) => {
+          event.preventDefault();
+          window.open(payload.notification.click_action, '_blank');
+        };
+      }
+    });
 
-        // Initializing Firebase
-        firebase.initializeApp(firebaseConfig);
-
-        const messaging = firebase.messaging();
-
-        // Request permission to send notifications
-        Notification.requestPermission().then((permission) => {
-          if (permission === 'granted') {
-            console.log('Notification permission granted.');
-            // Get token
-            messaging.getToken({ vapidKey: 'BBnEtMOtCc10zPV3w8-5w0odv6e7PcBIKOHlCKxv7_E9qtF0Jsb1HGK6n56yddlJLBeMZXBpdeQhkEjTmhYF-Ts' })
-              .then((currentToken) => {
-                if (currentToken) {
-                  console.log('Token FCM:', currentToken);
-                } else {
-                  console.log('No registration token available. Request permission to generate one.');
-                }
-              }).catch((err) => {
-                console.error('An error occurred while retrieving token. ', err);
-              });
-          } else {
-            console.log('Unable to get permission to notify.');
-          }
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/firebase-messaging-sw.js')
+        .then((registration) => {
+          console.log('Service Worker registrado con alcance:', registration.scope);
+        }).catch((err) => {
+          console.error('Service Worker registration failed: ', err);
         });
+    }
+  } else {
+    console.log('iOS device detected, skipping Firebase Messaging setup.');
+  }
+</script>
 
-        messaging.onMessage((payload) => {
-          console.log('Message received. ', payload);
-          const notificationTitle = payload.notification.title;
-          const notificationOptions = {
-            body: payload.notification.body,
-            icon: 'icons/logo.png'
-          };
-          if (Notification.permission === 'granted') {
-            const notification = new Notification(notificationTitle, notificationOptions);
-            notification.onclick = (event) => {
-              event.preventDefault();
-              window.open(payload.notification.click_action, '_blank');
-            };
-          }
-        });
-
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('/firebase-messaging-sw.js')
-            .then((registration) => {
-              console.log('Service Worker registrado con alcance:', registration.scope);
-            }).catch((err) => {
-              console.error('Service Worker registration failed: ', err);
-            });
-        }
-  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  
-  
-  
-  
   <style id="splash-screen-style">
     html {
       height: 100%
@@ -184,9 +201,9 @@
   
   
   <script>
-    window.addEventListener('load', function(ev) {
+    window.addEventListener('load', async function(ev) {
       // Download main.dart.js
-      _flutter.loader.loadEntrypoint({
+      await _flutter.loader.loadEntrypoint({
         serviceWorker: {
           serviceWorkerVersion: serviceWorkerVersion,
         },
@@ -198,6 +215,5 @@
       });
     });
   </script>
-
 
 </body></html>

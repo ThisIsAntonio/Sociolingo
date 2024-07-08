@@ -3,67 +3,52 @@ import 'package:chat_app/screens/friendSuggestionsGrid.dart';
 import 'package:chat_app/screens/friendRequestsList.dart';
 import 'package:chat_app/screens/friend_search.dart';
 
-
-
-//import 'package:easy_localization/easy_localization.dart';
-
 class FriendRequestsPage extends StatefulWidget {
   @override
   _FriendRequestsPage createState() => _FriendRequestsPage();
 }
 
 class _FriendRequestsPage extends State<FriendRequestsPage> {
+  int _selectedIndex = 0;
 
-  int currentPageIndex = 0;
-
-final List<Widget> pages = [
+  final List<Widget> _pages = [
     FriendRequestsList(),
     FriendSuggestionsGrid(),
     FriendSearch(),
-
   ];
 
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-                leading: Container(),
-
-        actions: <Widget> [
-            ElevatedButton(
-            onPressed: () {
-             setState((){
-              currentPageIndex = 0;
-             });
-            },
-            child: Text('Requests')
-              ),
-              ElevatedButton(
-            onPressed: () {
-               setState((){
-              currentPageIndex = 1;
-             });
-            },
-            child: Text('Suggestions')
-              ),
-              
-                  ElevatedButton(
-            onPressed: () {
-              setState((){
-              currentPageIndex = 2;
-             });
-            },
-            child: Text('Search')
-              ),
-              ]
+        title: Text('Friends'),
       ),
-     body:
-     Expanded(
-            child: pages[currentPageIndex],
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list),
+            label: 'Requests',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group),
+            label: 'Suggestions',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'Search',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.amber[800],
+        onTap: _onItemTapped,
+      ),
     );
-    
   }
 }
-

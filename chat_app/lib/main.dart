@@ -11,6 +11,7 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:js' as js;
 //import 'package:chat_app/model/topics_info.dart';
 //import 'package:chat_app/model/user_test.dart';
 //import 'package:chat_app/model/language_list.dart';
@@ -18,6 +19,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 // A stream controller for handling language changes.
 final StreamController<void> languageChangeStreamController =
     StreamController<void>.broadcast();
+
+// Check if the device is IOS
+bool isIOSDevice() {
+  return js.context.hasProperty('isIOSDevice') &&
+      js.context['isIOSDevice'] as bool;
+}
 
 // The main entry point of the Flutter application.
 void main() async {
@@ -45,16 +52,16 @@ void main() async {
         //.catchError((e) => print('Error inicializando Firebase: $e'));
         ;
   }
+
   // Initialize Firebase messaging.
   FirebaseMessaging messaging = FirebaseMessaging.instance;
   String? token;
 
-  //  FirebaseMessaging.instance.requestPermission();
-  if (kIsWeb) {
+  if (kIsWeb && !isIOSDevice()) {
     token = await messaging.getToken(
         vapidKey:
             "BBnEtMOtCc10zPV3w8-5w0odv6e7PcBIKOHlCKxv7_E9qtF0Jsb1HGK6n56yddlJLBeMZXBpdeQhkEjTmhYF-Ts");
-  } else {
+  } else if (!kIsWeb) {
     NotificationSettings settings = await messaging.requestPermission(
       alert: true,
       announcement: false,
@@ -67,8 +74,13 @@ void main() async {
     token = await messaging.getToken();
     print('User granted permission: ${settings.authorizationStatus}');
   }
+
   print("Firebase Messaging Token: $token");
-  saveTokenToDatabase(token);
+
+  if (token != null) {
+    saveTokenToDatabase(token);
+  }
+
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   // Activate Firebase App Check.
   if (defaultTargetPlatform == TargetPlatform.android) {
