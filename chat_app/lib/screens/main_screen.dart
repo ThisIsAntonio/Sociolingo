@@ -31,6 +31,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   bool _userCollapsed = false;
   String? imageUrl;
   String lastSeen = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+  final GlobalKey<NavigatorState> _navigatorKey =
+      GlobalKey<NavigatorState>(); // Aquí declaras el GlobalKey
 
   @override
   void initState() {
@@ -99,16 +101,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       if (userDoc.docs.isNotEmpty) {
         var userDoc1 = userDoc.docs.first;
         Map<String, dynamic> data = userDoc1.data();
-        bool isActive = data['is_active'] ?? false;
-
-        if (!isActive) {
-          await auth.FirebaseAuth.instance.signOut();
-          Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (context) => LoginScreen(),
-          ));
-          return;
-        }
-
         setState(() {
           currentUser = User.fromJson(data);
           imageUrl = data['imageUrl'] as String?;
@@ -136,41 +128,58 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   void _navigateToScreen(String? title) {
-    int newIndex;
+    String routeName;
     switch (title) {
       case 'Chat':
-        newIndex = 0;
+        routeName = 'chat';
         break;
       case 'Request':
-        newIndex = 2;
+        routeName = 'friend_requests';
         break;
       default:
         return; // Do nothing if the title doesn't match
     }
 
-    if (mounted) {
-      setState(() {
-        _selectedIndex = newIndex;
-      });
-    }
+    _navigatorKey.currentState?.pushNamed(routeName);
   }
 
   // Build the selected page based on the current index
   Widget _buildPage() {
-    switch (_selectedIndex) {
-      case 0:
-        return ChatPage(); // Main Page
-      case 1:
-        return TopicsPage();
-      case 2:
-        return FriendRequestsPage();
-      case 3:
-        return UserInfoPage(userEmail: widget.userEmail);
-      case 4:
-        return SettingsPage(userEmail: widget.userEmail);
-      default:
-        return ChatPage(); // Fallback page
-    }
+    return Navigator(
+      key: _navigatorKey,
+      onGenerateRoute: (RouteSettings settings) {
+        WidgetBuilder builder;
+        switch (settings.name) {
+          case 'chat':
+            builder = (BuildContext _) => ChatPage();
+            break;
+          case 'topics':
+            builder = (BuildContext _) => TopicsPage();
+            break;
+          case 'friend_requests':
+            builder = (BuildContext _) => FriendRequestsPage();
+            break;
+          case 'user_info':
+            builder =
+                (BuildContext _) => UserInfoPage(userEmail: widget.userEmail);
+            break;
+          case 'settings':
+            builder = (BuildContext _) => SettingsPage(
+                userEmail: widget.userEmail, onLogout: _handleLogout);
+            break;
+          default:
+            builder = (BuildContext _) => ChatPage();
+        }
+        return MaterialPageRoute(builder: builder, settings: settings);
+      },
+    );
+  }
+
+  void _handleLogout() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => LoginScreen()),
+      (Route<dynamic> route) => false,
+    );
   }
 
   // Update the selected index when tapping on a navigation item
@@ -178,6 +187,28 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     setState(() {
       _selectedIndex = index;
     });
+    String routeName;
+    switch (index) {
+      case 0:
+        routeName = 'chat';
+        break;
+      case 1:
+        routeName = 'topics';
+        break;
+      case 2:
+        routeName = 'friend_requests';
+        break;
+      case 3:
+        routeName = 'user_info';
+        break;
+      case 4:
+        routeName = 'settings';
+        break;
+      default:
+        routeName = 'chat';
+    }
+
+    _navigatorKey.currentState?.pushNamed(routeName);
   }
 
   Widget _userImageWidget(double imageSize) {

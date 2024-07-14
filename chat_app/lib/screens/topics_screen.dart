@@ -101,15 +101,8 @@ class _TopicsScreenState extends State<TopicsScreen> {
         SnackBar(content: Text(tr('topicScreen_hobbiesUpdateSuccessful'))),
       );
       if (widget.screenID == 2) {
-        // Redirect to the User Profile after saving the data
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => MainScreen(
-                    userEmail: userEmail!,
-                    returnScreen: 3,
-                  )),
-        );
+        // Pop the current screen to go back to the previous one
+        Navigator.pop(context, true);
       } else {
         // Redirect to the MainScreen after saving the data
         Navigator.pushReplacement(

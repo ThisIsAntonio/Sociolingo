@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:chat_app/screens/login_screen.dart';
 import 'package:chat_app/model/theme_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class SettingsPage extends StatelessWidget {
   final String userEmail;
+  final VoidCallback onLogout;
 
-  const SettingsPage({Key? key, required this.userEmail}) : super(key: key);
+  const SettingsPage(
+      {Key? key, required this.userEmail, required this.onLogout})
+      : super(key: key);
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -207,12 +209,13 @@ class SettingsPage extends StatelessWidget {
         ),
       );
 
-      // Close the sesion and redirect to LoginScreen
+      // Close the session and redirect to LoginScreen
       await FirebaseAuth.instance.signOut();
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-        (Route<dynamic> route) => false,
-      );
+      onLogout();
+      // Navigator.of(context).pushAndRemoveUntil(
+      //   MaterialPageRoute(builder: (context) => const LoginScreen()),
+      //   (Route<dynamic> route) => false,
+      // );
     } catch (e) {
       // Show the error message if something went wrong
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -258,11 +261,12 @@ class SettingsPage extends StatelessWidget {
     }).then((_) async {
       // Close the session
       await FirebaseAuth.instance.signOut();
-      // Redirect to the loginScreen
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-        (Route<dynamic> route) => false,
-      );
+      // Redirect to the loginScreen and remove all previous routes
+      onLogout();
+      // Navigator.of(context).pushAndRemoveUntil(
+      //   MaterialPageRoute(builder: (context) => LoginScreen()),
+      //   (Route<dynamic> route) => false,
+      // );
     }).catchError((error) {
       // Error showing them on SnackBar
       ScaffoldMessenger.of(context).showSnackBar(

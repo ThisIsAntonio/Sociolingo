@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:chat_app/screens/friendSuggestionsGrid.dart';
 import 'package:chat_app/screens/friendRequestsList.dart';
 import 'package:chat_app/screens/friend_search.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class FriendRequestsPage extends StatefulWidget {
   @override
@@ -23,26 +24,33 @@ class _FriendRequestsPage extends State<FriendRequestsPage> {
     });
   }
 
+  final List<String> _titles = [
+    tr('friendRequests_requestsTitle'),
+    tr('friendRequests_suggestionsTitle'),
+    tr('friendRequests_searchTitle'),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Friends'),
+        leading: Container(),
+        title: Text(_titles[_selectedIndex]),
       ),
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.list),
-            label: 'Requests',
+            label: tr('friendRequests_requestsTitle'),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.group),
-            label: 'Suggestions',
+            label: tr('friendRequests_suggestionsTitle'),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.search),
-            label: 'Search',
+            label: tr('friendRequests_searchTitle'),
           ),
         ],
         currentIndex: _selectedIndex,

@@ -184,13 +184,17 @@ class _UserInfoPageState extends State<UserInfoPage> {
   }
 
   // Function to navigate to the TopicsScreen
-  void _navigateToTopicsScreen() {
-    Navigator.push(
+  void _navigateToTopicsScreen() async {
+    bool? updated = await Navigator.push(
       context,
       MaterialPageRoute(
           builder: (context) =>
               TopicsScreen(userId: widget.userEmail, screenID: 2)),
     );
+    if (updated == true) {
+      // Reload the user information if topics were updated
+      _fetchSelectedHobbies();
+    }
   }
 
   // Function to fetch the selected hobbies

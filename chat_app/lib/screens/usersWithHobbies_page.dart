@@ -271,43 +271,55 @@ class _UsersWithHobbyPageState extends State<UsersWithHobbyPage> {
           Set<String> excludedIds = snapshot.data!;
 
           return StreamBuilder<QuerySnapshot>(
-              stream:
-                  FirebaseFirestore.instance.collection('users').snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
+            stream: FirebaseFirestore.instance.collection('users').snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
 
-                if (!snapshot.hasData || snapshot.data == null) {
-                  return Center(child: Text("userHobbies_noData"));
-                }
+              if (!snapshot.hasData || snapshot.data == null) {
+                return Center(child: Text("userHobbies_noData"));
+              }
 
-                List<DocumentSnapshot> usersWithHobby =
-                    snapshot.data!.docs.where((userDoc) {
+              List<DocumentSnapshot> usersWithHobby =
+                  snapshot.data!.docs.where((userDoc) {
+                Map<String, dynamic> userData =
+                    userDoc.data() as Map<String, dynamic>;
+                List<dynamic> userHobbiesIds =
+                    userData['selectedHobbies'] ?? [];
+                // check if the user has the hobby and is not in the exclude list
+                return userHobbiesIds.contains(widget.hobbyId) &&
+                    !excludedIds.contains(userDoc.id);
+              }).toList();
+
+              // Show a grid of users
+              return GridView.builder(
+                padding: EdgeInsets.all(8), // Add padding to the grid
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  childAspectRatio: crossAxisCount > 6
+                      ? .5
+                      : crossAxisCount > 2
+                          ? .65
+                          : 1, // Adjust the aspect ratio to make cards larger
+                ),
+                itemCount: usersWithHobby.length,
+                itemBuilder: (context, index) {
                   Map<String, dynamic> userData =
-                      userDoc.data() as Map<String, dynamic>;
-                  List<dynamic> userHobbiesIds =
-                      userData['selectedHobbies'] ?? [];
-                  // check if the user has the hobby and is not in the exclude list
-                  return userHobbiesIds.contains(widget.hobbyId) &&
-                      !excludedIds.contains(userDoc.id);
-                }).toList();
-
-                // Show a grid of users
-                return GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                  ),
-                  itemCount: usersWithHobby.length,
-                  itemBuilder: (context, index) {
-                    Map<String, dynamic> userData =
-                        usersWithHobby[index].data() as Map<String, dynamic>;
-                    String userId = usersWithHobby[index].id;
-                    bool isRequestAlreadySent = requestSent[userId] ?? false;
-                    // show user info
-                    return GestureDetector(
-                      onTap: () => showUserProfile(context, userData, userId),
-                      child: Card(
+                      usersWithHobby[index].data() as Map<String, dynamic>;
+                  String userId = usersWithHobby[index].id;
+                  bool isRequestAlreadySent = requestSent[userId] ?? false;
+                  // show user info
+                  return GestureDetector(
+                    onTap: () => showUserProfile(context, userData, userId),
+                    child: Card(
+                      margin: EdgeInsets.all(
+                          8), // Increase margin for more space around each card
+                      child: Padding(
+                        padding: const EdgeInsets.all(
+                            16.0), // Increase padding inside the card
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -320,10 +332,16 @@ class _UsersWithHobbyPageState extends State<UsersWithHobbyPage> {
                                   ? Icon(Icons.person, size: 40)
                                   : null,
                             ),
-                            SizedBox(height: 8),
+                            SizedBox(height: 16),
                             Text(
-                                "${userData['first_name']} ${userData['last_name']}"),
-                            Text(userData['country'] ?? 'Unknown'),
+                              "${userData['first_name']} ${userData['last_name']}",
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 8),
+                            Text(userData['country'] ?? 'Unknown',
+                                textAlign: TextAlign.center),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -350,10 +368,12 @@ class _UsersWithHobbyPageState extends State<UsersWithHobbyPage> {
                           ],
                         ),
                       ),
-                    );
-                  },
-                );
-              });
+                    ),
+                  );
+                },
+              );
+            },
+          );
         },
       ),
     );

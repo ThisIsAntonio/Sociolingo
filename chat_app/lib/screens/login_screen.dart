@@ -510,6 +510,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       return null;
                     },
                     style: TextStyle(fontSize: fontSize, color: fontColor),
+                    textInputAction: TextInputAction.next,
                   ),
                 ),
                 // Password
@@ -529,6 +530,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       return null;
                     },
                     style: TextStyle(fontSize: fontSize, color: fontColor),
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _submit(),
                   ),
                 ),
                 const SizedBox(height: 20),
