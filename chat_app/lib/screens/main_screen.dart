@@ -11,6 +11,7 @@ import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:chat_app/model/theme_provider.dart';
+import 'package:chat_app/screens/login_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final String userEmail;
@@ -98,6 +99,16 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       if (userDoc.docs.isNotEmpty) {
         var userDoc1 = userDoc.docs.first;
         Map<String, dynamic> data = userDoc1.data();
+        bool isActive = data['is_active'] ?? false;
+
+        if (!isActive) {
+          await auth.FirebaseAuth.instance.signOut();
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (context) => LoginScreen(),
+          ));
+          return;
+        }
+
         setState(() {
           currentUser = User.fromJson(data);
           imageUrl = data['imageUrl'] as String?;

@@ -71,37 +71,39 @@ class _LoginScreenState extends State<LoginScreen> {
         bool isActive = userData['is_active'] ?? false;
         bool firstTime = userData['first_time'] ?? false;
 
-        if (isActive) {
-          _updateMessagingToken();
-          if (firstTime == true) {
-            // The user is new so we navigate them to set their profile information and send the screen to do the process
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (context) =>
-                    TopicsScreen(userId: user.uid, screenID: 1)));
-            await FirebaseFirestore.instance
-                .collection('users')
-                .doc(user.uid)
-                .update({
-              'first_time': false,
-            });
-          } else {
-            // The user is active
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (context) => MainScreen(
-                      userEmail: user.email!,
-                    )));
-            await FirebaseFirestore.instance
-                .collection('users')
-                .doc(user.uid)
-                .update({
-              'isOnline': true,
-              'lastSeen': lastSeen,
-            });
-          }
-        } else {
-          // The user is not active
+        if (!isActive) {
           ScaffoldMessenger.of(context)
               .showSnackBar(SnackBar(content: Text(tr('login_userNotActive'))));
+          await FirebaseAuth.instance.signOut();
+          return;
+        }
+
+        _updateMessagingToken();
+
+        if (firstTime) {
+          // The user is new so we navigate them to set their profile information and send the screen to do the process
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (context) =>
+                  TopicsScreen(userId: user.uid, screenID: 1)));
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .update({
+            'first_time': false,
+          });
+        } else {
+          // The user is active
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (context) => MainScreen(
+                    userEmail: user.email!,
+                  )));
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .update({
+            'isOnline': true,
+            'lastSeen': lastSeen,
+          });
         }
       } else {
         // There is not user data

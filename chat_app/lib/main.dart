@@ -179,12 +179,39 @@ class _MyAppState extends State<MyApp> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.active) {
                   if (snapshot.hasData) {
-                    // the user is authenticate go to the MainScreen
-                    return MainScreen(
-                      userEmail: snapshot.data!.email!,
+                    return FutureBuilder(
+                      future: FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(snapshot.data!.uid)
+                          .get(),
+                      builder: (context,
+                          AsyncSnapshot<DocumentSnapshot> userSnapshot) {
+                        if (userSnapshot.connectionState ==
+                            ConnectionState.done) {
+                          if (userSnapshot.hasData &&
+                              userSnapshot.data!.exists) {
+                            Map<String, dynamic> userData = userSnapshot.data!
+                                .data() as Map<String, dynamic>;
+                            bool isActive = userData['is_active'] ?? false;
+
+                            if (isActive) {
+                              return MainScreen(
+                                userEmail: snapshot.data!.email!,
+                              );
+                            } else {
+                              FirebaseAuth.instance.signOut();
+                              return WelcomeScreen();
+                            }
+                          } else {
+                            return WelcomeScreen();
+                          }
+                        }
+                        return Scaffold(
+                          body: Center(child: CircularProgressIndicator()),
+                        );
+                      },
                     );
                   } else {
-                    // the user is not authenticate go to welcome screen
                     return WelcomeScreen();
                   }
                 }

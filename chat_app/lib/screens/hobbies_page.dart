@@ -80,7 +80,7 @@ class _HobbiesPageState extends State<HobbiesPage> {
             ),
             itemCount: hobbies.length,
             itemBuilder: (context, index) {
-              hobbyName = hobbies[index]['name'];
+              String localHobbyName = hobbies[index]['name'];
               String hobbyId = hobbies[index].id;
 
               return GestureDetector(
@@ -89,7 +89,7 @@ class _HobbiesPageState extends State<HobbiesPage> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => UsersWithHobbyPage(
-                              hobbyId: hobbyId, hobbyName: hobbyName)),
+                              hobbyId: hobbyId, hobbyName: localHobbyName)),
                     );
                   },
                   child: Card(
@@ -98,7 +98,7 @@ class _HobbiesPageState extends State<HobbiesPage> {
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
-                          hobbyName,
+                          localHobbyName,
                           style: TextStyle(
                             color: Colors
                                 .black, // Black text to contrast with pastel colors
