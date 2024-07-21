@@ -14,15 +14,24 @@ class _ChatPageState extends State<ChatPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String? selectedFriendId;
 
-  // Function to get the list of friends from Firestore database
+// Function to get the list of friends from Firestore database
   Future<bool> _isFriendWith(String friendId) async {
     final currentUserId = _auth.currentUser!.uid;
+    // print('Current User ID: $currentUserId, Checking Friend ID: $friendId');
+
     final friendships = await _firestore
         .collection('friendships')
-        .where('users', arrayContainsAny: [currentUserId, friendId]).get();
+        .where('users', arrayContains: currentUserId)
+        .get();
 
-    // A friendship document exists if the query returns any documents
-    return friendships.docs.isNotEmpty;
+    // Check if friendId is in any of the friendship documents
+    bool isFriend = friendships.docs.any((doc) {
+      List<dynamic> users = doc['users'];
+      return users.contains(friendId);
+    });
+
+    // print('Is Friend: $isFriend');
+    return isFriend;
   }
 
   // Function to get the list of unread messages for a specific user
@@ -123,25 +132,41 @@ class _ChatPageState extends State<ChatPage> {
               width: isLargeScreen ? screenWidth * 0.35 : screenWidth,
               child: StreamBuilder<QuerySnapshot>(
                 stream: _firestore
-                    .collection('chats')
-                    .where('participants',
-                        arrayContains: _auth.currentUser!.uid)
+                    .collection('friendships')
+                    .where('users', arrayContains: _auth.currentUser!.uid)
                     .snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData)
+                builder: (context, friendshipSnapshot) {
+                  if (!friendshipSnapshot.hasData) {
                     return Center(child: CircularProgressIndicator());
+                  }
 
-                  var chats = snapshot.data!.docs;
-                  return ListView(
-                    children: chats.map<Widget>((chat) {
-                      var friendId = (chat['participants'] as List)
-                          .firstWhere((id) => id != _auth.currentUser!.uid);
-                      return FutureBuilder<bool>(
-                        future: _isFriendWith(friendId),
-                        builder: (context, isFriendSnapshot) {
-                          if (!isFriendSnapshot.hasData ||
-                              !isFriendSnapshot.data!)
-                            return Container(); // Don't show if not friends or data not fetched yet
+                  var friendships = friendshipSnapshot.data!.docs
+                      .map((doc) => (doc.data()
+                          as Map<String, dynamic>)['users'] as List<dynamic>)
+                      .toList();
+
+                  return StreamBuilder<QuerySnapshot>(
+                    stream: _firestore
+                        .collection('chats')
+                        .where('participants',
+                            arrayContains: _auth.currentUser!.uid)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return Center(child: CircularProgressIndicator());
+                      }
+
+                      var chats = snapshot.data!.docs;
+                      return ListView(
+                        children: chats.map<Widget>((chat) {
+                          var friendId = (chat['participants'] as List)
+                              .firstWhere((id) => id != _auth.currentUser!.uid);
+                          //print('Chat with Friend ID: $friendId');
+
+                          if (!friendships
+                              .any((users) => users.contains(friendId))) {
+                            return Container(); // Do not show if not friends
+                          }
 
                           return FutureBuilder<DocumentSnapshot>(
                             future: _firestore
@@ -149,10 +174,17 @@ class _ChatPageState extends State<ChatPage> {
                                 .doc(friendId)
                                 .get(),
                             builder: (context, snapshot) {
-                              if (!snapshot.hasData)
-                                return ListTile(title: Text("Loading..."));
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return Container(); // Do not show anything while loading
+                              }
+                              if (!snapshot.hasData || !snapshot.data!.exists) {
+                                return Container();
+                              }
+
                               var friend =
                                   snapshot.data!.data() as Map<String, dynamic>;
+
                               return ListTile(
                                 leading: CircleAvatar(
                                   backgroundImage: NetworkImage(
@@ -166,7 +198,10 @@ class _ChatPageState extends State<ChatPage> {
                                 subtitle: FutureBuilder<int>(
                                   future: countUnreadMessages(chat.id),
                                   builder: (context, snapshot) {
-                                    // Reeplace the text with the number of unread messages
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return Text("Loading...");
+                                    }
                                     if (snapshot.hasData &&
                                         snapshot.data! > 0) {
                                       return Row(
@@ -191,7 +226,6 @@ class _ChatPageState extends State<ChatPage> {
                                         ],
                                       );
                                     } else {
-                                      // If there are no unread messages, show the last message
                                       return Text(
                                           chat['lastMessage'] ?? "No messages");
                                     }
@@ -201,13 +235,29 @@ class _ChatPageState extends State<ChatPage> {
                                   setState(() {
                                     selectedFriendId = friendId;
                                   });
+                                  if (!isLargeScreen) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ChatWindow(
+                                          key: ValueKey(selectedFriendId),
+                                          friendId: selectedFriendId!,
+                                          isLargeScreen: isLargeScreen,
+                                        ),
+                                      ),
+                                    ).then((_) {
+                                      setState(() {
+                                        selectedFriendId = null;
+                                      });
+                                    });
+                                  }
                                 },
                               );
                             },
                           );
-                        },
+                        }).toList(),
                       );
-                    }).toList(),
+                    },
                   );
                 },
               ),

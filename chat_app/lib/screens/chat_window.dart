@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:chat_app/screens/main_screen.dart';
 import 'package:chat_app/model/language_list.dart';
 
 class ChatWindow extends StatefulWidget {
@@ -282,8 +281,6 @@ class _ChatWindowState extends State<ChatWindow> {
 
   @override
   Widget build(BuildContext context) {
-    final String currentUserEmail =
-        FirebaseAuth.instance.currentUser?.email ?? '';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_chatId != null) {
         markMessagesAsRead(_chatId!);
@@ -297,13 +294,7 @@ class _ChatWindowState extends State<ChatWindow> {
                 icon: Icon(Icons.arrow_back),
                 onPressed: () {
                   // Comeback to MainScreen
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            MainScreen(userEmail: currentUserEmail)),
-                    (Route<dynamic> route) => false,
-                  );
+                  Navigator.pop(context);
                 },
               ),
         title: Column(

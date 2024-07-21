@@ -183,9 +183,10 @@
     "friendInfo_birthdayLabel": "Birthday: ",
     "friendInfo_hobbiesLabel": "Hobbies: ",
     "friendInfo_languagesLabel": "Languages",
-
-
-
+    "friendInfo_confirmDeleteTitle": "Confirm Delete",
+    "friendInfo_confirmDeleteMessage": "Are you sure you want to delete this friend?",
+    "friendInfo_cancelButton": "Cancel",
+    "friendInfo_deleteButton": "Delete",
     "resetPassword_passwordResetSuccessfully": "Password reset successfully",
     "resetPassword_errorResettingPassword": "Error resetting password",
     "resetPassword_errorResettingPasswordTryAgain": "An error occurred. Please try again later.",

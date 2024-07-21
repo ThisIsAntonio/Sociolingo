@@ -181,8 +181,10 @@
     "friendInfo_birthdayLabel": "Année de naissance: ",
     "friendInfo_hobbiesLabel": "Passe-temps: ",
     "friendInfo_languagesLabel": "Langues",
-
-
+    "friendInfo_confirmDeleteTitle": "Confirmer la suppression",
+    "friendInfo_confirmDeleteMessage": "Êtes-vous sûr de vouloir supprimer cet ami?",
+    "friendInfo_cancelButton": "Annuler",
+    "friendInfo_deleteButton": "Supprimer",
     "resetPassword_title": "Reinitialiser le mot de passe",
     "resetPassword_passwordResetSuccessfully": "Mot de passe réinitialisé avec succès",
     "resetPassword_errorResettingPassword": "Erreur lors de la réinitialisation du mot de passe",

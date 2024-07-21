@@ -46,6 +46,15 @@ class _UserInfoPageState extends State<UserInfoPage> {
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (mounted) {
+      _fetchUserInfo(widget.userEmail);
+      _fetchFriends();
+    }
+  }
+
   // Function to fetch the user info
   Future<void> _fetchUserInfo(String userEmail) async {
     try {
@@ -161,12 +170,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
                             '${friendData['first_name']} ${friendData['last_name']}'),
                         onTap: () {
                           Navigator.of(context).pop(); // Close the dialog
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => FriendDetailsPage(
-                                      email: friendData[
-                                          'email']))); // Go to FriendDetailsPage
+                          _navigateToFriendDetails(
+                              friendData['email']); // Go to FriendDetailsPage
                         },
                       ))
                   .toList(),
@@ -181,6 +186,18 @@ class _UserInfoPageState extends State<UserInfoPage> {
         );
       },
     );
+  }
+
+  void _navigateToFriendDetails(String email) async {
+    bool? friendUpdated = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => FriendDetailsPage(email: email)),
+    );
+    if (friendUpdated == true) {
+      await _fetchUserInfo(widget.userEmail);
+      await _fetchFriends();
+      setState(() {});
+    }
   }
 
   // Function to navigate to the TopicsScreen

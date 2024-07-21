@@ -181,8 +181,10 @@
     "friendInfo_birthdayLabel": "Fecha de Nacimiento: ",
     "friendInfo_hobbiesLabel": "Hobbies: ",
     "friendInfo_languagesLabel": "Idiomas",
-
-
+    "friendInfo_confirmDeleteTitle": "Confirmar eliminación",
+    "friendInfo_confirmDeleteMessage": "¿Estás seguro de que deseas eliminar a este amigo?",
+    "friendInfo_cancelButton": "Cancelar",
+    "friendInfo_deleteButton": "Eliminar",
     "resetPassword_title": "Restablecer contraseña",
     "resetPassword_passwordResetSuccessfully": "Contraseña restablecida correctamente",
     "resetPassword_errorResettingPassword": "Error al restablecer la contraseña",

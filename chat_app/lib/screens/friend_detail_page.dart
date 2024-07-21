@@ -166,6 +166,34 @@ class _FriendDetailsPageState extends State<FriendDetailsPage> {
     }
   }
 
+  // Function to confirm delete friend
+  Future<void> _confirmDeleteFriend() async {
+    bool? confirm = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(tr('friendInfo_confirmDeleteTitle')),
+          content: Text(tr('friendInfo_confirmDeleteMessage')),
+          actions: <Widget>[
+            TextButton(
+              child: Text(tr('friendInfo_cancelButton')),
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            TextButton(
+              child: Text(tr('friendInfo_deleteButton')),
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      await _toggleFriendship();
+      Navigator.pop(context, true);
+    }
+  }
+
   // CheckFriendshipStatus from Firebase Firestore to know if the current logged in user is friends with the friend
   Future<void> _toggleFriendship() async {
     if (_isFriend) {
@@ -331,7 +359,7 @@ class _FriendDetailsPageState extends State<FriendDetailsPage> {
                                 _isFriend
                                     ? IconButton(
                                         icon: Icon(Icons.delete_forever),
-                                        onPressed: _toggleFriendship,
+                                        onPressed: _confirmDeleteFriend,
                                       )
                                     : IconButton(
                                         icon: Icon(Icons.person_add),
@@ -354,6 +382,9 @@ class _FriendDetailsPageState extends State<FriendDetailsPage> {
                                     tr('friendInfo_languagesLabel'),
                                     style: TextStyle(fontSize: fontSize),
                                   ),
+                                  const SizedBox(
+                                      height:
+                                          20), // Separator (20 pixels height)
                                   Wrap(
                                     spacing:
                                         8.0, // Horizontal space between chips

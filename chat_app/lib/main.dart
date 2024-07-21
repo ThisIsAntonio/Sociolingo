@@ -51,22 +51,31 @@ void main() async {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
   String? token;
 
-  if (kIsWeb && !isIOSDevice()) {
-    token = await messaging.getToken(
-        vapidKey:
-            "BBnEtMOtCc10zPV3w8-5w0odv6e7PcBIKOHlCKxv7_E9qtF0Jsb1HGK6n56yddlJLBeMZXBpdeQhkEjTmhYF-Ts");
-  } else if (!kIsWeb) {
-    NotificationSettings settings = await messaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
-    token = await messaging.getToken();
-    print('User granted permission: ${settings.authorizationStatus}');
+  try {
+    if (kIsWeb && !isIOSDevice()) {
+      token = await messaging.getToken(
+          vapidKey:
+              "BBnEtMOtCc10zPV3w8-5w0odv6e7PcBIKOHlCKxv7_E9qtF0Jsb1HGK6n56yddlJLBeMZXBpdeQhkEjTmhYF-Ts");
+    } else if (!kIsWeb) {
+      NotificationSettings settings = await messaging.requestPermission(
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        criticalAlert: false,
+        provisional: false,
+        sound: true,
+      );
+      if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional) {
+        token = await messaging.getToken();
+        print('User granted permission: ${settings.authorizationStatus}');
+      } else {
+        print('User declined or has not accepted permission');
+      }
+    }
+  } catch (e) {
+    print('Error obtaining Firebase Messaging token: $e');
   }
 
   print("Firebase Messaging Token: $token");

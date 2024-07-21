@@ -58,6 +58,7 @@ class _FriendSearchPage extends State<FriendSearch> {
     var sentRequests = await firestore
         .collection('friend_requests')
         .where('from', isEqualTo: currentUserId)
+        .where('status', isEqualTo: 'pending')
         .get();
     for (var doc in sentRequests.docs) {
       requestSent[doc['to']] = true;
@@ -67,6 +68,7 @@ class _FriendSearchPage extends State<FriendSearch> {
     var receivedRequests = await firestore
         .collection('friend_requests')
         .where('to', isEqualTo: currentUserId)
+        .where('status', isEqualTo: 'pending')
         .get();
     for (var doc in receivedRequests.docs) {
       pendingRequestIds[doc['from']] = doc.id;
@@ -110,6 +112,7 @@ class _FriendSearchPage extends State<FriendSearch> {
     }
   }
 
+  // Function to cancel friend requests
   Future<void> cancelFriendRequest(String friendId) async {
     if (pendingRequestIds.containsKey(friendId)) {
       await firestore

@@ -96,13 +96,17 @@ class FriendRequestsList extends StatelessWidget {
                             children: [
                               IconButton(
                                 icon: Icon(Icons.check),
-                                onPressed: () =>
-                                    respondToFriendRequest(request.id, true),
+                                onPressed: () async {
+                                  await respondToFriendRequest(
+                                      request.id, true);
+                                },
                               ),
                               IconButton(
                                 icon: Icon(Icons.close),
-                                onPressed: () =>
-                                    respondToFriendRequest(request.id, false),
+                                onPressed: () async {
+                                  await respondToFriendRequest(
+                                      request.id, false);
+                                },
                               ),
                             ],
                           ),
