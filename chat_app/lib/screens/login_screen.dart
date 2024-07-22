@@ -494,6 +494,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: inputWidth),
                   child: TextFormField(
+                    key: Key('emailField'),
                     decoration: InputDecoration(
                       labelText: tr('login_email'),
                       labelStyle:
@@ -515,6 +516,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 // Password
                 ConstrainedBox(
+                  key: Key('passwordField'),
                   constraints: BoxConstraints(maxWidth: inputWidth),
                   child: TextFormField(
                     decoration: InputDecoration(
@@ -539,6 +541,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Container(
                   width: buttonWidth,
                   child: ElevatedButton(
+                    key: Key('loginButton'),
                     onPressed: _submit,
                     child: Text(tr('login_buttonLogin')),
                     style: ElevatedButton.styleFrom(

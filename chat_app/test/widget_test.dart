@@ -1,20 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:chat_app/screens/login_screen.dart'; // Asegúrate de que esta ruta sea correcta
+import 'package:chat_app/screens/welcome_screen.dart';
 
 void main() {
-  testWidgets('Login Screen Test', (WidgetTester tester) async {
-    // Construye la aplicación y dispara un frame.
-    await tester.pumpWidget(MaterialApp(home: LoginScreen()));
+  testWidgets('showComingSoonDialog displays the dialog',
+      (WidgetTester tester) async {
+    // Build our app and trigger a frame.
+    await tester.pumpWidget(MyApp());
+    print('App built successfully');
 
-    // Realiza aquí tus verificaciones y acciones de prueba.
-    // Por ejemplo, puedes buscar botones o campos de texto y simular interacciones.
+    // Find the first SocialButton in the widget tree.
+    final socialButtonFinder = find.byType(SocialButton).first;
 
-    // Verifica si ciertos widgets están presentes en la pantalla.
-    // Como ejemplo, verifica la presencia de un campo de texto para el email.
-    expect(find.byType(TextFormField), findsWidgets);
+    // Verify that the SocialButton is found.
+    expect(socialButtonFinder, findsOneWidget);
+    print('SocialButton found');
 
-    // Aquí puedes agregar más verificaciones o interacciones,
-    // como enviar toques en botones o ingresar texto en campos de texto.
+    // Tap the button to trigger the dialog.
+    await tester.tap(socialButtonFinder);
+    print('SocialButton tapped');
+    await tester.pumpAndSettle(); // Wait for the dialog to appear.
+
+    // Verify that the dialog appears.
+    expect(find.byType(AlertDialog), findsOneWidget);
+    print('AlertDialog displayed');
+
+    // Tap the OK button to dismiss the dialog.
+    final okButtonFinder = find.widgetWithText(TextButton, 'OK');
+    expect(okButtonFinder, findsOneWidget);
+    print('OK button found in AlertDialog');
+
+    await tester.tap(okButtonFinder);
+    print('OK button tapped');
+    await tester.pumpAndSettle(); // Wait for the dialog to disappear.
+
+    // Verify that the dialog is no longer visible.
+    expect(find.byType(AlertDialog), findsNothing);
+    print('AlertDialog dismissed');
   });
 }
