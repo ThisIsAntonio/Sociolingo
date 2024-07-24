@@ -379,73 +379,109 @@ class _UserInfoPageState extends State<UserInfoPage> {
                                 height: 20), // Separator (20 pixel height)
                             Container(
                               decoration: BoxDecoration(
-                                // color: Color.fromARGB(255, 147, 158, 167),
+                                color: infoTileColor,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               padding: EdgeInsets.all(padding),
+                              width: columnWidth,
                               child: Center(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [
-                                            Color.fromARGB(255, 16, 184,
-                                                199), // Start color
-                                            Color.fromARGB(
-                                                255, 222, 12, 190), // End color
-                                          ],
-                                        ),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      padding: EdgeInsets.all(padding),
-                                      constraints: BoxConstraints(
-                                        maxWidth:
-                                            200, // Max of the size that the image can take
-                                      ),
-                                      child: Column(children: [
-                                        _userImageWidget(imageSize),
-                                      ]),
-                                    ),
-                                    const SizedBox(width: 50),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            '${_user!.firstName} ${_user!.lastName}',
-                                            style: TextStyle(
-                                                color: titleFontColor,
-                                                fontSize: fontSize,
-                                                fontWeight: FontWeight.bold),
-                                            textAlign: TextAlign
-                                                .center, // Centrar el texto
-                                            overflow: TextOverflow.ellipsis,
+                                child: Padding(
+                                  padding: EdgeInsets.all(padding),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              Color.fromARGB(255, 16, 184,
+                                                  199), // Start color
+                                              Color.fromARGB(255, 222, 12,
+                                                  190), // End color
+                                            ],
                                           ),
-                                          const SizedBox(height: 8),
-                                          GestureDetector(
-                                            onTap: () =>
-                                                _showFriendsList(context),
-                                            child: Text(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        padding: EdgeInsets.all(padding),
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          child: Container(
+                                            width: imageSize,
+                                            height: imageSize,
+                                            child: _userImageWidget(imageSize),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 20),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            LayoutBuilder(
+                                              builder: (context, constraints) {
+                                                double screenWidth =
+                                                    constraints.maxWidth;
+                                                return Column(
+                                                  children: [
+                                                    Text(
+                                                      _user!.firstName,
+                                                      style: TextStyle(
+                                                        color: infoFontColor,
+                                                        fontSize: fontSize,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                    ),
+                                                    Text(
+                                                      _user!.lastName,
+                                                      style: TextStyle(
+                                                        color: infoFontColor,
+                                                        fontSize:
+                                                            screenWidth < 600
+                                                                ? fontSize * 0.8
+                                                                : fontSize,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                    ),
+                                                  ],
+                                                );
+                                              },
+                                            ),
+                                            const SizedBox(height: 8),
+                                            GestureDetector(
+                                              onTap: () =>
+                                                  _showFriendsList(context),
+                                              child: Text(
                                                 tr('userInfo_friends') +
                                                     ': $_friendCount',
                                                 style: TextStyle(
-                                                    color: titleFontColor,
-                                                    fontSize: fontSize)),
-                                          ),
-                                        ],
+                                                  color: infoFontColor,
+                                                  fontSize: fontSize,
+                                                ),
+                                                textAlign: TextAlign
+                                                    .center, // Center the text
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                             const SizedBox(
-                                height: 40), // Separator (40 pixels height)
+                                height: 20), // Separator (40 pixels height)
                             Center(
                               child: Container(
                                 width: columnWidth,
@@ -467,7 +503,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                                             fontSize: fontSize)),
                                     const SizedBox(
                                         height:
-                                            20), // Separator (20 pixels height)
+                                            10), // Separator (20 pixels height)
                                     Text(
                                         tr('userInfo_phoneLabel') +
                                             '\n' +
@@ -498,7 +534,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                                         ),
                                         Wrap(
                                           spacing:
-                                              8.0, // Espacio horizontal entre los chips
+                                              8.0, // Hozirontal space between the chips
                                           children: _selectedLanguages
                                               .map((language) => Chip(
                                                     label: Text(getLanguageName(
@@ -551,63 +587,81 @@ class _UserInfoPageState extends State<UserInfoPage> {
                                     ConstrainedBox(
                                       constraints:
                                           BoxConstraints(maxWidth: 600),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: Container(
-                                              width: buttonWidth,
-                                              child: ElevatedButton(
-                                                onPressed:
-                                                    _navigateToTopicsScreen,
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      buttonColor, // Size of the bottom
-                                                ),
-                                                child: Text(
-                                                    tr(
-                                                        'userInfo_buttonUpdateTopics'),
+                                      child: LayoutBuilder(
+                                        builder: (context, constraints) {
+                                          double screenWidth =
+                                              constraints.maxWidth;
+                                          bool isWideScreen = screenWidth > 600;
+
+                                          return Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Container(
+                                                width: isWideScreen
+                                                    ? 200
+                                                    : screenWidth * 0.4,
+                                                margin: EdgeInsets.symmetric(
+                                                    horizontal:
+                                                        isWideScreen ? 10 : 5),
+                                                child: ElevatedButton(
+                                                  onPressed:
+                                                      _navigateToTopicsScreen,
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        buttonColor, // Button background color
+                                                  ),
+                                                  child: Text(
+                                                    tr('userInfo_buttonUpdateTopics'),
                                                     style: TextStyle(
-                                                        color: titleFontColor,
-                                                        fontSize: fontSize)),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                            width: 10,
-                                          ),
-                                          Expanded(
-                                            child: Container(
-                                              width: buttonWidth,
-                                              child: ElevatedButton(
-                                                onPressed: () =>
-                                                    Navigator.pushReplacement(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                            builder: (_) =>
-                                                                EditUserInfoPage(
-                                                                    user: _user,
-                                                                    userEmail:
-                                                                        widget
-                                                                            .userEmail)))
-                                                      ..then((value) {
-                                                        // Optional: Reload user information when returning from editing page
-                                                        _fetchUserInfo(
-                                                            widget.userEmail);
-                                                      }),
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      buttonColor, // Size of the bottom
+                                                      color: titleFontColor,
+                                                      fontSize: fontSize,
+                                                    ),
+                                                  ),
                                                 ),
-                                                child: Text(
-                                                    tr(
-                                                        'userInfo_buttonEditProfile'),
-                                                    style: TextStyle(
-                                                        color: titleFontColor,
-                                                        fontSize: fontSize)),
                                               ),
-                                            ),
-                                          ),
-                                        ],
+                                              Container(
+                                                width: isWideScreen
+                                                    ? 200
+                                                    : screenWidth * 0.4,
+                                                margin: EdgeInsets.symmetric(
+                                                    horizontal:
+                                                        isWideScreen ? 10 : 5),
+                                                child: ElevatedButton(
+                                                  onPressed: () =>
+                                                      Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (_) =>
+                                                          EditUserInfoPage(
+                                                        user: _user,
+                                                        userEmail:
+                                                            widget.userEmail,
+                                                      ),
+                                                    ),
+                                                  ).then((value) {
+                                                    // Reload user information when returning from editing page
+                                                    _fetchUserInfo(
+                                                        widget.userEmail);
+                                                  }),
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        buttonColor, // Button background color
+                                                  ),
+                                                  child: Text(
+                                                    tr('userInfo_buttonEditProfile'),
+                                                    style: TextStyle(
+                                                      color: titleFontColor,
+                                                      fontSize: fontSize,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        },
                                       ),
                                     ),
                                   ],

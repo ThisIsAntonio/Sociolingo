@@ -8,7 +8,6 @@ import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'dart:io';
 import 'package:country_picker/country_picker.dart';
 import 'package:chat_app/model/user.dart';
-import 'package:chat_app/screens/main_screen.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:chat_app/model/language_list.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -19,9 +18,11 @@ class EditUserInfoPage extends StatefulWidget {
   final String userEmail;
 
   // Constructor for initializing the widget
-  const EditUserInfoPage(
-      {Key? key, required this.user, required this.userEmail})
-      : super(key: key);
+  const EditUserInfoPage({
+    Key? key,
+    required this.user,
+    required this.userEmail,
+  }) : super(key: key);
 
   // Method to create the state for this widget
   @override
@@ -187,9 +188,7 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
 
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(tr('editUserInfo_updateSuccessfully'))));
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (context) =>
-                MainScreen(userEmail: widget.userEmail, returnScreen: 3)));
+        Navigator.pop(context, true);
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(tr('editUserInfo_updateFailed') + ' $e')));
@@ -538,11 +537,7 @@ class _EditUserInfoPageState extends State<EditUserInfoPage> {
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                    builder: (context) => MainScreen(
-                                        userEmail: widget.userEmail,
-                                        returnScreen: 3)));
+                            Navigator.pop(context, true);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color.fromRGBO(162, 245, 238, 1),
