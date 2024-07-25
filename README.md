@@ -65,6 +65,8 @@ To install it:
 ## Firebase Configuration
 Ensure you have set up a Firebase project and linked it with your Flutter app. Follow the Firebase documentation to add Firebase to your Flutter project: https://firebase.flutter.dev/docs/overview
 
+A Firebase Account and an API key is required for Database connectivity 
+
 ## Database and Authentication Setup
 - Use Firebase Console to create authentication providers (Email/Password, Google, etc.).
 - Set up Firestore database rules for secure data access.
