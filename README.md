@@ -57,10 +57,10 @@ To install it:
         4. Code Signing the App: Before you can install your app on a device, you need to configure code signing. Go to Project > Runner > Signing & Capabilities and make sure you have selected a team under the "Team" section. 
           If you're developing for personal use, you can select your Apple ID account as your team.
       
-        5. Install the App on the Device: With your device selected and code signing configured, you can install the app directly from Xcode. Click the play button (▶️) on the toolbar in Xcode or select Product > Run from the menu bar. 
-          Xcode will compile the app and install it on your device.
+        5. Install the App on the Device: From visual studio code you need to run: 
+                - flutter install ios (to install the program on the device)
 
-  Note: Remember that to install apps directly on iOS devices, you need an Apple developer account. If you're using a free account, there are limitations, such as needing to manually reinstall your app every 7 days.
+  Note: Remember that to install apps directly on iOS devices, you need an Apple developer account.
 
 ## Firebase Configuration
 Ensure you have set up a Firebase project and linked it with your Flutter app. Follow the Firebase documentation to add Firebase to your Flutter project: https://firebase.flutter.dev/docs/overview

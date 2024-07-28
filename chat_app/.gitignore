@@ -44,3 +44,7 @@ app.*.map.json
 
 # Firebase Hosting
 /.firebase
+
+# Ignore Google services files
+chat_app/ios/Runner/GoogleService-Info.plist
+chat_app/android/app/google-services.json

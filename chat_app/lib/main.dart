@@ -28,18 +28,18 @@ void main() async {
   // Ensure that Easy Localization is initialized.
   await EasyLocalization.ensureInitialized();
 
+  // Initialize Firebase with your firebase info from web version
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
-          apiKey: "AIzaSyDb6GMwxxnc4O8Rh7Lw3TCG8jYCm1lui60",
-          authDomain: "sociolingo-project.firebaseapp.com",
-          projectId: "sociolingo-project",
-          storageBucket: "sociolingo-project.appspot.com",
-          messagingSenderId: "1065841467151",
-          appId: "1:1065841467151:web:df66b762cde6a6ff0b687a",
-          databaseURL:
-              "https://sociolingo-project-default-rtdb.firebaseio.com/",
-          measurementId: "G-D6SLD741Y9"),
+          apiKey: "put your api key",
+          authDomain: "put your auth domain",
+          projectId: "put your project id",
+          storageBucket: "put your storage bucket",
+          messagingSenderId: "put your messaging sender id",
+          appId: "put your app id",
+          databaseURL: "put your database url",
+          measurementId: "put your measurement id"),
     );
   } else {
     await Firebase.initializeApp()

@@ -57,13 +57,13 @@
   window.isIOSDevice = isIOS();
       // Firebase Config
   var firebaseConfig = {
-    apiKey: "AIzaSyDb6GMwxxnc4O8Rh7Lw3TCG8jYCm1lui60",
-    authDomain: "sociolingo-project.firebaseapp.com",
-    projectId: "sociolingo-project",
-    storageBucket: "sociolingo-project.appspot.com",
-    messagingSenderId: "1065841467151",
-    appId: "1:1065841467151:web:df66b762cde6a6ff0b687a",
-    measurementId: "G-D6SLD741Y9"
+    apiKey: "put your api key",
+    authDomain: "put your auth domain",
+    projectId: "put your project id",
+    storageBucket: "put your storage bucket",
+    messagingSenderId: "put your messaging sender id",
+    appId: "put your app id",
+    measurementId: "put your measurement id"
   };
 
   // Initialize Firebase
@@ -71,7 +71,6 @@
 
   // Check if the device is iOS
   if (!window.isIOSDevice) {
-    console.log("============== entro =============== ");
 
     const messaging = firebase.messaging();
 
@@ -80,7 +79,7 @@
       if (permission === 'granted') {
         console.log('Notification permission granted.');
         // Get token
-        messaging.getToken({ vapidKey: 'BBnEtMOtCc10zPV3w8-5w0odv6e7PcBIKOHlCKxv7_E9qtF0Jsb1HGK6n56yddlJLBeMZXBpdeQhkEjTmhYF-Ts' })
+        messaging.getToken({ vapidKey: 'put your vapid key here' })
           .then((currentToken) => {
             if (currentToken) {
               console.log('Token FCM:', currentToken);

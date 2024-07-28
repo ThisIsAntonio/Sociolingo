@@ -2,15 +2,14 @@ importScripts("https://www.gstatic.com/firebasejs/9.10.0/firebase-app-compat.js"
 importScripts("https://www.gstatic.com/firebasejs/9.10.0/firebase-messaging-compat.js");
 
 firebase.initializeApp({
-    apiKey: "AIzaSyDb6GMwxxnc4O8Rh7Lw3TCG8jYCm1lui60",
-    authDomain: "sociolingo-project.firebaseapp.com",
-    projectId: "sociolingo-project",
-    storageBucket: "sociolingo-project.appspot.com",
-    messagingSenderId: "1065841467151",
-    appId: "1:1065841467151:web:df66b762cde6a6ff0b687a",
-    databaseURL:
-        "https://sociolingo-project-default-rtdb.firebaseio.com/",
-    measurementId: "G-D6SLD741Y9",
+        apiKey: "put your api key",
+        authDomain: "put your auth domain",
+        projectId: "put your project id",
+        storageBucket: "put your storage bucket",
+        messagingSenderId: "put your messaging sender id",
+        appId: "put your app id",
+        databaseURL: "put your database url",
+        measurementId: "put your measurement id"
 });
 
 // Necessary to receive background messages:
