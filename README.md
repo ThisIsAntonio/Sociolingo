@@ -21,7 +21,7 @@ To start developing this project, follow these steps:
 ### Flutter Application Configuration
 
 1. Clone the Flutter app repository:
-https://github.com/ThisIsAntonio/Project1.git
+https://github.com/marcos-astudillo/Project1.git
 
 2. Navigate to the Flutter application directory:
 cd Project1/chat_app
